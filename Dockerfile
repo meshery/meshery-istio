@@ -12,5 +12,5 @@ COPY --from=bd /meshery-istio /app/
 COPY --from=bd /istio /app/istio
 COPY --from=bd /etc/passwd /etc/passwd
 USER appuser
-WORKDIR /app/cmd
+WORKDIR /app
 CMD ./meshery-istio

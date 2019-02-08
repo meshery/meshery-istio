@@ -10,6 +10,7 @@ docker:
 	docker build -t layer5/meshery-istio .
 
 docker-run:
+	(docker rm -f meshery-istio) || true
 	docker run --name meshery-istio -d \
 	-p 10000:10000 \
 	-e DEBUG=true \
