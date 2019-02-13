@@ -14,6 +14,7 @@
 
 package istio
 
+// supportedOperation represents a supported operation
 type supportedOperation struct {
 	// a unique identifier
 	key string
@@ -21,11 +22,16 @@ type supportedOperation struct {
 	name string
 	// the template file name
 	templateName string
-
+	// resetOp specifies if the operation is of reset type
 	resetOp bool
 }
 
 var supportedOps = []supportedOperation{
+	{
+		key:          "istio_0",
+		name:         "Install Istio",
+		templateName: "install_istio.tmpl",
+	},
 	{
 		key:          "istio_1",
 		name:         "Shift All traffic to version V1 of all the services",
