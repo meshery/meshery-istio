@@ -17,17 +17,18 @@ package istio
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"path"
 	"strings"
 	"text/template"
 
+	"github.com/ghodss/yaml"
 	"github.com/layer5io/meshery-istio/meshes"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"gopkg.in/yaml.v2"
-	"k8s.io/apimachinery/pkg/runtime"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 // 	SupportedOperations(context.Context, *SupportedOperationsRequest) (*SupportedOperationsResponse, error)
@@ -48,35 +49,22 @@ func (iClient *IstioClient) CreateMeshInstance(_ context.Context, k8sReq *meshes
 		logrus.Error(err)
 		return nil, err
 	}
-	iClient.k8s = ic.k8s
-	iClient.istioConfigApi = ic.istioConfigApi
-	iClient.istioNetworkingApi = ic.istioNetworkingApi
+	iClient.k8sDynamicClient = ic.k8sDynamicClient
 	return &meshes.CreateMeshInstanceResponse{}, nil
 }
 
-func (iClient *IstioClient) deleteAllCreatedResources(ctx context.Context, namespace string) {
-	resourceNames := []string{"productpage", "ratings", "reviews", "details"}
-	for _, rs := range resourceNames {
-		iClient.deleteResource(ctx, virtualServices, namespace, rs)
-
-	}
-}
-
-func (iClient *IstioClient) deleteResource(ctx context.Context, overallType, namespace, resName string) error {
-	if iClient.istioNetworkingApi == nil {
+func (iClient *IstioClient) deleteResource(ctx context.Context, res schema.GroupVersionResource, data *unstructured.Unstructured) error {
+	if iClient.k8sDynamicClient == nil {
 		return errors.New("mesh client has not been created")
 	}
 
-	newRes := iClient.istioNetworkingApi.Delete().
-		Namespace(namespace).
-		Resource(overallType).SubResource(resName).Do()
-	_, err := newRes.Get()
+	err := iClient.k8sDynamicClient.Resource(res).Namespace(data.GetNamespace()).Delete(data.GetName(), &metav1.DeleteOptions{})
 	if err != nil {
 		err = errors.Wrapf(err, "unable to delete the requested resource")
 		logrus.Error(err)
 		return err
 	}
-	logrus.Infof("Deleted Resource of type: %s and name: %s", overallType, resName)
+	logrus.Infof("Deleted Resource of type: %s and name: %s", data.GetKind(), data.GetName())
 	return nil
 }
 
@@ -85,53 +73,63 @@ func (iClient *IstioClient) MeshName(context.Context, *meshes.MeshNameRequest) (
 	return &meshes.MeshNameResponse{Name: "Istio"}, nil
 }
 
-func (iClient *IstioClient) applyRulePayload(ctx context.Context, namespace string, newVSBytes []byte) error {
-	if iClient.istioNetworkingApi == nil {
+func (iClient *IstioClient) applyRulePayload(ctx context.Context, namespace string, newBytes []byte, delete bool) error {
+	if iClient.k8sDynamicClient == nil {
 		return errors.New("mesh client has not been created")
 	}
-	vs := &VirtualService{}
-	err := yaml.Unmarshal(newVSBytes, vs)
+
+	jsonBytes, err := yaml.YAMLToJSON(newBytes)
 	if err != nil {
-		err = errors.Wrapf(err, "unable to unmarshal yaml")
+		err = errors.Wrapf(err, "unable to convert yaml to json")
 		logrus.Error(err)
 		return err
 	}
-	vs.Kind = virtualservice
-	vs.APIVersion = istioNetworkingGroupVersion.String()
-	newVSBytesJ, err := json.Marshal(vs)
+	data := &unstructured.Unstructured{}
+	err = data.UnmarshalJSON(jsonBytes)
 	if err != nil {
-		err = errors.Wrapf(err, "unable to marshal virtual service map")
+		err = errors.Wrapf(err, "unable to unmarshal json created from yaml")
 		logrus.Error(err)
 		return err
 	}
+	groupVersion := strings.Split(data.GetAPIVersion(), "/")
+	fmt.Printf("groupVersion: %v\n", groupVersion)
 
-	newVSRes := iClient.istioNetworkingApi.Post().SetHeader("content-type", runtime.ContentTypeJSON).
-		Namespace(namespace).
-		Resource(virtualServices).Body(newVSBytesJ).Do()
-	_, err = newVSRes.Get()
+	group := groupVersion[0]
+	version := groupVersion[1]
+
+	kind := strings.ToLower(data.GetKind())
+	if !data.IsList() {
+		kind += "s"
+	}
+
+	res := schema.GroupVersionResource{
+		Group:    group,
+		Version:  version,
+		Resource: kind,
+	}
+
+	if namespace != "" {
+		data.SetNamespace(namespace)
+	}
+
+	if delete {
+		return iClient.deleteResource(ctx, res, data)
+	}
+
+	_, err = iClient.k8sDynamicClient.Resource(res).Namespace(data.GetNamespace()).Create(data, metav1.CreateOptions{})
 	if err != nil {
-		newVSRes = iClient.istioNetworkingApi.Get().SetHeader("content-type", runtime.ContentTypeJSON).
-			Namespace(namespace).Name(vs.ObjectMeta.Name).
-			Resource(virtualServices).Do()
-		newVSResInst, err := newVSRes.Get()
+		err = errors.Wrapf(err, "unable to create the requested resource, attempting to update")
+		logrus.Warn(err)
+
+		data, err = iClient.k8sDynamicClient.Resource(res).Namespace(data.GetNamespace()).Get(data.GetName(), metav1.GetOptions{})
 		if err != nil {
-			err = errors.Wrapf(err, "unable to get the virtual service instance")
-			logrus.Error(err)
-			return err
-		}
-		vs1, _ := newVSResInst.(*VirtualService)
-		vs.ObjectMeta.ResourceVersion = vs1.ObjectMeta.ResourceVersion
-		newVSBytesJ, err := json.Marshal(vs)
-		if err != nil {
-			err = errors.Wrapf(err, "unable to marshal virtual service map")
+			err = errors.Wrap(err, "unable to retrieve the resource with a matching name, while attempting to apply the config")
 			logrus.Error(err)
 			return err
 		}
 
-		if _, err = iClient.istioNetworkingApi.Put().SetHeader("content-type", runtime.ContentTypeJSON).
-			Namespace(namespace).Name(vs.ObjectMeta.Name).
-			Resource(virtualServices).Body(newVSBytesJ).Do().Get(); err != nil {
-			err = errors.Wrapf(err, "unable to get the virtual service instance from result")
+		if _, err = iClient.k8sDynamicClient.Resource(res).Namespace(data.GetNamespace()).Update(data, metav1.UpdateOptions{}); err != nil {
+			err = errors.Wrap(err, "unable to update resource with the given name, while attempting to apply the config")
 			logrus.Error(err)
 			return err
 		}
@@ -146,50 +144,49 @@ func (iClient *IstioClient) ApplyOperation(ctx context.Context, arReq *meshes.Ap
 	}
 
 	// ApplyRule(ctx context.Context, opName, username, namespace string) error {
-	yamlFile := ""
-	reset := false
-	for _, op := range supportedOps {
-		if op.key == arReq.OpName {
-			yamlFile = op.templateName
-			if op.resetOp == true {
-				reset = true
-			}
-		}
-	}
-	if yamlFile == "" && !reset {
+	op, ok := supportedOps[arReq.OpName]
+	if !ok {
 		return nil, fmt.Errorf("error: %s is not a valid operation name", arReq.OpName)
 	}
-	if reset {
-		iClient.deleteAllCreatedResources(ctx, arReq.Namespace)
-		return &meshes.ApplyRuleResponse{}, nil
+
+	if arReq.OpName == customOpName && arReq.CustomBody == "" {
+		return nil, fmt.Errorf("error: yaml body is empty for %s operation", arReq.OpName)
 	}
-	if err := iClient.applyConfigChange(ctx, path.Join("istio", "config_templates", yamlFile), arReq.Username, arReq.Namespace); err != nil {
+
+	yamlFile := ""
+	if arReq.OpName == customOpName {
+		yamlFile = arReq.CustomBody
+	} else {
+		tmpl, err := template.ParseFiles(path.Join("istio", "config_templates", op.templateName))
+		if err != nil {
+			err = errors.Wrapf(err, "unable to parse template")
+			logrus.Error(err)
+			return nil, err
+		}
+		buf := bytes.NewBufferString("")
+		err = tmpl.Execute(buf, map[string]string{
+			"user_name": arReq.Username,
+			"namespace": arReq.Namespace,
+		})
+		if err != nil {
+			err = errors.Wrapf(err, "unable to execute template")
+			logrus.Error(err)
+			return nil, err
+		}
+		yamlFile = buf.String()
+	}
+	if err := iClient.applyConfigChange(ctx, yamlFile, arReq.Namespace, arReq.DeleteOp); err != nil {
 		return nil, err
 	}
 	return &meshes.ApplyRuleResponse{}, nil
 }
 
-func (iClient *IstioClient) applyConfigChange(ctx context.Context, yamlFile, username, namespace string) error {
-	iClient.deleteAllCreatedResources(ctx, namespace)
-
-	tmpl := template.Must(template.ParseFiles(yamlFile))
-
-	buf := bytes.NewBufferString("")
-	err := tmpl.Execute(buf, map[string]string{
-		"user_name": username,
-		"namespace": namespace,
-	})
-	if err != nil {
-		err = errors.Wrapf(err, "unable to parse template")
-		logrus.Error(err)
-		return err
-	}
-	completeYaml := buf.String()
-	yamls := strings.Split(completeYaml, "---")
+func (iClient *IstioClient) applyConfigChange(ctx context.Context, yamlFile, namespace string, delete bool) error {
+	yamls := strings.Split(yamlFile, "---")
 
 	for _, yml := range yamls {
 		if strings.TrimSpace(yml) != "" {
-			if err := iClient.applyRulePayload(ctx, namespace, []byte(yml)); err != nil {
+			if err := iClient.applyRulePayload(ctx, namespace, []byte(yml), delete); err != nil {
 				return err
 			}
 		}
@@ -199,10 +196,9 @@ func (iClient *IstioClient) applyConfigChange(ctx context.Context, yamlFile, use
 
 // SupportedOperations - returns a list of supported operations on the mesh
 func (iClient *IstioClient) SupportedOperations(context.Context, *meshes.SupportedOperationsRequest) (*meshes.SupportedOperationsResponse, error) {
-	// Operations(ctx context.Context) (map[string]string, error) {
 	result := map[string]string{}
-	for _, op := range supportedOps {
-		result[op.key] = op.name
+	for key, op := range supportedOps {
+		result[key] = op.name
 	}
 	return &meshes.SupportedOperationsResponse{
 		Ops: result,
