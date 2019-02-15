@@ -1,3 +1,5 @@
+<img align="right" src="https://layer5.io/assets/images/cube-sh-small.png" />
+
 # meshery-istio
 Istio adapter for Meshery
 
