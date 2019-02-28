@@ -18,6 +18,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"path"
 	"strings"
 	"text/template"
@@ -26,9 +27,12 @@ import (
 	"github.com/layer5io/meshery-istio/meshes"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/selection"
 )
 
 // 	SupportedOperations(context.Context, *SupportedOperationsRequest) (*SupportedOperationsResponse, error)
@@ -49,6 +53,7 @@ func (iClient *IstioClient) CreateMeshInstance(_ context.Context, k8sReq *meshes
 		logrus.Error(err)
 		return nil, err
 	}
+	iClient.k8sClientset = ic.k8sClientset
 	iClient.k8sDynamicClient = ic.k8sDynamicClient
 	return &meshes.CreateMeshInstanceResponse{}, nil
 }
@@ -175,10 +180,45 @@ func (iClient *IstioClient) ApplyOperation(ctx context.Context, arReq *meshes.Ap
 		}
 		yamlFile = buf.String()
 	}
+
 	if err := iClient.applyConfigChange(ctx, yamlFile, arReq.Namespace, arReq.DeleteOp); err != nil {
 		return nil, err
 	}
+
+	if op.returnLogs {
+		logs, err := iClient.fetchLogs(arReq.Namespace, op.appLabel)
+		if err != nil {
+			return nil, err
+		}
+		return &meshes.ApplyRuleResponse{Error: logs}, nil
+	}
 	return &meshes.ApplyRuleResponse{}, nil
+}
+
+func (iClient *IstioClient) fetchLogs(namespace, appLabel string) (string, error) {
+	r, err := labels.NewRequirement("app", selection.Equals, []string{appLabel})
+	if err != nil {
+		return "", err
+	}
+
+	pods, err := iClient.k8sClientset.CoreV1().Pods(namespace).List(metav1.ListOptions{LabelSelector: r.String()})
+	if err != nil {
+		return "", err
+	}
+
+	req := iClient.k8sClientset.CoreV1().Pods(namespace).GetLogs(pods.Items[len(pods.Items)-1].ObjectMeta.Name, &corev1.PodLogOptions{})
+	podLogs, err := req.Stream()
+	if err != nil {
+		return "", err
+	}
+	defer podLogs.Close()
+
+	buf := new(bytes.Buffer)
+	_, err = io.Copy(buf, podLogs)
+	if err != nil {
+		return "", err
+	}
+	return buf.String(), nil
 }
 
 func (iClient *IstioClient) applyConfigChange(ctx context.Context, yamlFile, namespace string, delete bool) error {

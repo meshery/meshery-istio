@@ -1,0 +1,72 @@
+###############################
+# istio-vet RBAC
+##############################
+# Cluster wide get, list access for resources
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: istio-vet-istio-system
+rules:
+- apiGroups: ["authentication.istio.io"]
+  resources: ["*"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["config.istio.io"]
+  resources: ["*"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["networking.istio.io"]
+  resources: ["*"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["rbac.istio.io"]
+  resources: ["*"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["config.istio.io"]
+  resources: ["*"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["apiextensions.k8s.io"]
+  resources: ["customresourcedefinitions"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["extensions"]
+  resources: ["thirdpartyresources", "thirdpartyresources.extensions", "ingresses", "ingresses/status", "deployments"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources: ["configmaps", "endpoints", "pods", "services", "namespaces"]
+  verbs: ["get", "list", "watch"]
+---
+# Grant permissions to the istio-vet.
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: istio-vet-istio-system
+subjects:
+- kind: ServiceAccount
+  name: istio-vet-service-account
+  namespace: {{.namespace}}
+roleRef:
+  kind: ClusterRole
+  name: istio-vet-istio-system
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: istio-vet-service-account
+  namespace: {{.namespace}}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: istio-vet
+  namespace: {{.namespace}}
+spec:
+  template:
+    metadata:
+      labels:
+        app: istio-vet
+        istio: vet
+    spec:
+      containers:
+      - name: istio-vet
+        image: quay.io/aspenmesh/istio-vet:master
+        imagePullPolicy: IfNotPresent
+      restartPolicy: Never
+      serviceAccountName: istio-vet-service-account
