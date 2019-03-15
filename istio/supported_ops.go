@@ -19,6 +19,10 @@ type supportedOperation struct {
 	name string
 	// the template file name
 	templateName string
+	// the app label
+	appLabel string
+	// returnLogs specifies if the operation logs should be returned
+	returnLogs bool
 }
 
 const customOpName = "custom"
@@ -27,6 +31,12 @@ var supportedOps = map[string]supportedOperation{
 	"istio_install": {
 		name:         "Install Istio",
 		templateName: "install_istio.tmpl",
+	},
+	"istio_vet": {
+		name:         "Run istio-vet",
+		templateName: "istio_vet.tmpl",
+		appLabel:     "istio-vet",
+		returnLogs:   true,
 	},
 	"cb1": {
 		name:         "Limit circuit breaker config to one connection",

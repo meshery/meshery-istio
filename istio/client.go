@@ -16,14 +16,14 @@ package istio
 
 import (
 	"k8s.io/client-go/dynamic"
-
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 )
 
 // IstioClient represents an Istio client in Meshery
 type IstioClient struct {
-	// k8s              *kube.Clientset
+	k8sClientset     *kubernetes.Clientset
 	k8sDynamicClient dynamic.Interface
 }
 
@@ -57,5 +57,12 @@ func newClient(kubeconfig []byte, contextName string) (*IstioClient, error) {
 		return nil, err
 	}
 	client.k8sDynamicClient = dynamicClient
+
+	k8sClientset, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		return nil, err
+	}
+	client.k8sClientset = k8sClientset
+
 	return &client, nil
 }
