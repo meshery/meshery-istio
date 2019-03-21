@@ -244,7 +244,9 @@ func (iClient *IstioClient) fetchLogs(namespace, appLabel string) (string, error
 		return "", err
 	}
 
-	req := iClient.k8sClientset.CoreV1().Pods(namespace).GetLogs(pods.Items[len(pods.Items)-1].ObjectMeta.Name, &corev1.PodLogOptions{})
+	req := iClient.k8sClientset.CoreV1().Pods(namespace).GetLogs(pods.Items[len(pods.Items)-1].ObjectMeta.Name, &corev1.PodLogOptions{
+		Container: "istio-vet",
+	})
 	podLogs, err := req.Stream()
 	if err != nil {
 		return "", err
