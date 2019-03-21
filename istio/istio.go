@@ -22,6 +22,7 @@ import (
 	"path"
 	"strings"
 	"text/template"
+	"time"
 
 	"github.com/ghodss/yaml"
 	"github.com/layer5io/meshery-istio/meshes"
@@ -55,7 +56,7 @@ func (iClient *IstioClient) CreateMeshInstance(_ context.Context, k8sReq *meshes
 	}
 	iClient.k8sClientset = ic.k8sClientset
 	iClient.k8sDynamicClient = ic.k8sDynamicClient
-	iClient.eventChan = make(chan *meshes.EventsResponse)
+	iClient.eventChan = make(chan *meshes.EventsResponse, 100)
 	return &meshes.CreateMeshInstanceResponse{}, nil
 }
 
@@ -214,51 +215,61 @@ func (iClient *IstioClient) ApplyOperation(ctx context.Context, arReq *meshes.Ap
 	}
 
 	if op.returnLogs && !arReq.DeleteOp {
-		logs, err := iClient.fetchLogs(arReq.Namespace, op.appLabel)
-		if err != nil {
-			return nil, err
-		}
 		go func() {
+			// we don't have to wait for logs
+			iClient.fetchLogs(arReq.Namespace, op.appLabel)
 			// TODO: add parsing logic to fetchLogs so that we can make it return an EventsResponse
 			// for now adding this logic here to see it in action
 			// TODO: may be move istio vet deployment as part of istio install and have this run periodically
-			iClient.eventChan <- &meshes.EventsResponse{
-				EventType: meshes.EventType_ERROR,
-				Summary:   "Logs from Istio Vet",
-				Details:   logs,
-			}
+
 		}()
 		return &meshes.ApplyRuleResponse{}, nil
 	}
 	return &meshes.ApplyRuleResponse{}, nil
 }
 
-func (iClient *IstioClient) fetchLogs(namespace, appLabel string) (string, error) {
+func (iClient *IstioClient) fetchLogs(namespace, appLabel string) error {
+	logrus.Debug("starting to get istio-vet logs")
 	r, err := labels.NewRequirement("app", selection.Equals, []string{appLabel})
 	if err != nil {
-		return "", err
+		err = errors.Wrapf(err, "unable to fetch label requirements:")
+		logrus.Error(err)
+		return err
 	}
-
 	pods, err := iClient.k8sClientset.CoreV1().Pods(namespace).List(metav1.ListOptions{LabelSelector: r.String()})
 	if err != nil {
-		return "", err
+		err = errors.Wrapf(err, "unable to fetch pods for label:")
+		logrus.Error(err)
+		return err
 	}
-
+	var lines int64 = 100
 	req := iClient.k8sClientset.CoreV1().Pods(namespace).GetLogs(pods.Items[len(pods.Items)-1].ObjectMeta.Name, &corev1.PodLogOptions{
 		Container: "istio-vet",
+		TailLines: &lines,
 	})
 	podLogs, err := req.Stream()
 	if err != nil {
-		return "", err
+		err = errors.Wrapf(err, "unable to get log stream:")
+		logrus.Error(err)
+		return err
 	}
 	defer podLogs.Close()
 
 	buf := new(bytes.Buffer)
 	_, err = io.Copy(buf, podLogs)
 	if err != nil {
-		return "", err
+		err = errors.Wrapf(err, "unable to copy logs from reader:")
+		logrus.Error(err)
+		return err
 	}
-	return buf.String(), nil
+	logrus.Debugf("received logs: %s", buf)
+
+	iClient.eventChan <- &meshes.EventsResponse{
+		EventType: meshes.EventType_ERROR,
+		Summary:   "Logs from Istio Vet",
+		Details:   buf.String(),
+	}
+	return nil
 }
 
 func (iClient *IstioClient) applyConfigChange(ctx context.Context, yamlFile, namespace string, delete bool) error {
@@ -287,12 +298,19 @@ func (iClient *IstioClient) SupportedOperations(context.Context, *meshes.Support
 
 // StreamEvents - streams generated/collected events to the client
 func (iClient *IstioClient) StreamEvents(in *meshes.EventsRequest, stream meshes.MeshService_StreamEventsServer) error {
-	for event := range iClient.eventChan {
-		if err := stream.Send(event); err != nil {
-			err = errors.Wrapf(err, "unable to send event")
-			logrus.Error(err)
-			return err
+	logrus.Debugf("waiting on event stream. . .")
+	for {
+		select {
+		case event := <-iClient.eventChan:
+			logrus.Debugf("sending event: %+#v", event)
+			if err := stream.Send(event); err != nil {
+				err = errors.Wrapf(err, "unable to send event")
+				logrus.Error(err)
+				return err
+			}
+		default:
 		}
+		time.Sleep(500 * time.Millisecond)
 	}
 	return nil
 }
