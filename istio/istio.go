@@ -213,7 +213,7 @@ func (iClient *IstioClient) ApplyOperation(ctx context.Context, arReq *meshes.Ap
 		return nil, err
 	}
 
-	if op.returnLogs {
+	if op.returnLogs && !arReq.DeleteOp {
 		logs, err := iClient.fetchLogs(arReq.Namespace, op.appLabel)
 		if err != nil {
 			return nil, err
