@@ -19,6 +19,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"math/rand"
 	"path"
 	"strings"
 	"text/template"
@@ -264,8 +265,14 @@ func (iClient *IstioClient) fetchLogs(namespace, appLabel string) error {
 	}
 	logrus.Debugf("received logs: %s", buf)
 
+	eTypes := []meshes.EventType{
+		meshes.EventType_INFO,
+		meshes.EventType_WARN,
+		meshes.EventType_ERROR,
+	}
+
 	iClient.eventChan <- &meshes.EventsResponse{
-		EventType: meshes.EventType_ERROR,
+		EventType: eTypes[rand.Intn(len(eTypes))], // just to mimic different types of events for now.
 		Summary:   "Logs from Istio Vet",
 		Details:   buf.String(),
 	}
@@ -305,6 +312,11 @@ func (iClient *IstioClient) StreamEvents(in *meshes.EventsRequest, stream meshes
 			logrus.Debugf("sending event: %+#v", event)
 			if err := stream.Send(event); err != nil {
 				err = errors.Wrapf(err, "unable to send event")
+
+				// to prevent loosing the event, will re-add to the channel
+				go func() {
+					iClient.eventChan <- event
+				}()
 				logrus.Error(err)
 				return err
 			}
