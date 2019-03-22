@@ -14,3 +14,6 @@ docker-run:
 	-p 10000:10000 \
 	-e DEBUG=true \
 	layer5/meshery-istio
+
+run:
+	DEBUG=true go run main.go

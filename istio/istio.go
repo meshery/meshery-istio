@@ -19,9 +19,11 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"math/rand"
 	"path"
 	"strings"
 	"text/template"
+	"time"
 
 	"github.com/ghodss/yaml"
 	"github.com/layer5io/meshery-istio/meshes"
@@ -44,7 +46,7 @@ func (iClient *IstioClient) CreateMeshInstance(_ context.Context, k8sReq *meshes
 		k8sConfig = k8sReq.K8SConfig
 		contextName = k8sReq.ContextName
 	}
-	logrus.Debugf("received k8sConfig: %s", k8sConfig)
+	// logrus.Debugf("received k8sConfig: %s", k8sConfig)
 	logrus.Debugf("received contextName: %s", contextName)
 
 	ic, err := newClient(k8sConfig, contextName)
@@ -55,6 +57,7 @@ func (iClient *IstioClient) CreateMeshInstance(_ context.Context, k8sReq *meshes
 	}
 	iClient.k8sClientset = ic.k8sClientset
 	iClient.k8sDynamicClient = ic.k8sDynamicClient
+	iClient.eventChan = make(chan *meshes.EventsResponse, 100)
 	return &meshes.CreateMeshInstanceResponse{}, nil
 }
 
@@ -65,9 +68,15 @@ func (iClient *IstioClient) deleteResource(ctx context.Context, res schema.Group
 
 	err := iClient.k8sDynamicClient.Resource(res).Namespace(data.GetNamespace()).Delete(data.GetName(), &metav1.DeleteOptions{})
 	if err != nil {
-		err = errors.Wrapf(err, "unable to delete the requested resource")
-		logrus.Error(err)
-		return err
+		err = errors.Wrapf(err, "unable to delete the requested resource, attempting operation without namespace")
+		logrus.Warn(err)
+
+		err := iClient.k8sDynamicClient.Resource(res).Delete(data.GetName(), &metav1.DeleteOptions{})
+		if err != nil {
+			err = errors.Wrapf(err, "unable to delete the requested resource")
+			logrus.Error(err)
+			return err
+		}
 	}
 	logrus.Infof("Deleted Resource of type: %s and name: %s", data.GetKind(), data.GetName())
 	return nil
@@ -97,10 +106,14 @@ func (iClient *IstioClient) applyRulePayload(ctx context.Context, namespace stri
 		return err
 	}
 	groupVersion := strings.Split(data.GetAPIVersion(), "/")
-	fmt.Printf("groupVersion: %v\n", groupVersion)
-
-	group := groupVersion[0]
-	version := groupVersion[1]
+	logrus.Debugf("groupVersion: %v", groupVersion)
+	var group, version string
+	if len(groupVersion) == 2 {
+		group = groupVersion[0]
+		version = groupVersion[1]
+	} else if len(groupVersion) == 1 {
+		version = groupVersion[0]
+	}
 
 	kind := strings.ToLower(data.GetKind())
 	if !data.IsList() {
@@ -120,23 +133,41 @@ func (iClient *IstioClient) applyRulePayload(ctx context.Context, namespace stri
 	if delete {
 		return iClient.deleteResource(ctx, res, data)
 	}
+	logrus.Debugf("Received data: %+#v", data)
+	logrus.Debugf("Computed Resource: %+#v", res)
 
 	_, err = iClient.k8sDynamicClient.Resource(res).Namespace(data.GetNamespace()).Create(data, metav1.CreateOptions{})
 	if err != nil {
-		err = errors.Wrapf(err, "unable to create the requested resource, attempting to update")
+		err = errors.Wrapf(err, "unable to create the requested resource, attempting operation without namespace")
 		logrus.Warn(err)
-
-		data, err = iClient.k8sDynamicClient.Resource(res).Namespace(data.GetNamespace()).Get(data.GetName(), metav1.GetOptions{})
+		_, err = iClient.k8sDynamicClient.Resource(res).Create(data, metav1.CreateOptions{})
 		if err != nil {
-			err = errors.Wrap(err, "unable to retrieve the resource with a matching name, while attempting to apply the config")
-			logrus.Error(err)
-			return err
-		}
+			err = errors.Wrapf(err, "unable to create the requested resource, attempting to update")
+			logrus.Warn(err)
 
-		if _, err = iClient.k8sDynamicClient.Resource(res).Namespace(data.GetNamespace()).Update(data, metav1.UpdateOptions{}); err != nil {
-			err = errors.Wrap(err, "unable to update resource with the given name, while attempting to apply the config")
-			logrus.Error(err)
-			return err
+			data1, err := iClient.k8sDynamicClient.Resource(res).Namespace(data.GetNamespace()).Get(data.GetName(), metav1.GetOptions{})
+			if err != nil {
+				err = errors.Wrap(err, "unable to retrieve the resource with a matching name, attempting operation without namespace")
+				logrus.Warn(err)
+
+				data1, err = iClient.k8sDynamicClient.Resource(res).Get(data.GetName(), metav1.GetOptions{})
+				if err != nil {
+					err = errors.Wrap(err, "unable to retrieve the resource with a matching name, while attempting to apply the config")
+					logrus.Error(err)
+					return err
+				}
+			}
+
+			if _, err = iClient.k8sDynamicClient.Resource(res).Namespace(data.GetNamespace()).Update(data1, metav1.UpdateOptions{}); err != nil {
+				err = errors.Wrap(err, "unable to update resource with the given name, attempting operation without namespace")
+				logrus.Warn(err)
+
+				if _, err = iClient.k8sDynamicClient.Resource(res).Update(data1, metav1.UpdateOptions{}); err != nil {
+					err = errors.Wrap(err, "unable to update resource with the given name, while attempting to apply the config")
+					logrus.Error(err)
+					return err
+				}
+			}
 		}
 	}
 	return nil
@@ -148,7 +179,6 @@ func (iClient *IstioClient) ApplyOperation(ctx context.Context, arReq *meshes.Ap
 		return nil, errors.New("mesh client has not been created")
 	}
 
-	// ApplyRule(ctx context.Context, opName, username, namespace string) error {
 	op, ok := supportedOps[arReq.OpName]
 	if !ok {
 		return nil, fmt.Errorf("error: %s is not a valid operation name", arReq.OpName)
@@ -185,40 +215,68 @@ func (iClient *IstioClient) ApplyOperation(ctx context.Context, arReq *meshes.Ap
 		return nil, err
 	}
 
-	if op.returnLogs {
-		logs, err := iClient.fetchLogs(arReq.Namespace, op.appLabel)
-		if err != nil {
-			return nil, err
-		}
-		return &meshes.ApplyRuleResponse{Error: logs}, nil
+	if op.returnLogs && !arReq.DeleteOp {
+		go func() {
+			// we don't have to wait for logs
+			iClient.fetchLogs(arReq.Namespace, op.appLabel)
+			// TODO: add parsing logic to fetchLogs so that we can make it return an EventsResponse
+			// for now adding this logic here to see it in action
+			// TODO: may be move istio vet deployment as part of istio install and have this run periodically
+
+		}()
+		return &meshes.ApplyRuleResponse{}, nil
 	}
 	return &meshes.ApplyRuleResponse{}, nil
 }
 
-func (iClient *IstioClient) fetchLogs(namespace, appLabel string) (string, error) {
+func (iClient *IstioClient) fetchLogs(namespace, appLabel string) error {
+	logrus.Debug("starting to get istio-vet logs")
 	r, err := labels.NewRequirement("app", selection.Equals, []string{appLabel})
 	if err != nil {
-		return "", err
+		err = errors.Wrapf(err, "unable to fetch label requirements:")
+		logrus.Error(err)
+		return err
 	}
-
 	pods, err := iClient.k8sClientset.CoreV1().Pods(namespace).List(metav1.ListOptions{LabelSelector: r.String()})
 	if err != nil {
-		return "", err
+		err = errors.Wrapf(err, "unable to fetch pods for label:")
+		logrus.Error(err)
+		return err
 	}
-
-	req := iClient.k8sClientset.CoreV1().Pods(namespace).GetLogs(pods.Items[len(pods.Items)-1].ObjectMeta.Name, &corev1.PodLogOptions{})
+	var lines int64 = 100
+	req := iClient.k8sClientset.CoreV1().Pods(namespace).GetLogs(pods.Items[len(pods.Items)-1].ObjectMeta.Name, &corev1.PodLogOptions{
+		Container: "istio-vet",
+		TailLines: &lines,
+	})
 	podLogs, err := req.Stream()
 	if err != nil {
-		return "", err
+		err = errors.Wrapf(err, "unable to get log stream:")
+		logrus.Error(err)
+		return err
 	}
 	defer podLogs.Close()
 
 	buf := new(bytes.Buffer)
 	_, err = io.Copy(buf, podLogs)
 	if err != nil {
-		return "", err
+		err = errors.Wrapf(err, "unable to copy logs from reader:")
+		logrus.Error(err)
+		return err
 	}
-	return buf.String(), nil
+	logrus.Debugf("received logs: %s", buf)
+
+	eTypes := []meshes.EventType{
+		meshes.EventType_INFO,
+		meshes.EventType_WARN,
+		meshes.EventType_ERROR,
+	}
+
+	iClient.eventChan <- &meshes.EventsResponse{
+		EventType: eTypes[rand.Intn(len(eTypes))], // just to mimic different types of events for now.
+		Summary:   "Logs from Istio Vet",
+		Details:   buf.String(),
+	}
+	return nil
 }
 
 func (iClient *IstioClient) applyConfigChange(ctx context.Context, yamlFile, namespace string, delete bool) error {
@@ -243,4 +301,28 @@ func (iClient *IstioClient) SupportedOperations(context.Context, *meshes.Support
 	return &meshes.SupportedOperationsResponse{
 		Ops: result,
 	}, nil
+}
+
+// StreamEvents - streams generated/collected events to the client
+func (iClient *IstioClient) StreamEvents(in *meshes.EventsRequest, stream meshes.MeshService_StreamEventsServer) error {
+	logrus.Debugf("waiting on event stream. . .")
+	for {
+		select {
+		case event := <-iClient.eventChan:
+			logrus.Debugf("sending event: %+#v", event)
+			if err := stream.Send(event); err != nil {
+				err = errors.Wrapf(err, "unable to send event")
+
+				// to prevent loosing the event, will re-add to the channel
+				go func() {
+					iClient.eventChan <- event
+				}()
+				logrus.Error(err)
+				return err
+			}
+		default:
+		}
+		time.Sleep(500 * time.Millisecond)
+	}
+	return nil
 }
