@@ -18,8 +18,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io"
-	"math/rand"
 	"path"
 	"strings"
 	"text/template"
@@ -29,12 +27,9 @@ import (
 	"github.com/layer5io/meshery-istio/meshes"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/apimachinery/pkg/selection"
 )
 
 // 	SupportedOperations(context.Context, *SupportedOperationsRequest) (*SupportedOperationsResponse, error)
@@ -58,6 +53,7 @@ func (iClient *IstioClient) CreateMeshInstance(_ context.Context, k8sReq *meshes
 	iClient.k8sClientset = ic.k8sClientset
 	iClient.k8sDynamicClient = ic.k8sDynamicClient
 	iClient.eventChan = make(chan *meshes.EventsResponse, 100)
+	iClient.config = ic.config
 	return &meshes.CreateMeshInstanceResponse{}, nil
 }
 
@@ -191,6 +187,9 @@ func (iClient *IstioClient) ApplyOperation(ctx context.Context, arReq *meshes.Ap
 	yamlFile := ""
 	if arReq.OpName == customOpName {
 		yamlFile = arReq.CustomBody
+	} else if arReq.OpName == runVet {
+		go iClient.runVet()
+		return &meshes.ApplyRuleResponse{}, nil
 	} else {
 		tmpl, err := template.ParseFiles(path.Join("istio", "config_templates", op.templateName))
 		if err != nil {
@@ -215,67 +214,7 @@ func (iClient *IstioClient) ApplyOperation(ctx context.Context, arReq *meshes.Ap
 		return nil, err
 	}
 
-	if op.returnLogs && !arReq.DeleteOp {
-		go func() {
-			// we don't have to wait for logs
-			iClient.fetchLogs(arReq.Namespace, op.appLabel)
-			// TODO: add parsing logic to fetchLogs so that we can make it return an EventsResponse
-			// for now adding this logic here to see it in action
-			// TODO: may be move istio vet deployment as part of istio install and have this run periodically
-
-		}()
-	}
 	return &meshes.ApplyRuleResponse{}, nil
-}
-
-func (iClient *IstioClient) fetchLogs(namespace, appLabel string) error {
-	logrus.Debug("starting to get istio-vet logs")
-	r, err := labels.NewRequirement("app", selection.Equals, []string{appLabel})
-	if err != nil {
-		err = errors.Wrapf(err, "unable to fetch label requirements:")
-		logrus.Error(err)
-		return err
-	}
-	pods, err := iClient.k8sClientset.CoreV1().Pods(namespace).List(metav1.ListOptions{LabelSelector: r.String()})
-	if err != nil {
-		err = errors.Wrapf(err, "unable to fetch pods for label:")
-		logrus.Error(err)
-		return err
-	}
-	var lines int64 = 100
-	req := iClient.k8sClientset.CoreV1().Pods(namespace).GetLogs(pods.Items[len(pods.Items)-1].ObjectMeta.Name, &corev1.PodLogOptions{
-		Container: "istio-vet",
-		TailLines: &lines,
-	})
-	podLogs, err := req.Stream()
-	if err != nil {
-		err = errors.Wrapf(err, "unable to get log stream:")
-		logrus.Error(err)
-		return err
-	}
-	defer podLogs.Close()
-
-	buf := new(bytes.Buffer)
-	_, err = io.Copy(buf, podLogs)
-	if err != nil {
-		err = errors.Wrapf(err, "unable to copy logs from reader:")
-		logrus.Error(err)
-		return err
-	}
-	logrus.Debugf("received logs: %s", buf)
-
-	eTypes := []meshes.EventType{
-		meshes.EventType_INFO,
-		meshes.EventType_WARN,
-		meshes.EventType_ERROR,
-	}
-
-	iClient.eventChan <- &meshes.EventsResponse{
-		EventType: eTypes[rand.Intn(len(eTypes))], // just to mimic different types of events for now.
-		Summary:   "Logs from Istio Vet",
-		Details:   buf.String(),
-	}
-	return nil
 }
 
 func (iClient *IstioClient) applyConfigChange(ctx context.Context, yamlFile, namespace string, delete bool) error {

@@ -8,6 +8,9 @@ require (
 	git.apache.org/thrift.git v0.12.0 // indirect
 	github.com/Azure/go-autorest v11.4.0+incompatible // indirect
 	github.com/Shopify/sarama v1.20.1 // indirect
+	github.com/aspenmesh/istio-client-go v0.0.0-20181002001939-c2ad69c03a02
+	github.com/aspenmesh/istio-vet v0.0.0-20190305212226-f54d548fbb72
+	github.com/cnf/structhash v0.0.0-20180104161610-62a607eb0224 // indirect
 	github.com/coreos/go-systemd v0.0.0-20190204112023-081494f7ee4f // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/emicklei/go-restful v2.8.1+incompatible // indirect
@@ -26,6 +29,7 @@ require (
 	github.com/gorilla/mux v1.7.0 // indirect
 	github.com/gregjones/httpcache v0.0.0-20190203031600-7a902570cb17 // indirect
 	github.com/grpc-ecosystem/grpc-gateway v1.7.0 // indirect
+	github.com/hashicorp/golang-lru v0.5.1 // indirect
 	github.com/howeyc/gopass v0.0.0-20170109162249-bf9dde6d0d2c // indirect
 	github.com/imdario/mergo v0.3.7 // indirect
 	github.com/json-iterator/go v1.1.5 // indirect
@@ -71,6 +75,7 @@ require (
 	google.golang.org/grpc v1.18.0
 	gopkg.in/yaml.v2 v2.2.2
 	honnef.co/go/tools v0.0.0-20190128043916-71123fcbb8fe // indirect
+	istio.io/api v0.0.0-20190322134240-785ea83cee80 // indirect
 	k8s.io/api v0.0.0-20190222213804-5cb15d344471
 	k8s.io/apimachinery v0.0.0-20190221213512-86fb29eff628
 	k8s.io/client-go v2.0.0-alpha.0.0.20190228174230-b40b2a5939e4+incompatible
