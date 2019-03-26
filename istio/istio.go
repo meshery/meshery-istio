@@ -224,7 +224,6 @@ func (iClient *IstioClient) ApplyOperation(ctx context.Context, arReq *meshes.Ap
 			// TODO: may be move istio vet deployment as part of istio install and have this run periodically
 
 		}()
-		return &meshes.ApplyRuleResponse{}, nil
 	}
 	return &meshes.ApplyRuleResponse{}, nil
 }
