@@ -24,6 +24,7 @@ import (
 
 // IstioClient represents an Istio client in Meshery
 type IstioClient struct {
+	config           *rest.Config
 	k8sClientset     *kubernetes.Clientset
 	k8sDynamicClient dynamic.Interface
 	eventChan        chan *meshes.EventsResponse
@@ -31,7 +32,6 @@ type IstioClient struct {
 
 func configClient(kubeconfig []byte, contextName string) (*rest.Config, error) {
 	if len(kubeconfig) > 0 {
-		// clientcmd.BuildConfigFromFlags("", kubeconfig)
 		ccfg, err := clientcmd.Load(kubeconfig)
 		if err != nil {
 			return nil, err
@@ -65,6 +65,7 @@ func newClient(kubeconfig []byte, contextName string) (*IstioClient, error) {
 		return nil, err
 	}
 	client.k8sClientset = k8sClientset
+	client.config = ccfg
 
 	return &client, nil
 }

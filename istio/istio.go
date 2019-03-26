@@ -18,7 +18,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io"
 	"math/rand"
 	"path"
 	"strings"
@@ -29,12 +28,9 @@ import (
 	"github.com/layer5io/meshery-istio/meshes"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/apimachinery/pkg/selection"
 )
 
 // 	SupportedOperations(context.Context, *SupportedOperationsRequest) (*SupportedOperationsResponse, error)
@@ -229,55 +225,55 @@ func (iClient *IstioClient) ApplyOperation(ctx context.Context, arReq *meshes.Ap
 	return &meshes.ApplyRuleResponse{}, nil
 }
 
-func (iClient *IstioClient) fetchLogs(namespace, appLabel string) error {
+func (iClient *IstioClient) streamEvents(namespace string) error {
 	logrus.Debug("starting to get istio-vet logs")
-	r, err := labels.NewRequirement("app", selection.Equals, []string{appLabel})
-	if err != nil {
-		err = errors.Wrapf(err, "unable to fetch label requirements:")
-		logrus.Error(err)
-		return err
-	}
-	pods, err := iClient.k8sClientset.CoreV1().Pods(namespace).List(metav1.ListOptions{LabelSelector: r.String()})
-	if err != nil {
-		err = errors.Wrapf(err, "unable to fetch pods for label:")
-		logrus.Error(err)
-		return err
-	}
-	var lines int64 = 100
-	req := iClient.k8sClientset.CoreV1().Pods(namespace).GetLogs(pods.Items[len(pods.Items)-1].ObjectMeta.Name, &corev1.PodLogOptions{
-		Container: "istio-vet",
-		TailLines: &lines,
-	})
-	podLogs, err := req.Stream()
-	if err != nil {
-		err = errors.Wrapf(err, "unable to get log stream:")
-		logrus.Error(err)
-		return err
-	}
-	defer podLogs.Close()
+	// r, err := labels.NewRequirement("app", selection.Equals, []string{appLabel})
+	// if err != nil {
+	// 	err = errors.Wrapf(err, "unable to fetch label requirements:")
+	// 	logrus.Error(err)
+	// 	return err
+	// }
+	// pods, err := iClient.k8sClientset.CoreV1().Pods(namespace).List(metav1.ListOptions{LabelSelector: r.String()})
+	// if err != nil {
+	// 	err = errors.Wrapf(err, "unable to fetch pods for label:")
+	// 	logrus.Error(err)
+	// 	return err
+	// }
+	// var lines int64 = 100
+	// req := iClient.k8sClientset.CoreV1().Pods(namespace).GetLogs(pods.Items[len(pods.Items)-1].ObjectMeta.Name, &corev1.PodLogOptions{
+	// 	Container: "istio-vet",
+	// 	TailLines: &lines,
+	// })
+	// podLogs, err := req.Stream()
+	// if err != nil {
+	// 	err = errors.Wrapf(err, "unable to get log stream:")
+	// 	logrus.Error(err)
+	// 	return err
+	// }
+	// defer podLogs.Close()
 
-	buf := new(bytes.Buffer)
-	_, err = io.Copy(buf, podLogs)
-	if err != nil {
-		err = errors.Wrapf(err, "unable to copy logs from reader:")
-		logrus.Error(err)
-		return err
-	}
-	logrus.Debugf("received logs: %s", buf)
+	// buf := new(bytes.Buffer)
+	// _, err = io.Copy(buf, podLogs)
+	// if err != nil {
+	// 	err = errors.Wrapf(err, "unable to copy logs from reader:")
+	// 	logrus.Error(err)
+	// 	return err
+	// }
+	// logrus.Debugf("received logs: %s", buf)
 
-	eTypes := []meshes.EventType{
-		meshes.EventType_INFO,
-		meshes.EventType_WARN,
-		meshes.EventType_ERROR,
-	}
+	// eTypes := []meshes.EventType{
+	// 	meshes.EventType_INFO,
+	// 	meshes.EventType_WARN,
+	// 	meshes.EventType_ERROR,
+	// }
 
-	iClient.eventChan <- &meshes.EventsResponse{
-		EventType: eTypes[rand.Intn(len(eTypes))], // just to mimic different types of events for now.
-		Summary:   "Logs from Istio Vet",
-		Details:   buf.String(),
-	}
-	return nil
-}
+// 	iClient.eventChan <- &meshes.EventsResponse{
+// 		EventType: eTypes[rand.Intn(len(eTypes))], // just to mimic different types of events for now.
+// 		Summary:   "Logs from Istio Vet",
+// 		Details:   buf.String(),
+// 	}
+// 	return nil
+// }
 
 func (iClient *IstioClient) applyConfigChange(ctx context.Context, yamlFile, namespace string, delete bool) error {
 	yamls := strings.Split(yamlFile, "---")
