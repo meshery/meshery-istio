@@ -65,7 +65,7 @@ func newClient(kubeconfig []byte, contextName string) (*IstioClient, error) {
 		return nil, err
 	}
 	client.k8sClientset = k8sClientset
-	client.config = ccfg
+	client.config = config
 
 	return &client, nil
 }

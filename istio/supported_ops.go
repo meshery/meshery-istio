@@ -26,13 +26,14 @@ type supportedOperation struct {
 }
 
 const customOpName = "custom"
+const runVet = "istio_vet"
 
 var supportedOps = map[string]supportedOperation{
 	"istio_install": {
 		name:         "Install Istio",
 		templateName: "install_istio.tmpl",
 	},
-	"istio_vet": {
+	runVet: {
 		name: "Run istio-vet",
 		// templateName: "istio_vet.tmpl",
 		// appLabel:     "istio-vet",

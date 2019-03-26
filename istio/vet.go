@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	istioinformer "github.com/aspenmesh/istio-client-go/pkg/client/informers/externalversions"
 	"github.com/aspenmesh/istio-vet/pkg/istioclient"
 	"github.com/aspenmesh/istio-vet/pkg/vetter"
 	"github.com/aspenmesh/istio-vet/pkg/vetter/applabel"
@@ -22,6 +23,18 @@ import (
 	apiv1 "github.com/aspenmesh/istio-vet/api/v1"
 )
 
+type metaInformerFactory struct {
+	k8s   informers.SharedInformerFactory
+	istio istioinformer.SharedInformerFactory
+}
+
+func (m *metaInformerFactory) K8s() informers.SharedInformerFactory {
+	return m.k8s
+}
+func (m *metaInformerFactory) Istio() istioinformer.SharedInformerFactory {
+	return m.istio
+}
+
 func (iClient *IstioClient) runVet() error {
 	istioClient, err := istioclient.New(iClient.config)
 	if err != nil {
@@ -29,7 +42,7 @@ func (iClient *IstioClient) runVet() error {
 		return err
 	}
 
-	kubeInformerFactory := informers.NewSharedInformerFactory(iClient.k8sClient, 0)
+	kubeInformerFactory := informers.NewSharedInformerFactory(iClient.k8sClientset, 0)
 	istioInformerFactory := istioinformer.NewSharedInformerFactory(istioClient, 0)
 	informerFactory := &metaInformerFactory{
 		k8s:   kubeInformerFactory,
