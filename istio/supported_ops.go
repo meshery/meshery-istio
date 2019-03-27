@@ -44,6 +44,6 @@ var supportedOps = map[string]supportedOperation{
 		templateName: "circuit_breaking.tmpl",
 	},
 	customOpName: {
-		name: customOpName,
+		name: "Custom YAML",
 	},
 }
