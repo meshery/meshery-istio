@@ -15,6 +15,8 @@
 package istio
 
 import (
+	"time"
+
 	"github.com/layer5io/meshery-istio/meshes"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
@@ -28,6 +30,10 @@ type IstioClient struct {
 	k8sClientset     *kubernetes.Clientset
 	k8sDynamicClient dynamic.Interface
 	eventChan        chan *meshes.EventsResponse
+
+	istioReleaseVersion     string
+	istioReleaseDownloadURL string
+	istioReleaseUpdatedAt   time.Time
 }
 
 func configClient(kubeconfig []byte, contextName string) (*rest.Config, error) {
