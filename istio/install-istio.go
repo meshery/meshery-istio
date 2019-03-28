@@ -30,8 +30,9 @@ const (
 )
 
 var (
-	basePath                   = path.Join(destinationFolder, "%s")
-	installFile                = path.Join(basePath, "install/kubernetes/istio-demo-auth.yaml")
+	basePath    = path.Join(destinationFolder, "%s")
+	installFile = path.Join(basePath, "install/kubernetes/istio-demo.yaml")
+	// installFile                = path.Join(basePath, "install/kubernetes/istio-demo-auth.yaml")
 	bookInfoInstallFile        = path.Join(basePath, "samples/bookinfo/platform/kube/bookinfo.yaml")
 	bookInfoGatewayInstallFile = path.Join(basePath, "samples/bookinfo/networking/bookinfo-gateway.yaml")
 	crdFolder                  = path.Join(basePath, "install/kubernetes/helm/istio-init/files/")
