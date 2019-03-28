@@ -25,6 +25,8 @@ const (
 	localFile         = "/tmp/istio.tar.gz"
 	destinationFolder = "/tmp/istio"
 	crdPattern        = "crd(.*)yaml"
+
+	cachePeriod = 1 * time.Hour
 )
 
 var (
@@ -48,7 +50,7 @@ type Asset struct {
 }
 
 func (iClient *IstioClient) getLatestReleaseURL() error {
-	if iClient.istioReleaseDownloadURL == "" || time.Since(iClient.istioReleaseUpdatedAt) > 1*time.Hour {
+	if iClient.istioReleaseDownloadURL == "" || time.Since(iClient.istioReleaseUpdatedAt) > cachePeriod {
 		logrus.Debugf("API info url: %s", repoURL)
 		resp, err := http.Get(repoURL)
 		if err != nil {
@@ -70,7 +72,7 @@ func (iClient *IstioClient) getLatestReleaseURL() error {
 			logrus.Error(err)
 			return err
 		}
-		logrus.Debugf("Raw api info: %s", body)
+		// logrus.Debugf("Raw api info: %s", body)
 		result := &APIInfo{}
 		err = json.Unmarshal(body, result)
 		if err != nil {
@@ -200,7 +202,7 @@ func (iClient *IstioClient) downloadIstio() (string, error) {
 
 	lFileStat, err := os.Stat(localFile)
 	if err == nil {
-		if time.Since(lFileStat.ModTime()) > 5*time.Minute {
+		if time.Since(lFileStat.ModTime()) > cachePeriod {
 			proceedWithDownload = true
 		} else {
 			proceedWithDownload = false

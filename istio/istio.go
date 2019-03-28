@@ -153,14 +153,14 @@ func (iClient *IstioClient) applyRulePayload(ctx context.Context, namespace stri
 	if iClient.k8sDynamicClient == nil {
 		return errors.New("mesh client has not been created")
 	}
-	logrus.Debugf("received yaml bytes: %s", newBytes)
+	// logrus.Debugf("received yaml bytes: %s", newBytes)
 	jsonBytes, err := yaml.YAMLToJSON(newBytes)
 	if err != nil {
 		err = errors.Wrapf(err, "unable to convert yaml to json")
 		logrus.Error(err)
 		return err
 	}
-	logrus.Debugf("created json: %s, length: %d", jsonBytes, len(jsonBytes))
+	// logrus.Debugf("created json: %s, length: %d", jsonBytes, len(jsonBytes))
 	if len(jsonBytes) > 5 { // attempting to skip 'null' json
 		data := &unstructured.Unstructured{}
 		err = data.UnmarshalJSON(jsonBytes)
@@ -182,8 +182,8 @@ func (iClient *IstioClient) applyRulePayload(ctx context.Context, namespace stri
 }
 
 func (iClient *IstioClient) executeRule(ctx context.Context, data *unstructured.Unstructured, namespace string, delete bool) error {
-	logrus.Debug("========================================================")
-	logrus.Debugf("Received data: %+#v", data)
+	// logrus.Debug("========================================================")
+	// logrus.Debugf("Received data: %+#v", data)
 	if namespace != "" {
 		data.SetNamespace(namespace)
 	}
@@ -230,6 +230,41 @@ func (iClient *IstioClient) executeRule(ctx context.Context, data *unstructured.
 	return nil
 }
 
+func (iClient *IstioClient) applyIstioCRDs(ctx context.Context, delete bool) error {
+	crdYAMLs, err := iClient.getCRDsYAML()
+	if err != nil {
+		return err
+	}
+	logrus.Debug("processing crds. . .")
+	for _, crdYAML := range crdYAMLs {
+		if err := iClient.applyConfigChange(ctx, crdYAML, "", delete); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (iClient *IstioClient) labelNamespaceForAutoInjection(ctx context.Context, namespace string) error {
+	ns := &unstructured.Unstructured{}
+	res := schema.GroupVersionResource{
+		Version:  "v1",
+		Resource: "namespaces",
+	}
+	ns.SetName(namespace)
+	ns, err := iClient.getResource(ctx, res, ns)
+	if err != nil {
+		return err
+	}
+	ns.SetLabels(map[string]string{
+		"istio-injection": "enabled",
+	})
+	err = iClient.updateResource(ctx, res, ns)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // ApplyRule is a method invoked to apply a particular operation on the mesh in a namespace
 func (iClient *IstioClient) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRuleRequest) (*meshes.ApplyRuleResponse, error) {
 	if arReq == nil {
@@ -246,19 +281,17 @@ func (iClient *IstioClient) ApplyOperation(ctx context.Context, arReq *meshes.Ap
 	}
 
 	var yamlFileContents string
-	// var err error
+	var err error
 
 	switch arReq.OpName {
 	case customOpCommand:
 		yamlFileContents = arReq.CustomBody
 	case installIstioCommand:
 		arReq.Namespace = ""
-		crdYAMLs, err := iClient.getCRDsYAML()
-		if err != nil {
-			return nil, err
-		}
-		for _, crdYAML := range crdYAMLs {
-			if err := iClient.applyConfigChange(ctx, crdYAML, "", arReq.DeleteOp); err != nil {
+		if arReq.DeleteOp {
+			defer iClient.applyIstioCRDs(ctx, arReq.DeleteOp)
+		} else {
+			if err = iClient.applyIstioCRDs(ctx, arReq.DeleteOp); err != nil {
 				return nil, err
 			}
 		}
@@ -267,30 +300,11 @@ func (iClient *IstioClient) ApplyOperation(ctx context.Context, arReq *meshes.Ap
 			return nil, err
 		}
 	case installBookInfoCommand:
-		ns := &unstructured.Unstructured{}
-		res := schema.GroupVersionResource{
-			// Group:    group,
-			Version:  "v1",
-			Resource: "namespaces",
+		if !arReq.DeleteOp {
+			if err := iClient.labelNamespaceForAutoInjection(ctx, arReq.Namespace); err != nil {
+				return nil, err
+			}
 		}
-		ns.SetName(arReq.Namespace)
-		ns, err := iClient.getResource(ctx, res, ns)
-		if err != nil {
-			return nil, err
-		}
-		ns.SetLabels(map[string]string{
-			"istio-injection": "enabled",
-		})
-		err = iClient.updateResource(ctx, res, ns)
-		if err != nil {
-			return nil, err
-		}
-
-		// yamlFileContents = buf.String()
-		// if err := iClient.applyConfigChange(ctx, yamlFileContents, arReq.Namespace, arReq.DeleteOp); err != nil {
-		// 	return nil, err
-		// }
-
 		yamlFileContents, err = iClient.getBookInfoAppYAML()
 		if err != nil {
 			return nil, err
@@ -338,6 +352,13 @@ func (iClient *IstioClient) applyConfigChange(ctx context.Context, yamlFileConte
 	for _, yml := range yamls {
 		if strings.TrimSpace(yml) != "" {
 			if err := iClient.applyRulePayload(ctx, namespace, []byte(yml), delete); err != nil {
+				errStr := strings.TrimSpace(err.Error())
+				if delete && (strings.HasSuffix(errStr, "not found") ||
+					strings.HasSuffix(errStr, "the server could not find the requested resource")) {
+					// logrus.Debugf("skipping error. . .")
+					continue
+				}
+				// logrus.Debugf("returning error: %v", err)
 				return err
 			}
 		}
