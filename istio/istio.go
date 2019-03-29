@@ -265,6 +265,48 @@ func (iClient *IstioClient) labelNamespaceForAutoInjection(ctx context.Context, 
 	return nil
 }
 
+func (iClient *IstioClient) executeInstall(ctx context.Context, arReq *meshes.ApplyRuleRequest) error {
+	arReq.Namespace = ""
+	if arReq.DeleteOp {
+		defer iClient.applyIstioCRDs(ctx, arReq.DeleteOp)
+	} else {
+		if err := iClient.applyIstioCRDs(ctx, arReq.DeleteOp); err != nil {
+			return err
+		}
+	}
+	yamlFileContents, err := iClient.getLatestIstioYAML()
+	if err != nil {
+		return err
+	}
+	if err := iClient.applyConfigChange(ctx, yamlFileContents, arReq.Namespace, arReq.DeleteOp); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (iClient *IstioClient) executeBookInfoInstall(ctx context.Context, arReq *meshes.ApplyRuleRequest) error {
+	if !arReq.DeleteOp {
+		if err := iClient.labelNamespaceForAutoInjection(ctx, arReq.Namespace); err != nil {
+			return err
+		}
+	}
+	yamlFileContents, err := iClient.getBookInfoAppYAML()
+	if err != nil {
+		return err
+	}
+	if err := iClient.applyConfigChange(ctx, yamlFileContents, arReq.Namespace, arReq.DeleteOp); err != nil {
+		return err
+	}
+	yamlFileContents, err = iClient.getBookInfoGatewayYAML()
+	if err != nil {
+		return err
+	}
+	if err := iClient.applyConfigChange(ctx, yamlFileContents, arReq.Namespace, arReq.DeleteOp); err != nil {
+		return err
+	}
+	return nil
+}
+
 // ApplyRule is a method invoked to apply a particular operation on the mesh in a namespace
 func (iClient *IstioClient) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRuleRequest) (*meshes.ApplyRuleResponse, error) {
 	if arReq == nil {
@@ -281,41 +323,63 @@ func (iClient *IstioClient) ApplyOperation(ctx context.Context, arReq *meshes.Ap
 	}
 
 	var yamlFileContents string
-	var err error
+	// var err error
 
 	switch arReq.OpName {
 	case customOpCommand:
 		yamlFileContents = arReq.CustomBody
 	case installIstioCommand:
-		arReq.Namespace = ""
-		if arReq.DeleteOp {
-			defer iClient.applyIstioCRDs(ctx, arReq.DeleteOp)
-		} else {
-			if err = iClient.applyIstioCRDs(ctx, arReq.DeleteOp); err != nil {
-				return nil, err
+		go func() {
+			opName1 := "deploying"
+			if arReq.DeleteOp {
+				opName1 = "removing"
 			}
-		}
-		yamlFileContents, err = iClient.getLatestIstioYAML()
-		if err != nil {
-			return nil, err
-		}
+			if err := iClient.executeInstall(ctx, arReq); err != nil {
+				iClient.eventChan <- &meshes.EventsResponse{
+					EventType: meshes.EventType_ERROR,
+					Summary:   fmt.Sprintf("Error while %s Istio", opName1),
+					Details:   err.Error(),
+				}
+				return
+			}
+			opName := "deployed"
+			if arReq.DeleteOp {
+				opName = "removed"
+			}
+			iClient.eventChan <- &meshes.EventsResponse{
+				EventType: meshes.EventType_INFO,
+				Summary:   fmt.Sprintf("Istio %s successfully", opName),
+				Details:   fmt.Sprintf("The latest version of Istio is now %s.", opName),
+			}
+			return
+		}()
+		return &meshes.ApplyRuleResponse{}, nil
 	case installBookInfoCommand:
-		if !arReq.DeleteOp {
-			if err := iClient.labelNamespaceForAutoInjection(ctx, arReq.Namespace); err != nil {
-				return nil, err
+		go func() {
+			opName1 := "deploying"
+			if arReq.DeleteOp {
+				opName1 = "removing"
 			}
-		}
-		yamlFileContents, err = iClient.getBookInfoAppYAML()
-		if err != nil {
-			return nil, err
-		}
-		if err := iClient.applyConfigChange(ctx, yamlFileContents, arReq.Namespace, arReq.DeleteOp); err != nil {
-			return nil, err
-		}
-		yamlFileContents, err = iClient.getBookInfoGatewayYAML()
-		if err != nil {
-			return nil, err
-		}
+			if err := iClient.executeBookInfoInstall(ctx, arReq); err != nil {
+				iClient.eventChan <- &meshes.EventsResponse{
+					EventType: meshes.EventType_ERROR,
+					Summary:   fmt.Sprintf("Error while %s the canonical Book Info App", opName1),
+					Details:   err.Error(),
+				}
+				return
+			}
+			opName := "deployed"
+			if arReq.DeleteOp {
+				opName = "removed"
+			}
+			iClient.eventChan <- &meshes.EventsResponse{
+				EventType: meshes.EventType_INFO,
+				Summary:   fmt.Sprintf("Book Info app %s successfully", opName),
+				Details:   fmt.Sprintf("The Istio canonical Book Info app is now %s.", opName),
+			}
+			return
+		}()
+		return &meshes.ApplyRuleResponse{}, nil
 	case runVet:
 		go iClient.runVet()
 		return &meshes.ApplyRuleResponse{}, nil
