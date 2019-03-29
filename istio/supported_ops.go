@@ -25,13 +25,22 @@ type supportedOperation struct {
 	// returnLogs bool
 }
 
-const customOpName = "custom"
-const runVet = "istio_vet"
+const (
+	customOpCommand        = "custom"
+	runVet                 = "istio_vet"
+	installIstioCommand    = "istio_install"
+	installBookInfoCommand = "install_book_info"
+	cbCommand              = "cb1"
+)
 
 var supportedOps = map[string]supportedOperation{
-	"istio_install": {
-		name:         "Install Istio",
-		templateName: "install_istio.tmpl",
+	installIstioCommand: {
+		name: "Install the latest version of Istio",
+		// templateName: "install_istio.tmpl",
+	},
+	installBookInfoCommand: {
+		name: "Install the canonical Book Info Application",
+		// templateName: "install_istio.tmpl",
 	},
 	runVet: {
 		name: "Run istio-vet",
@@ -39,11 +48,11 @@ var supportedOps = map[string]supportedOperation{
 		// appLabel:     "istio-vet",
 		// returnLogs:   true,
 	},
-	"cb1": {
+	cbCommand: {
 		name:         "Limit circuit breaker config to one connection",
 		templateName: "circuit_breaking.tmpl",
 	},
-	customOpName: {
+	customOpCommand: {
 		name: "Custom YAML",
 	},
 }
