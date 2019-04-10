@@ -18,6 +18,8 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"path"
 	"strings"
 	"text/template"
@@ -253,7 +255,25 @@ func (iClient *IstioClient) labelNamespaceForAutoInjection(ctx context.Context, 
 	ns.SetName(namespace)
 	ns, err := iClient.getResource(ctx, res, ns)
 	if err != nil {
-		return err
+		if strings.HasSuffix(err.Error(), "not found") {
+			if err = iClient.createNamespace(ctx, namespace); err != nil {
+				return err
+			}
+
+			ns := &unstructured.Unstructured{}
+			ns.SetName(namespace)
+			ns, err = iClient.getResource(ctx, res, ns)
+			if err != nil {
+				return err
+			}
+		} else {
+			return err
+		}
+	}
+	logrus.Debugf("retrieved namespace: %+#v", ns)
+	if ns == nil {
+		ns = &unstructured.Unstructured{}
+		ns.SetName(namespace)
 	}
 	ns.SetLabels(map[string]string{
 		"istio-injection": "enabled",
@@ -263,6 +283,38 @@ func (iClient *IstioClient) labelNamespaceForAutoInjection(ctx context.Context, 
 		return err
 	}
 	return nil
+}
+
+func (iClient *IstioClient) createNamespace(ctx context.Context, namespace string) error {
+	logrus.Debugf("creating namespace: %s", namespace)
+	yamlFileContents, err := iClient.executeTemplate(ctx, "", namespace, "namespace.yml")
+	if err != nil {
+		return err
+	}
+	if err := iClient.applyConfigChange(ctx, yamlFileContents, namespace, false); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (iClient *IstioClient) executeTemplate(ctx context.Context, username, namespace, templateName string) (string, error) {
+	tmpl, err := template.ParseFiles(path.Join("istio", "config_templates", templateName))
+	if err != nil {
+		err = errors.Wrapf(err, "unable to parse template")
+		logrus.Error(err)
+		return "", err
+	}
+	buf := bytes.NewBufferString("")
+	err = tmpl.Execute(buf, map[string]string{
+		"user_name": username,
+		"namespace": namespace,
+	})
+	if err != nil {
+		err = errors.Wrapf(err, "unable to execute template")
+		logrus.Error(err)
+		return "", err
+	}
+	return buf.String(), nil
 }
 
 func (iClient *IstioClient) executeInstall(ctx context.Context, arReq *meshes.ApplyRuleRequest) error {
@@ -323,7 +375,7 @@ func (iClient *IstioClient) ApplyOperation(ctx context.Context, arReq *meshes.Ap
 	}
 
 	var yamlFileContents string
-	// var err error
+	var err error
 
 	switch arReq.OpName {
 	case customOpCommand:
@@ -384,23 +436,10 @@ func (iClient *IstioClient) ApplyOperation(ctx context.Context, arReq *meshes.Ap
 		go iClient.runVet()
 		return &meshes.ApplyRuleResponse{}, nil
 	default:
-		tmpl, err := template.ParseFiles(path.Join("istio", "config_templates", op.templateName))
+		yamlFileContents, err = iClient.executeTemplate(ctx, arReq.Username, arReq.Namespace, op.templateName)
 		if err != nil {
-			err = errors.Wrapf(err, "unable to parse template")
-			logrus.Error(err)
 			return nil, err
 		}
-		buf := bytes.NewBufferString("")
-		err = tmpl.Execute(buf, map[string]string{
-			"user_name": arReq.Username,
-			"namespace": arReq.Namespace,
-		})
-		if err != nil {
-			err = errors.Wrapf(err, "unable to execute template")
-			logrus.Error(err)
-			return nil, err
-		}
-		yamlFileContents = buf.String()
 	}
 
 	if err := iClient.applyConfigChange(ctx, yamlFileContents, arReq.Namespace, arReq.DeleteOp); err != nil {
@@ -411,8 +450,13 @@ func (iClient *IstioClient) ApplyOperation(ctx context.Context, arReq *meshes.Ap
 }
 
 func (iClient *IstioClient) applyConfigChange(ctx context.Context, yamlFileContents, namespace string, delete bool) error {
-	yamls := strings.Split(yamlFileContents, "---")
-
+	// yamls := strings.Split(yamlFileContents, "---")
+	yamls, err := iClient.splitYAML(yamlFileContents)
+	if err != nil {
+		err = errors.Wrap(err, "error while splitting yaml")
+		logrus.Error(err)
+		return err
+	}
 	for _, yml := range yamls {
 		if strings.TrimSpace(yml) != "" {
 			if err := iClient.applyRulePayload(ctx, namespace, []byte(yml), delete); err != nil {
@@ -463,4 +507,42 @@ func (iClient *IstioClient) StreamEvents(in *meshes.EventsRequest, stream meshes
 		time.Sleep(500 * time.Millisecond)
 	}
 	return nil
+}
+
+func (iClient *IstioClient) splitYAML(yamlContents string) ([]string, error) {
+	yamlDecoder, ok := NewDocumentDecoder(ioutil.NopCloser(bytes.NewReader([]byte(yamlContents)))).(*YAMLDecoder)
+	if !ok {
+		err := fmt.Errorf("unable to create a yaml decoder")
+		logrus.Error(err)
+		return nil, err
+	}
+	defer yamlDecoder.Close()
+	var err error
+	n := 0
+	data := [][]byte{}
+	ind := 0
+	for err == io.ErrShortBuffer || err == nil {
+		// for {
+		d := make([]byte, 1000)
+		n, err = yamlDecoder.Read(d)
+		// logrus.Debugf("Read this: %s, count: %d, err: %v", d, n, err)
+		if len(data) == 0 || len(data) <= ind {
+			data = append(data, []byte{})
+		}
+		if n > 0 {
+			data[ind] = append(data[ind], d...)
+		}
+		if err == nil {
+			logrus.Debugf("..............BOUNDARY................")
+			ind++
+		}
+	}
+	result := make([]string, len(data))
+	for i, row := range data {
+		r := string(row)
+		r = strings.Trim(r, "\x00")
+		logrus.Debugf("ind: %d, data: %s", i, r)
+		result[i] = r
+	}
+	return result, nil
 }

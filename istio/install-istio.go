@@ -20,18 +20,17 @@ import (
 )
 
 const (
-	repoURL           = "https://api.github.com/repos/istio/istio/releases/latest"
-	URLSuffix         = "-linux.tar.gz"
-	localFile         = "/tmp/istio.tar.gz"
-	destinationFolder = "/tmp/istio"
-	crdPattern        = "crd(.*)yaml"
-
+	repoURL     = "https://api.github.com/repos/istio/istio/releases/latest"
+	URLSuffix   = "-linux.tar.gz"
+	crdPattern  = "crd(.*)yaml"
 	cachePeriod = 1 * time.Hour
 )
 
 var (
-	basePath    = path.Join(destinationFolder, "%s")
-	installFile = path.Join(basePath, "install/kubernetes/istio-demo.yaml")
+	localFile         = path.Join(os.TempDir(), "istio.tar.gz")
+	destinationFolder = path.Join(os.TempDir(), "istio")
+	basePath          = path.Join(destinationFolder, "%s")
+	installFile       = path.Join(basePath, "install/kubernetes/istio-demo.yaml")
 	// installFile                = path.Join(basePath, "install/kubernetes/istio-demo-auth.yaml")
 	bookInfoInstallFile        = path.Join(basePath, "samples/bookinfo/platform/kube/bookinfo.yaml")
 	bookInfoGatewayInstallFile = path.Join(basePath, "samples/bookinfo/networking/bookinfo-gateway.yaml")
