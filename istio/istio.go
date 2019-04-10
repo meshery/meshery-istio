@@ -33,7 +33,6 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	yaml2 "k8s.io/apimachinery/pkg/util/yaml"
 )
 
 func (iClient *IstioClient) CreateMeshInstance(_ context.Context, k8sReq *meshes.CreateMeshInstanceRequest) (*meshes.CreateMeshInstanceResponse, error) {
@@ -511,7 +510,7 @@ func (iClient *IstioClient) StreamEvents(in *meshes.EventsRequest, stream meshes
 }
 
 func (iClient *IstioClient) splitYAML(yamlContents string) ([]string, error) {
-	yamlDecoder, ok := yaml2.NewDocumentDecoder(ioutil.NopCloser(bytes.NewReader([]byte(yamlContents)))).(*yaml2.YAMLDecoder)
+	yamlDecoder, ok := NewDocumentDecoder(ioutil.NopCloser(bytes.NewReader([]byte(yamlContents)))).(*YAMLDecoder)
 	if !ok {
 		err := fmt.Errorf("unable to create a yaml decoder")
 		logrus.Error(err)
@@ -527,10 +526,10 @@ func (iClient *IstioClient) splitYAML(yamlContents string) ([]string, error) {
 		d := make([]byte, 1000)
 		n, err = yamlDecoder.Read(d)
 		// logrus.Debugf("Read this: %s, count: %d, err: %v", d, n, err)
+		if len(data) == 0 || len(data) <= ind {
+			data = append(data, []byte{})
+		}
 		if n > 0 {
-			if len(data) == 0 || len(data) <= ind {
-				data = append(data, []byte{})
-			}
 			data[ind] = append(data[ind], d...)
 		}
 		if err == nil {
