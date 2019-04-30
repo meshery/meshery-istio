@@ -26,17 +26,21 @@ type supportedOperation struct {
 }
 
 const (
-	customOpCommand        = "custom"
-	runVet                 = "istio_vet"
-	installIstioCommand    = "istio_install"
-	installBookInfoCommand = "install_book_info"
-	cbCommand              = "cb1"
+	customOpCommand         = "custom"
+	runVet                  = "istio_vet"
+	installIstioCommand     = "istio_install"
+	installmTLSIstioCommand = "istio_mtls_install"
+	installBookInfoCommand  = "install_book_info"
+	cbCommand               = "cb1"
 )
 
 var supportedOps = map[string]supportedOperation{
 	installIstioCommand: {
 		name: "Install the latest version of Istio",
 		// templateName: "install_istio.tmpl",
+	},
+	installmTLSIstioCommand: {
+		name: "Install the latest version of Istio with mTLS",
 	},
 	installBookInfoCommand: {
 		name: "Install the canonical Book Info Application",

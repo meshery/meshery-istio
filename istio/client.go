@@ -20,9 +20,9 @@ import (
 	"github.com/layer5io/meshery-istio/meshes"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
+	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
-	_ "k8s.io/client-go/plugin/pkg/client/auth"
 )
 
 // IstioClient represents an Istio client in Meshery

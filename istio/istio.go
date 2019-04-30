@@ -317,7 +317,7 @@ func (iClient *IstioClient) executeTemplate(ctx context.Context, username, names
 	return buf.String(), nil
 }
 
-func (iClient *IstioClient) executeInstall(ctx context.Context, arReq *meshes.ApplyRuleRequest) error {
+func (iClient *IstioClient) executeInstall(ctx context.Context, installmTLS bool, arReq *meshes.ApplyRuleRequest) error {
 	arReq.Namespace = ""
 	if arReq.DeleteOp {
 		defer iClient.applyIstioCRDs(ctx, arReq.DeleteOp)
@@ -326,7 +326,7 @@ func (iClient *IstioClient) executeInstall(ctx context.Context, arReq *meshes.Ap
 			return err
 		}
 	}
-	yamlFileContents, err := iClient.getLatestIstioYAML()
+	yamlFileContents, err := iClient.getLatestIstioYAML(installmTLS)
 	if err != nil {
 		return err
 	}
@@ -376,17 +376,21 @@ func (iClient *IstioClient) ApplyOperation(ctx context.Context, arReq *meshes.Ap
 
 	var yamlFileContents string
 	var err error
+	installWithmTLS := false
 
 	switch arReq.OpName {
 	case customOpCommand:
 		yamlFileContents = arReq.CustomBody
+	case installmTLSIstioCommand:
+		installWithmTLS = true
+		fallthrough
 	case installIstioCommand:
 		go func() {
 			opName1 := "deploying"
 			if arReq.DeleteOp {
 				opName1 = "removing"
 			}
-			if err := iClient.executeInstall(ctx, arReq); err != nil {
+			if err := iClient.executeInstall(ctx, installWithmTLS, arReq); err != nil {
 				iClient.eventChan <- &meshes.EventsResponse{
 					EventType: meshes.EventType_ERROR,
 					Summary:   fmt.Sprintf("Error while %s Istio", opName1),
