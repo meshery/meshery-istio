@@ -18,11 +18,14 @@ import (
 	"time"
 
 	"github.com/layer5io/meshery-istio/meshes"
+	"github.com/sirupsen/logrus"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
+
+	"github.com/ghodss/yaml"
 )
 
 // IstioClient represents an Istio client in Meshery
@@ -53,6 +56,7 @@ func configClient(kubeconfig []byte, contextName string) (*rest.Config, error) {
 }
 
 func newClient(kubeconfig []byte, contextName string) (*IstioClient, error) {
+	kubeconfig = monkeyPatchingToSupportInsecureConn(kubeconfig)
 	client := IstioClient{}
 	config, err := configClient(kubeconfig, contextName)
 	if err != nil {
@@ -75,4 +79,40 @@ func newClient(kubeconfig []byte, contextName string) (*IstioClient, error) {
 	client.config = config
 
 	return &client, nil
+}
+
+func monkeyPatchingToSupportInsecureConn(data []byte) []byte {
+	config := map[string]interface{}{}
+	if err := yaml.Unmarshal(data, &config); err != nil {
+		logrus.Warn(err)
+		return data // we will skip this process
+	}
+	// logrus.Infof("unmarshalled config: %+#v", config)
+	clusters, ok := config["clusters"].([]interface{})
+	if !ok {
+		logrus.Warn("unable to type cast clusters to a map array")
+		return data
+	}
+	for _, clusterI := range clusters {
+		cluster, ok := clusterI.(map[string]interface{})
+		if !ok {
+			logrus.Warn("unable to type case individual cluster to a map")
+			continue
+		}
+		indCluster, ok := cluster["cluster"].(map[string]interface{})
+		if !ok {
+			logrus.Warn("unable to type case clusters.cluster to a map")
+			continue
+		}
+		indCluster["insecure-skip-tls-verify"] = true // TODO: should we persist this back?
+		delete(indCluster, "certificate-authority-data")
+		delete(indCluster, "certificate-authority")
+	}
+	// logrus.Debugf("New config: %+#v", config)
+	data1, err := yaml.Marshal(config)
+	if err != nil {
+		logrus.Warn(err)
+		return data
+	}
+	return data1
 }
