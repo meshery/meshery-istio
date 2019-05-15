@@ -13,9 +13,7 @@ const smiBasePath = "istio/config_templates/smi/"
 
 var smiFiles = []string{
 	"split_v1alpha1_trafficsplit_crd.yaml",
-	"service_account.yaml",
-	"role.yaml",
-	"role_binding.yaml",
+	"rbac.yaml",
 	"operator.yaml",
 }
 
