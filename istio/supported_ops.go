@@ -32,6 +32,7 @@ const (
 	installmTLSIstioCommand = "istio_mtls_install"
 	installBookInfoCommand  = "install_book_info"
 	cbCommand               = "cb1"
+	installSMI              = "install_smi"
 )
 
 var supportedOps = map[string]supportedOperation{
@@ -55,6 +56,9 @@ var supportedOps = map[string]supportedOperation{
 	cbCommand: {
 		name:         "Limit circuit breaker config to one connection",
 		templateName: "circuit_breaking.tmpl",
+	},
+	installSMI: {
+		name: "Install Service Mesh Interface (SMI) Istio Adapter",
 	},
 	customOpCommand: {
 		name: "Custom YAML",

@@ -151,7 +151,7 @@ func (iClient *IstioClient) MeshName(context.Context, *meshes.MeshNameRequest) (
 	return &meshes.MeshNameResponse{Name: "Istio"}, nil
 }
 
-func (iClient *IstioClient) applyRulePayload(ctx context.Context, namespace string, newBytes []byte, delete bool) error {
+func (iClient *IstioClient) applyRulePayload(ctx context.Context, namespace string, newBytes []byte, delete, isCustomOp bool) error {
 	if iClient.k8sDynamicClient == nil {
 		return errors.New("mesh client has not been created")
 	}
@@ -174,16 +174,16 @@ func (iClient *IstioClient) applyRulePayload(ctx context.Context, namespace stri
 		if data.IsList() {
 			err = data.EachListItem(func(r runtime.Object) error {
 				dataL, _ := r.(*unstructured.Unstructured)
-				return iClient.executeRule(ctx, dataL, namespace, delete)
+				return iClient.executeRule(ctx, dataL, namespace, delete, isCustomOp)
 			})
 			return err
 		}
-		return iClient.executeRule(ctx, data, namespace, delete)
+		return iClient.executeRule(ctx, data, namespace, delete, isCustomOp)
 	}
 	return nil
 }
 
-func (iClient *IstioClient) executeRule(ctx context.Context, data *unstructured.Unstructured, namespace string, delete bool) error {
+func (iClient *IstioClient) executeRule(ctx context.Context, data *unstructured.Unstructured, namespace string, delete, isCustomOp bool) error {
 	// logrus.Debug("========================================================")
 	// logrus.Debugf("Received data: %+#v", data)
 	if namespace != "" {
@@ -221,11 +221,22 @@ func (iClient *IstioClient) executeRule(ctx context.Context, data *unstructured.
 	}
 
 	if err := iClient.createResource(ctx, res, data); err != nil {
-		data1, err := iClient.getResource(ctx, res, data)
-		if err != nil {
-			return err
-		}
-		if err = iClient.updateResource(ctx, res, data1); err != nil {
+		if isCustomOp {
+			if err := iClient.deleteResource(ctx, res, data); err != nil {
+				return err
+			}
+			time.Sleep(time.Second)
+			if err := iClient.createResource(ctx, res, data); err != nil {
+				return err
+			}
+			// data1, err := iClient.getResource(ctx, res, data)
+			// if err != nil {
+			// 	return err
+			// }
+			// if err = iClient.updateResource(ctx, res, data1); err != nil {
+			// 	return err
+			// }
+		} else {
 			return err
 		}
 	}
@@ -239,7 +250,7 @@ func (iClient *IstioClient) applyIstioCRDs(ctx context.Context, delete bool) err
 	}
 	logrus.Debug("processing crds. . .")
 	for _, crdYAML := range crdYAMLs {
-		if err := iClient.applyConfigChange(ctx, crdYAML, "", delete); err != nil {
+		if err := iClient.applyConfigChange(ctx, crdYAML, "", delete, false); err != nil {
 			return err
 		}
 	}
@@ -291,7 +302,7 @@ func (iClient *IstioClient) createNamespace(ctx context.Context, namespace strin
 	if err != nil {
 		return err
 	}
-	if err := iClient.applyConfigChange(ctx, yamlFileContents, namespace, false); err != nil {
+	if err := iClient.applyConfigChange(ctx, yamlFileContents, namespace, false, false); err != nil {
 		return err
 	}
 	return nil
@@ -330,7 +341,7 @@ func (iClient *IstioClient) executeInstall(ctx context.Context, installmTLS bool
 	if err != nil {
 		return err
 	}
-	if err := iClient.applyConfigChange(ctx, yamlFileContents, arReq.Namespace, arReq.DeleteOp); err != nil {
+	if err := iClient.applyConfigChange(ctx, yamlFileContents, arReq.Namespace, arReq.DeleteOp, false); err != nil {
 		return err
 	}
 	return nil
@@ -346,14 +357,14 @@ func (iClient *IstioClient) executeBookInfoInstall(ctx context.Context, arReq *m
 	if err != nil {
 		return err
 	}
-	if err := iClient.applyConfigChange(ctx, yamlFileContents, arReq.Namespace, arReq.DeleteOp); err != nil {
+	if err := iClient.applyConfigChange(ctx, yamlFileContents, arReq.Namespace, arReq.DeleteOp, false); err != nil {
 		return err
 	}
 	yamlFileContents, err = iClient.getBookInfoGatewayYAML()
 	if err != nil {
 		return err
 	}
-	if err := iClient.applyConfigChange(ctx, yamlFileContents, arReq.Namespace, arReq.DeleteOp); err != nil {
+	if err := iClient.applyConfigChange(ctx, yamlFileContents, arReq.Namespace, arReq.DeleteOp, false); err != nil {
 		return err
 	}
 	return nil
@@ -377,10 +388,12 @@ func (iClient *IstioClient) ApplyOperation(ctx context.Context, arReq *meshes.Ap
 	var yamlFileContents string
 	var err error
 	installWithmTLS := false
+	isCustomOp := false
 
 	switch arReq.OpName {
 	case customOpCommand:
 		yamlFileContents = arReq.CustomBody
+		isCustomOp = true
 	case installmTLSIstioCommand:
 		installWithmTLS = true
 		fallthrough
@@ -436,6 +449,14 @@ func (iClient *IstioClient) ApplyOperation(ctx context.Context, arReq *meshes.Ap
 			return
 		}()
 		return &meshes.ApplyRuleResponse{}, nil
+	case installSMI:
+		if arReq.Namespace != "default" {
+			iClient.createNamespace(ctx, arReq.Namespace)
+		}
+		yamlFileContents, err = getSMIYamls()
+		if err != nil {
+			return nil, err
+		}
 	case runVet:
 		go iClient.runVet()
 		return &meshes.ApplyRuleResponse{}, nil
@@ -446,14 +467,14 @@ func (iClient *IstioClient) ApplyOperation(ctx context.Context, arReq *meshes.Ap
 		}
 	}
 
-	if err := iClient.applyConfigChange(ctx, yamlFileContents, arReq.Namespace, arReq.DeleteOp); err != nil {
+	if err := iClient.applyConfigChange(ctx, yamlFileContents, arReq.Namespace, arReq.DeleteOp, isCustomOp); err != nil {
 		return nil, err
 	}
 
 	return &meshes.ApplyRuleResponse{}, nil
 }
 
-func (iClient *IstioClient) applyConfigChange(ctx context.Context, yamlFileContents, namespace string, delete bool) error {
+func (iClient *IstioClient) applyConfigChange(ctx context.Context, yamlFileContents, namespace string, delete, isCustomOp bool) error {
 	// yamls := strings.Split(yamlFileContents, "---")
 	yamls, err := iClient.splitYAML(yamlFileContents)
 	if err != nil {
@@ -463,12 +484,18 @@ func (iClient *IstioClient) applyConfigChange(ctx context.Context, yamlFileConte
 	}
 	for _, yml := range yamls {
 		if strings.TrimSpace(yml) != "" {
-			if err := iClient.applyRulePayload(ctx, namespace, []byte(yml), delete); err != nil {
+			if err := iClient.applyRulePayload(ctx, namespace, []byte(yml), delete, isCustomOp); err != nil {
 				errStr := strings.TrimSpace(err.Error())
-				if delete && (strings.HasSuffix(errStr, "not found") ||
-					strings.HasSuffix(errStr, "the server could not find the requested resource")) {
-					// logrus.Debugf("skipping error. . .")
-					continue
+				if delete {
+					if strings.HasSuffix(errStr, "not found") ||
+						strings.HasSuffix(errStr, "the server could not find the requested resource") {
+						// logrus.Debugf("skipping error. . .")
+						continue
+					}
+				} else {
+					if strings.HasSuffix(errStr, "already exists") {
+						continue
+					}
 				}
 				// logrus.Debugf("returning error: %v", err)
 				return err
