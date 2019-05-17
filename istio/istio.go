@@ -391,9 +391,6 @@ func (iClient *IstioClient) ApplyOperation(ctx context.Context, arReq *meshes.Ap
 	isCustomOp := false
 
 	switch arReq.OpName {
-	case customOpCommand:
-		yamlFileContents = arReq.CustomBody
-		isCustomOp = true
 	case installmTLSIstioCommand:
 		installWithmTLS = true
 		fallthrough
@@ -450,7 +447,7 @@ func (iClient *IstioClient) ApplyOperation(ctx context.Context, arReq *meshes.Ap
 		}()
 		return &meshes.ApplyRuleResponse{}, nil
 	case installSMI:
-		if arReq.Namespace != "default" {
+		if !arReq.DeleteOp && arReq.Namespace != "default" {
 			iClient.createNamespace(ctx, arReq.Namespace)
 		}
 		yamlFileContents, err = getSMIYamls()
@@ -460,7 +457,15 @@ func (iClient *IstioClient) ApplyOperation(ctx context.Context, arReq *meshes.Ap
 	case runVet:
 		go iClient.runVet()
 		return &meshes.ApplyRuleResponse{}, nil
+	case customOpCommand:
+		yamlFileContents = arReq.CustomBody
+		isCustomOp = true
 	default:
+		if !arReq.DeleteOp {
+			if err := iClient.labelNamespaceForAutoInjection(ctx, arReq.Namespace); err != nil {
+				return nil, err
+			}
+		}
 		yamlFileContents, err = iClient.executeTemplate(ctx, arReq.Username, arReq.Namespace, op.templateName)
 		if err != nil {
 			return nil, err

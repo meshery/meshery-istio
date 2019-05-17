@@ -19,10 +19,6 @@ type supportedOperation struct {
 	name string
 	// the template file name
 	templateName string
-	// the app label
-	appLabel string
-	// // returnLogs specifies if the operation logs should be returned
-	// returnLogs bool
 }
 
 const (
@@ -33,6 +29,7 @@ const (
 	installBookInfoCommand  = "install_book_info"
 	cbCommand               = "cb1"
 	installSMI              = "install_smi"
+	installHTTPBin          = "install_http_bin"
 )
 
 var supportedOps = map[string]supportedOperation{
@@ -62,5 +59,9 @@ var supportedOps = map[string]supportedOperation{
 	},
 	customOpCommand: {
 		name: "Custom YAML",
+	},
+	installHTTPBin: {
+		name:         "Install HTTP Bin app",
+		templateName: "httpbin.yaml",
 	},
 }
