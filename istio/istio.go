@@ -450,7 +450,7 @@ func (iClient *IstioClient) ApplyOperation(ctx context.Context, arReq *meshes.Ap
 		}()
 		return &meshes.ApplyRuleResponse{}, nil
 	case installSMI:
-		if arReq.Namespace != "default" {
+		if !arReq.DeleteOp && arReq.Namespace != "default" {
 			iClient.createNamespace(ctx, arReq.Namespace)
 		}
 		yamlFileContents, err = getSMIYamls()
