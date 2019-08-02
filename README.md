@@ -1,7 +1,9 @@
 <img align="right" src="https://layer5.io/assets/images/cube-sh-small.png" />
 
 # meshery-istio
-Meshery adapter for Istio
+Meshery Adapter for Istio
+
+><p align="center"><i>If you’re using Meshery or if you like the project, please ★ star this repository to show your support! 🤩</i></p>
 
 
 ## [Meshery](https://layer5.io/meshery)
