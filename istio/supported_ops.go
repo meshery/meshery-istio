@@ -14,11 +14,14 @@
 
 package istio
 
+import "github.com/layer5io/meshery-istio/meshes"
+
 type supportedOperation struct {
 	// a friendly name
 	name string
 	// the template file name
 	templateName string
+	opType       meshes.OpCategory
 }
 
 const (
@@ -36,32 +39,40 @@ var supportedOps = map[string]supportedOperation{
 	installIstioCommand: {
 		name: "Install the latest version of Istio",
 		// templateName: "install_istio.tmpl",
+		opType: meshes.OpCategory_INSTALL,
 	},
 	installmTLSIstioCommand: {
-		name: "Install the latest version of Istio with mTLS",
+		name:   "Install the latest version of Istio with mTLS",
+		opType: meshes.OpCategory_INSTALL,
 	},
 	installBookInfoCommand: {
 		name: "Install the canonical Book Info Application",
 		// templateName: "install_istio.tmpl",
+		opType: meshes.OpCategory_SAMPLE_APPLICATION,
 	},
 	runVet: {
-		name: "Run istio-vet",
+		name:   "Run istio-vet",
+		opType: meshes.OpCategory_VALIDATE,
 		// templateName: "istio_vet.tmpl",
 		// appLabel:     "istio-vet",
 		// returnLogs:   true,
 	},
 	cbCommand: {
 		name:         "Limit circuit breaker config to one connection",
+		opType:       meshes.OpCategory_CONFIGURE,
 		templateName: "circuit_breaking.tmpl",
 	},
 	installSMI: {
-		name: "Install Service Mesh Interface (SMI) Istio Adapter",
-	},
-	customOpCommand: {
-		name: "Custom YAML",
+		name:   "Install Service Mesh Interface (SMI) Istio Adapter",
+		opType: meshes.OpCategory_INSTALL,
 	},
 	installHTTPBin: {
 		name:         "Install HTTP Bin app",
 		templateName: "httpbin.yaml",
+		opType:       meshes.OpCategory_SAMPLE_APPLICATION,
+	},
+	customOpCommand: {
+		name:   "Custom YAML",
+		opType: meshes.OpCategory_CUSTOM,
 	},
 }
