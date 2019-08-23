@@ -1,10 +1,10 @@
 <img align="right" src="https://layer5.io/assets/images/cube-sh-small.png" />
 
-[![Docker Pulls](https://img.shields.io/docker/pulls/layer5/meshery.svg)](https://hub.docker.com/r/layer5/meshery)
-[![Go Report Card](https://goreportcard.com/badge/github.com/layer5io/meshery)](https://goreportcard.com/report/github.com/layer5io/meshery)
-[![Build Status](https://travis-ci.com/layer5io/meshery.svg?branch=master)](https://travis-ci.com/layer5io/meshery)
-![GitHub](https://img.shields.io/github/license/layer5io/meshery.svg)
-![GitHub issues by-label](https://img.shields.io/github/issues/layer5io/meshery/help%20wanted.svg)
+[![Docker Pulls](https://img.shields.io/docker/pulls/layer5/meshery-istio.svg)](https://hub.docker.com/r/layer5/meshery-istio)
+[![Go Report Card](https://goreportcard.com/badge/github.com/layer5io/meshery-istio)](https://goreportcard.com/report/github.com/layer5io/meshery-istio)
+[![Build Status](https://travis-ci.com/layer5io/meshery-istio.svg?branch=master)](https://travis-ci.com/layer5io/meshery-istio)
+![GitHub](https://img.shields.io/github/license/layer5io/meshery-istio.svg)
+![GitHub issues by-label](https://img.shields.io/github/issues/layer5io/meshery-istio/help%20wanted.svg)
 ![Website](https://img.shields.io/website/https/layer5.io/meshery.svg)
 ![Twitter Follow](https://img.shields.io/twitter/follow/layer5.svg?label=Follow&style=social)
 [![Slack](https://img.shields.io/badge/slack-380-lightgrey)](http://slack.layer5.io)
