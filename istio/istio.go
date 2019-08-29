@@ -376,13 +376,13 @@ func (iClient *IstioClient) ApplyOperation(ctx context.Context, arReq *meshes.Ap
 		return nil, errors.New("mesh client has not been created")
 	}
 
-	op, ok := supportedOps[arReq.OpName]
+	op, ok := supportedOps[arReq.GetOpName()]
 	if !ok {
-		return nil, fmt.Errorf("error: %s is not a valid operation name", arReq.OpName)
+		return nil, fmt.Errorf("operation id: %s, error: %s is not a valid operation name", arReq.GetOperationId(), arReq.GetOpName())
 	}
 
-	if arReq.OpName == customOpCommand && arReq.CustomBody == "" {
-		return nil, fmt.Errorf("error: yaml body is empty for %s operation", arReq.OpName)
+	if arReq.GetOpName() == customOpCommand && arReq.GetCustomBody() == "" {
+		return nil, fmt.Errorf("operation id: %s, error: yaml body is empty for %s operation", arReq.GetOperationId(), arReq.GetOpName())
 	}
 
 	var yamlFileContents string
@@ -402,9 +402,10 @@ func (iClient *IstioClient) ApplyOperation(ctx context.Context, arReq *meshes.Ap
 			}
 			if err := iClient.executeInstall(ctx, installWithmTLS, arReq); err != nil {
 				iClient.eventChan <- &meshes.EventsResponse{
-					EventType: meshes.EventType_ERROR,
-					Summary:   fmt.Sprintf("Error while %s Istio", opName1),
-					Details:   err.Error(),
+					OperationId: arReq.GetOperationId(),
+					EventType:   meshes.EventType_ERROR,
+					Summary:     fmt.Sprintf("Error while %s Istio", opName1),
+					Details:     err.Error(),
 				}
 				return
 			}
@@ -413,9 +414,10 @@ func (iClient *IstioClient) ApplyOperation(ctx context.Context, arReq *meshes.Ap
 				opName = "removed"
 			}
 			iClient.eventChan <- &meshes.EventsResponse{
-				EventType: meshes.EventType_INFO,
-				Summary:   fmt.Sprintf("Istio %s successfully", opName),
-				Details:   fmt.Sprintf("The latest version of Istio is now %s.", opName),
+				OperationId: arReq.GetOperationId(),
+				EventType:   meshes.EventType_INFO,
+				Summary:     fmt.Sprintf("Istio %s successfully", opName),
+				Details:     fmt.Sprintf("The latest version of Istio is now %s.", opName),
 			}
 			return
 		}()
@@ -428,9 +430,10 @@ func (iClient *IstioClient) ApplyOperation(ctx context.Context, arReq *meshes.Ap
 			}
 			if err := iClient.executeBookInfoInstall(ctx, arReq); err != nil {
 				iClient.eventChan <- &meshes.EventsResponse{
-					EventType: meshes.EventType_ERROR,
-					Summary:   fmt.Sprintf("Error while %s the canonical Book Info App", opName1),
-					Details:   err.Error(),
+					OperationId: arReq.GetOperationId(),
+					EventType:   meshes.EventType_ERROR,
+					Summary:     fmt.Sprintf("Error while %s the canonical Book Info App", opName1),
+					Details:     err.Error(),
 				}
 				return
 			}
@@ -439,16 +442,17 @@ func (iClient *IstioClient) ApplyOperation(ctx context.Context, arReq *meshes.Ap
 				opName = "removed"
 			}
 			iClient.eventChan <- &meshes.EventsResponse{
-				EventType: meshes.EventType_INFO,
-				Summary:   fmt.Sprintf("Book Info app %s successfully", opName),
-				Details:   fmt.Sprintf("The Istio canonical Book Info app is now %s.", opName),
+				OperationId: arReq.GetOperationId(),
+				EventType:   meshes.EventType_INFO,
+				Summary:     fmt.Sprintf("Book Info app %s successfully", opName),
+				Details:     fmt.Sprintf("The Istio canonical Book Info app is now %s.", opName),
 			}
 			return
 		}()
 		return &meshes.ApplyRuleResponse{}, nil
 	case installSMI:
-		if !arReq.DeleteOp && arReq.Namespace != "default" {
-			iClient.createNamespace(ctx, arReq.Namespace)
+		if !arReq.GetDeleteOp() && arReq.GetNamespace() != "default" {
+			iClient.createNamespace(ctx, arReq.GetNamespace())
 		}
 		yamlFileContents, err = getSMIYamls()
 		if err != nil {
@@ -458,25 +462,27 @@ func (iClient *IstioClient) ApplyOperation(ctx context.Context, arReq *meshes.Ap
 		go iClient.runVet()
 		return &meshes.ApplyRuleResponse{}, nil
 	case customOpCommand:
-		yamlFileContents = arReq.CustomBody
+		yamlFileContents = arReq.GetCustomBody()
 		isCustomOp = true
 	default:
 		if !arReq.DeleteOp {
-			if err := iClient.labelNamespaceForAutoInjection(ctx, arReq.Namespace); err != nil {
+			if err := iClient.labelNamespaceForAutoInjection(ctx, arReq.GetNamespace()); err != nil {
 				return nil, err
 			}
 		}
-		yamlFileContents, err = iClient.executeTemplate(ctx, arReq.Username, arReq.Namespace, op.templateName)
+		yamlFileContents, err = iClient.executeTemplate(ctx, arReq.GetUsername(), arReq.GetNamespace(), op.templateName)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	if err := iClient.applyConfigChange(ctx, yamlFileContents, arReq.Namespace, arReq.DeleteOp, isCustomOp); err != nil {
+	if err := iClient.applyConfigChange(ctx, yamlFileContents, arReq.GetNamespace(), arReq.GetDeleteOp(), isCustomOp); err != nil {
 		return nil, err
 	}
 
-	return &meshes.ApplyRuleResponse{}, nil
+	return &meshes.ApplyRuleResponse{
+		OperationId: arReq.GetOperationId(),
+	}, nil
 }
 
 func (iClient *IstioClient) applyConfigChange(ctx context.Context, yamlFileContents, namespace string, delete, isCustomOp bool) error {
