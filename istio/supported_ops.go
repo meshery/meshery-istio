@@ -46,7 +46,7 @@ var supportedOps = map[string]supportedOperation{
 		opType: meshes.OpCategory_INSTALL,
 	},
 	installBookInfoCommand: {
-		name: "Canonical Book Info Application",
+		name: "Book Info Application",
 		// templateName: "install_istio.tmpl",
 		opType: meshes.OpCategory_SAMPLE_APPLICATION,
 	},
