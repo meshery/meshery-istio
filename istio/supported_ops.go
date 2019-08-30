@@ -67,7 +67,7 @@ var supportedOps = map[string]supportedOperation{
 		opType: meshes.OpCategory_INSTALL,
 	},
 	installHTTPBin: {
-		name:         "HTTP Bin app",
+		name:         "HTTPbin Application",
 		templateName: "httpbin.yaml",
 		opType:       meshes.OpCategory_SAMPLE_APPLICATION,
 	},
