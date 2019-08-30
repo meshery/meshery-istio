@@ -378,11 +378,11 @@ func (iClient *IstioClient) ApplyOperation(ctx context.Context, arReq *meshes.Ap
 
 	op, ok := supportedOps[arReq.OpName]
 	if !ok {
-		return nil, fmt.Errorf("error: %s is not a valid operation name", arReq.OpName)
+		return nil, fmt.Errorf("operation id: %s, error: %s is not a valid operation name", arReq.OperationId, arReq.OpName)
 	}
 
 	if arReq.OpName == customOpCommand && arReq.CustomBody == "" {
-		return nil, fmt.Errorf("error: yaml body is empty for %s operation", arReq.OpName)
+		return nil, fmt.Errorf("operation id: %s, error: yaml body is empty for %s operation", arReq.OperationId, arReq.OpName)
 	}
 
 	var yamlFileContents string
@@ -402,9 +402,10 @@ func (iClient *IstioClient) ApplyOperation(ctx context.Context, arReq *meshes.Ap
 			}
 			if err := iClient.executeInstall(ctx, installWithmTLS, arReq); err != nil {
 				iClient.eventChan <- &meshes.EventsResponse{
-					EventType: meshes.EventType_ERROR,
-					Summary:   fmt.Sprintf("Error while %s Istio", opName1),
-					Details:   err.Error(),
+					OperationId: arReq.OperationId,
+					EventType:   meshes.EventType_ERROR,
+					Summary:     fmt.Sprintf("Error while %s Istio", opName1),
+					Details:     err.Error(),
 				}
 				return
 			}
@@ -413,13 +414,16 @@ func (iClient *IstioClient) ApplyOperation(ctx context.Context, arReq *meshes.Ap
 				opName = "removed"
 			}
 			iClient.eventChan <- &meshes.EventsResponse{
-				EventType: meshes.EventType_INFO,
-				Summary:   fmt.Sprintf("Istio %s successfully", opName),
-				Details:   fmt.Sprintf("The latest version of Istio is now %s.", opName),
+				OperationId: arReq.OperationId,
+				EventType:   meshes.EventType_INFO,
+				Summary:     fmt.Sprintf("Istio %s successfully", opName),
+				Details:     fmt.Sprintf("The latest version of Istio is now %s.", opName),
 			}
 			return
 		}()
-		return &meshes.ApplyRuleResponse{}, nil
+		return &meshes.ApplyRuleResponse{
+			OperationId: arReq.OperationId,
+		}, nil
 	case installBookInfoCommand:
 		go func() {
 			opName1 := "deploying"
@@ -428,9 +432,10 @@ func (iClient *IstioClient) ApplyOperation(ctx context.Context, arReq *meshes.Ap
 			}
 			if err := iClient.executeBookInfoInstall(ctx, arReq); err != nil {
 				iClient.eventChan <- &meshes.EventsResponse{
-					EventType: meshes.EventType_ERROR,
-					Summary:   fmt.Sprintf("Error while %s the canonical Book Info App", opName1),
-					Details:   err.Error(),
+					OperationId: arReq.OperationId,
+					EventType:   meshes.EventType_ERROR,
+					Summary:     fmt.Sprintf("Error while %s the canonical Book Info App", opName1),
+					Details:     err.Error(),
 				}
 				return
 			}
@@ -439,13 +444,16 @@ func (iClient *IstioClient) ApplyOperation(ctx context.Context, arReq *meshes.Ap
 				opName = "removed"
 			}
 			iClient.eventChan <- &meshes.EventsResponse{
-				EventType: meshes.EventType_INFO,
-				Summary:   fmt.Sprintf("Book Info app %s successfully", opName),
-				Details:   fmt.Sprintf("The Istio canonical Book Info app is now %s.", opName),
+				OperationId: arReq.OperationId,
+				EventType:   meshes.EventType_INFO,
+				Summary:     fmt.Sprintf("Book Info app %s successfully", opName),
+				Details:     fmt.Sprintf("The Istio canonical Book Info app is now %s.", opName),
 			}
 			return
 		}()
-		return &meshes.ApplyRuleResponse{}, nil
+		return &meshes.ApplyRuleResponse{
+			OperationId: arReq.OperationId,
+		}, nil
 	case installSMI:
 		if !arReq.DeleteOp && arReq.Namespace != "default" {
 			iClient.createNamespace(ctx, arReq.Namespace)
@@ -456,7 +464,9 @@ func (iClient *IstioClient) ApplyOperation(ctx context.Context, arReq *meshes.Ap
 		}
 	case runVet:
 		go iClient.runVet()
-		return &meshes.ApplyRuleResponse{}, nil
+		return &meshes.ApplyRuleResponse{
+			OperationId: arReq.OperationId,
+		}, nil
 	case customOpCommand:
 		yamlFileContents = arReq.CustomBody
 		isCustomOp = true
@@ -476,7 +486,9 @@ func (iClient *IstioClient) ApplyOperation(ctx context.Context, arReq *meshes.Ap
 		return nil, err
 	}
 
-	return &meshes.ApplyRuleResponse{}, nil
+	return &meshes.ApplyRuleResponse{
+		OperationId: arReq.OperationId,
+	}, nil
 }
 
 func (iClient *IstioClient) applyConfigChange(ctx context.Context, yamlFileContents, namespace string, delete, isCustomOp bool) error {
@@ -512,9 +524,16 @@ func (iClient *IstioClient) applyConfigChange(ctx context.Context, yamlFileConte
 
 // SupportedOperations - returns a list of supported operations on the mesh
 func (iClient *IstioClient) SupportedOperations(context.Context, *meshes.SupportedOperationsRequest) (*meshes.SupportedOperationsResponse, error) {
-	result := map[string]string{}
-	for key, op := range supportedOps {
-		result[key] = op.name
+	supportedOpsCount := len(supportedOps)
+	result := make([]*meshes.SupportedOperation, supportedOpsCount)
+	i := 0
+	for k, sp := range supportedOps {
+		result[i] = &meshes.SupportedOperation{
+			Key:      k,
+			Value:    sp.name,
+			Category: sp.opType,
+		}
+		i++
 	}
 	return &meshes.SupportedOperationsResponse{
 		Ops: result,
