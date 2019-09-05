@@ -1,0 +1,152 @@
+name: Meshery-Istio
+on:
+  push:
+    branches:
+      - '*'
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  lint:
+    name: Check & Review code
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out code
+      uses: actions/checkout@master
+      with:
+        fetch-depth: 1
+    - name: Setup Go
+      uses: actions/setup-go@v1
+      with:
+        go-version: ${{ secrets.GO_VERSION }}
+    - run: GOPROXY=direct GOSUMDB=off go get -u golang.org/x/lint/golint; go list ./... | grep -v /vendor/ | xargs -L1 /home/runner/go/bin/golint -set_exit_status
+  error_check:
+    name: Error check
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out code
+      uses: actions/checkout@master
+      with:
+        fetch-depth: 1
+    - name: Setup Go
+      uses: actions/setup-go@v1
+      with:
+        go-version: ${{ secrets.GO_VERSION }}
+    - run: GOPROXY=direct GOSUMDB=off GO111MODULE=on go get -u github.com/kisielk/errcheck; /home/runner/go/bin/errcheck ./...
+  static_check:
+    name: Static check
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out code
+      uses: actions/checkout@master
+      with:
+        fetch-depth: 1
+    - name: Setup Go
+      uses: actions/setup-go@v1
+      with:
+        go-version: ${{ secrets.GO_VERSION }}
+    - run: GOPROXY=direct GOSUMDB=off GO111MODULE=on go get -u honnef.co/go/tools/cmd/staticcheck; /home/runner/go/bin/staticcheck -checks all ./... # https://staticcheck.io/docs/checks
+  vet:
+    name: Vet
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out code
+      uses: actions/checkout@master
+      with:
+        fetch-depth: 1
+    - name: Setup Go
+      uses: actions/setup-go@v1
+      with:
+        go-version: ${{ secrets.GO_VERSION }}
+    - run: GOPROXY=direct GOSUMDB=off GO111MODULE=on go vet ./...
+  sec_check:
+    name: Security check
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out code
+      uses: actions/checkout@master
+      with:
+        fetch-depth: 1
+    - name: Setup Go
+      uses: actions/setup-go@v1
+      with:
+        go-version: ${{ secrets.GO_VERSION }}
+    - run: GOPROXY=direct GOSUMDB=off GO111MODULE=on go get github.com/securego/gosec/cmd/gosec; /home/runner/go/bin/gosec ./... # https://github.com/securego/gosec
+  tests:
+    # needs: [lint, error_check, static_check, vet, sec_check]
+    name: Tests
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out code
+      uses: actions/checkout@master
+      with:
+        fetch-depth: 1
+    - name: Setup Go
+      uses: actions/setup-go@v1
+      with:
+        go-version: ${{ secrets.GO_VERSION }}
+    - run: GOPROXY=direct GOSUMDB=off GO111MODULE=on go test ./...
+  build:
+    name: Meshery build check
+    runs-on: ubuntu-latest
+    # needs: [lint, error_check, static_check, vet, sec_check, tests]
+    steps:
+    - name: Check out code
+      uses: actions/checkout@master
+      with:
+        fetch-depth: 1
+    - name: Setup Go
+      uses: actions/setup-go@v1
+      with:
+        go-version: ${{ secrets.GO_VERSION }}
+    - run: GOPROXY=direct GOSUMDB=off GO111MODULE=on go build .
+  docker:
+    name: Docker build and push
+    runs-on: ubuntu-latest
+    # needs: [build, build_release]
+    steps:
+    - name: Check out code
+      if: github.event_name != 'pull_request' && (startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/master') && success()
+      uses: actions/checkout@master
+      with:
+        fetch-depth: 1
+    - name: docker login
+      if: github.event_name != 'pull_request' && (startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/master') && success()
+      uses: actions/docker/login@master # DOCKER_USERNAME & DOCKER_PASSWORD env should be set
+      env:
+        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+    - name: build docker
+      if: github.event_name != 'pull_request' && (startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/master') && success()
+      uses: actions/docker/cli@master
+      with:
+        args: "build -t ${{ secrets.IMAGE_NAME }} ."
+    - name: docker tag with GitHub tag
+      if: github.event_name != 'pull_request' && startsWith(github.ref, 'refs/tags/') && success()
+      uses: actions/docker/cli@master
+      with:
+        args: "tag ${{ secrets.IMAGE_NAME }}:latest ${{ secrets.IMAGE_NAME }}:${GITHUB_REF:10}" # stripping refs/tags/
+    - name: docker tag with GitHub sha
+      if: github.event_name != 'pull_request' && (startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/master') && success()
+      uses: actions/docker/cli@master
+      with:
+        args: "tag ${{ secrets.IMAGE_NAME }}:latest ${{ secrets.IMAGE_NAME }}:$GITHUB_SHA"
+    - name: push docker tag
+      if: github.event_name != 'pull_request' && startsWith(github.ref, 'refs/tags/') && success()
+      uses: actions/docker/cli@master
+      with:
+        args: "push ${{ secrets.IMAGE_NAME }}:${GITHUB_REF:10}"
+    - name: push docker sha
+      if: github.event_name != 'pull_request' && (startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/master') && success()
+      uses: actions/docker/cli@master
+      with:
+        args: "push ${{ secrets.IMAGE_NAME }}:$GITHUB_SHA"
+    - name: push docker latest
+      if: github.event_name != 'pull_request' && (startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/master') && success()
+      uses: actions/docker/cli@master
+      with:
+        args: "push ${{ secrets.IMAGE_NAME }}:latest"
+    
