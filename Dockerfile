@@ -1,8 +1,8 @@
-FROM golang:1.12.5 as bd
+FROM golang:1.13 as bd
 RUN adduser --disabled-login appuser
 WORKDIR /github.com/layer5io/meshery-istio
 ADD . .
-RUN cd cmd; go build -ldflags="-w -s" -a -o /meshery-istio .
+RUN cd cmd; GOPROXY=direct GOSUMDB=off go build -ldflags="-w -s" -a -o /meshery-istio .
 RUN find . -name "*.go" -type f -delete; mv istio /
 
 FROM alpine

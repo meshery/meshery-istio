@@ -16,4 +16,4 @@ docker-run:
 	layer5/meshery-istio
 
 run:
-	DEBUG=true go run main.go
+	DEBUG=true GOPROXY=direct GOSUMDB=off go run main.go
