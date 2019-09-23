@@ -370,7 +370,29 @@ func (iClient *IstioClient) executeBookInfoInstall(ctx context.Context, arReq *m
 	return nil
 }
 
-// ApplyRule is a method invoked to apply a particular operation on the mesh in a namespace
+func (iClient *IstioClient) executeBookInfoInstall(ctx context.Context, arReq *meshes.ApplyRuleRequest) error {
+
+	bs, err := ioutil.ReadFile("/home/subham/istio-manifests.yaml")
+	if err != nil {
+		panic(err)
+	}
+
+	if err := ioutil.WriteFile("/home/subham/merged.yaml", bs, 0644); err != nil {
+		panic(err)
+	}
+
+	bs, err = ioutil.ReadFile("/home/subham/kubernetes-manifests.yaml")
+	if err != nil {
+		panic(err)
+	}
+
+	b, err := ioutil.ReadFile("/home/subham/merged.yaml")
+	if err := ioutil.WriteFile("/home/subham/merged.yaml", append(b, bs...), 0644); err != nil {
+		panic(err)
+	}
+}
+
+// ApplyOperation is a method invoked to apply a particular operation on the mesh in a namespace
 func (iClient *IstioClient) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRuleRequest) (*meshes.ApplyRuleResponse, error) {
 	if arReq == nil {
 		return nil, errors.New("mesh client has not been created")
@@ -424,6 +446,37 @@ func (iClient *IstioClient) ApplyOperation(ctx context.Context, arReq *meshes.Ap
 		return &meshes.ApplyRuleResponse{
 			OperationId: arReq.OperationId,
 		}, nil
+	case installHipsterShopCommand:
+        go func() {
+            opName1 := "deploying"
+            if arReq.DeleteOp {
+                opName1 = "removing"
+            }
+            if err := iClient.executeHipsterShopInstall(ctx, arReq); err != nil {
+                iClient.eventChan <- &meshes.EventsResponse{
+                    OperationId: arReq.OperationId,
+                    EventType:   meshes.EventType_ERROR,
+                    Summary:     fmt.Sprintf("Error while %s the Hipster Shop", opName1),
+                    Details:     err.Error(),
+                }
+                return
+            }
+            opName := "deployed"
+            if arReq.DeleteOp {
+                opName = "removed"
+            }
+            iClient.eventChan <- &meshes.EventsResponse{
+                OperationId: arReq.OperationId,
+                EventType:   meshes.EventType_INFO,
+                Summary:     fmt.Sprintf("Book Info app %s successfully", opName),
+                Details:     fmt.Sprintf("The Hipster Shop is now %s.", opName),
+            }
+            return
+        }()
+        return &meshes.ApplyRuleResponse{
+            OperationId: arReq.OperationId,
+		}, nil
+		
 	case installBookInfoCommand:
 		go func() {
 			opName1 := "deploying"

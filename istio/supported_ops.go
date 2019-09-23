@@ -25,14 +25,15 @@ type supportedOperation struct {
 }
 
 const (
-	customOpCommand         = "custom"
-	runVet                  = "istio_vet"
-	installIstioCommand     = "istio_install"
-	installmTLSIstioCommand = "istio_mtls_install"
-	installBookInfoCommand  = "install_book_info"
-	cbCommand               = "cb1"
-	installSMI              = "install_smi"
-	installHTTPBin          = "install_http_bin"
+	customOpCommand           = "custom"
+	runVet                    = "istio_vet"
+	installIstioCommand       = "istio_install"
+	installmTLSIstioCommand   = "istio_mtls_install"
+	installBookInfoCommand    = "install_book_info"
+	cbCommand                 = "cb1"
+	installSMI                = "install_smi"
+	installHTTPBin            = "install_http_bin"
+	googleMSSampleApplication = "microservices_demo_application"
 )
 
 var supportedOps = map[string]supportedOperation{
@@ -74,5 +75,9 @@ var supportedOps = map[string]supportedOperation{
 	customOpCommand: {
 		name:   "Custom YAML",
 		opType: meshes.OpCategory_CUSTOM,
+	},
+	googleMSSampleApplication: {
+		name:   "microservices_demo_application",
+		opType: meshes.OpCategory_SAMPLE_APPLICATION,
 	},
 }
