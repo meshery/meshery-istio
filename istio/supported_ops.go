@@ -25,14 +25,22 @@ type supportedOperation struct {
 }
 
 const (
-	customOpCommand         = "custom"
-	runVet                  = "istio_vet"
-	installIstioCommand     = "istio_install"
-	installmTLSIstioCommand = "istio_mtls_install"
-	installBookInfoCommand  = "install_book_info"
-	cbCommand               = "cb1"
-	installSMI              = "install_smi"
-	installHTTPBin          = "install_http_bin"
+	customOpCommand                          = "custom"
+	runVet                                   = "istio_vet"
+	installIstioCommand                      = "istio_install"
+	installmTLSIstioCommand                  = "istio_mtls_install"
+	installBookInfoCommand                   = "install_book_info"
+	cbCommand                                = "cb1"
+	installSMI                               = "install_smi"
+	installHTTPBin                           = "install_http_bin"
+	bookInfoDefaultDestinationRules          = "bookInfoDefaultDestinationRules"
+	bookInfoRouteToV1AllServices             = "bookInfoRouteToV1AllServices"
+	bookInfoRouteToReviewsV2ForJason         = "bookInfoRouteToReviewsV2ForJason"
+	bookInfoCanary50pcReviewsV3              = "bookInfoCanary50pcReviewsV3"
+	bookInfoCanary100pcReviewsV3             = "bookInfoCanary100pcReviewsV3"
+	bookInfoInjectDelayForRatingsForJason    = "bookInfoInjectDelayForRatingsForJason"
+	bookInfoInjectHTTPAbortToRatingsForJason = "bookInfoInjectHTTPAbortToRatingsForJason"
+	bookInfoProductPageCircuitBreaking       = "bookInfoProductPageCircuitBreaking"
 )
 
 var supportedOps = map[string]supportedOperation{
@@ -61,6 +69,39 @@ var supportedOps = map[string]supportedOperation{
 		name:         "Configure circuit breaker with only one connection",
 		opType:       meshes.OpCategory_CONFIGURE,
 		templateName: "circuit_breaking.tmpl",
+	},
+	bookInfoDefaultDestinationRules: {
+		name:   "Default Book info destination rules (defines subsets)",
+		opType: meshes.OpCategory_CONFIGURE,
+	},
+	bookInfoRouteToV1AllServices: {
+		name:   "Route traffic to V1 of all Book info services",
+		opType: meshes.OpCategory_CONFIGURE,
+	},
+	bookInfoRouteToReviewsV2ForJason: {
+		name:   "Route traffic to V2 of Book info reviews service for user Jason",
+		opType: meshes.OpCategory_CONFIGURE,
+	},
+	bookInfoCanary50pcReviewsV3: {
+		name:   "Route 50% of the traffic to Book info reviews V3",
+		opType: meshes.OpCategory_CONFIGURE,
+	},
+	bookInfoCanary100pcReviewsV3: {
+		name:   "Route 100% of the traffic to Book info reviews V3",
+		opType: meshes.OpCategory_CONFIGURE,
+	},
+	bookInfoInjectDelayForRatingsForJason: {
+		name:   "Inject a 7s delay in the traffic to Book info ratings service for user Jason",
+		opType: meshes.OpCategory_CONFIGURE,
+	},
+	bookInfoInjectHTTPAbortToRatingsForJason: {
+		name:   "Inject HTTP abort to Book info ratings service for user Jason",
+		opType: meshes.OpCategory_CONFIGURE,
+	},
+	bookInfoProductPageCircuitBreaking: {
+		name:         "Configure circuit breaking with max 1 connection and max 1 pending request to Book info productpage service",
+		opType:       meshes.OpCategory_CONFIGURE,
+		templateName: "book_info_product_page_circuit_breaking.tmpl",
 	},
 	installSMI: {
 		name:   "Service Mesh Interface (SMI) Istio Adapter",

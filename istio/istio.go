@@ -237,7 +237,20 @@ func (iClient *IstioClient) executeRule(ctx context.Context, data *unstructured.
 			// 	return err
 			// }
 		} else {
-			return err
+			data1, err := iClient.getResource(ctx, res, data)
+			if err != nil {
+				return err
+			}
+			data.SetCreationTimestamp(data1.GetCreationTimestamp())
+			data.SetGenerateName(data1.GetGenerateName())
+			data.SetGeneration(data1.GetGeneration())
+			data.SetSelfLink(data1.GetSelfLink())
+			data.SetResourceVersion(data1.GetResourceVersion())
+			// data.DeepCopyInto(data1)
+			if err = iClient.updateResource(ctx, res, data); err != nil {
+				return err
+			}
+			// return err
 		}
 	}
 	return nil
@@ -454,6 +467,41 @@ func (iClient *IstioClient) ApplyOperation(ctx context.Context, arReq *meshes.Ap
 		return &meshes.ApplyRuleResponse{
 			OperationId: arReq.OperationId,
 		}, nil
+	case bookInfoDefaultDestinationRules:
+		yamlFileContents, err = iClient.getBookInfoDefaultDesinationRulesYAML()
+		if err != nil {
+			return nil, err
+		}
+	case bookInfoRouteToV1AllServices:
+		yamlFileContents, err = iClient.getBookInfoRouteToV1AllServicesYAML()
+		if err != nil {
+			return nil, err
+		}
+	case bookInfoRouteToReviewsV2ForJason:
+		yamlFileContents, err = iClient.getBookInfoRouteToReviewsV2ForJasonFile()
+		if err != nil {
+			return nil, err
+		}
+	case bookInfoCanary50pcReviewsV3:
+		yamlFileContents, err = iClient.getBookInfoCanary50pcReviewsV3File()
+		if err != nil {
+			return nil, err
+		}
+	case bookInfoCanary100pcReviewsV3:
+		yamlFileContents, err = iClient.getBookInfoCanary100pcReviewsV3File()
+		if err != nil {
+			return nil, err
+		}
+	case bookInfoInjectDelayForRatingsForJason:
+		yamlFileContents, err = iClient.getBookInfoInjectDelayForRatingsForJasonFile()
+		if err != nil {
+			return nil, err
+		}
+	case bookInfoInjectHTTPAbortToRatingsForJason:
+		yamlFileContents, err = iClient.getBookInfoInjectHTTPAbortToRatingsForJasonFile()
+		if err != nil {
+			return nil, err
+		}
 	case installSMI:
 		if !arReq.DeleteOp && arReq.Namespace != "default" {
 			iClient.createNamespace(ctx, arReq.Namespace)
@@ -482,9 +530,32 @@ func (iClient *IstioClient) ApplyOperation(ctx context.Context, arReq *meshes.Ap
 		}
 	}
 
-	if err := iClient.applyConfigChange(ctx, yamlFileContents, arReq.Namespace, arReq.DeleteOp, isCustomOp); err != nil {
-		return nil, err
-	}
+	go func() {
+		logrus.Debug("in the routine. . . .")
+		opName1 := "deploying"
+		if arReq.DeleteOp {
+			opName1 = "removing"
+		}
+		if err := iClient.applyConfigChange(ctx, yamlFileContents, arReq.Namespace, arReq.DeleteOp, isCustomOp); err != nil {
+			iClient.eventChan <- &meshes.EventsResponse{
+				OperationId: arReq.OperationId,
+				EventType:   meshes.EventType_ERROR,
+				Summary:     fmt.Sprintf("Error while %s \"%s\"", opName1, op.name),
+				Details:     err.Error(),
+			}
+			return
+		}
+		opName := "deployed"
+		if arReq.DeleteOp {
+			opName = "removed"
+		}
+		iClient.eventChan <- &meshes.EventsResponse{
+			OperationId: arReq.OperationId,
+			EventType:   meshes.EventType_INFO,
+			Summary:     fmt.Sprintf("\"%s\" %s successfully", op.name, opName),
+			Details:     fmt.Sprintf("\"%s\" %s successfully", op.name, opName),
+		}
+	}()
 
 	return &meshes.ApplyRuleResponse{
 		OperationId: arReq.OperationId,
