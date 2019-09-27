@@ -99,7 +99,7 @@ var supportedOps = map[string]supportedOperation{
 		opType: meshes.OpCategory_CONFIGURE,
 	},
 	bookInfoProductPageCircuitBreaking: {
-		name:         "Configure circuit breaking with max 1 connection and max 1 pending request to Book info productpage service",
+		name:         "Configure circuit breaking with max 1 request per connection and max 1 pending request to Book info productpage service",
 		opType:       meshes.OpCategory_CONFIGURE,
 		templateName: "book_info_product_page_circuit_breaking.tmpl",
 	},

@@ -23,10 +23,12 @@ const (
 	repoURL     = "https://api.github.com/repos/istio/istio/releases/latest"
 	URLSuffix   = "-linux.tar.gz"
 	crdPattern  = "crd(.*)yaml"
-	cachePeriod = 1 * time.Hour
+	cachePeriod = 6 * time.Hour
 )
 
 var (
+	localByPassFile = "/app/istio.tar.gz"
+
 	localFile                  = path.Join(os.TempDir(), "istio.tar.gz")
 	destinationFolder          = path.Join(os.TempDir(), "istio")
 	basePath                   = path.Join(destinationFolder, "%s")
@@ -197,31 +199,39 @@ func (iClient *IstioClient) untarPackage(destination, fileToUntar string) error 
 }
 
 func (iClient *IstioClient) downloadIstio() (string, error) {
-	logrus.Debug("preparing to download the latest istio release")
-	err := iClient.getLatestReleaseURL()
+	var fileName string
+	_, err := os.Stat(localByPassFile)
 	if err != nil {
-		return "", err
-	}
-	fileName := iClient.istioReleaseVersion
-	downloadURL := iClient.istioReleaseDownloadURL
-	logrus.Debugf("retrieved latest file name: %s and download url: %s", fileName, downloadURL)
-
-	proceedWithDownload := true
-
-	lFileStat, err := os.Stat(localFile)
-	if err == nil {
-		if time.Since(lFileStat.ModTime()) > cachePeriod {
-			proceedWithDownload = true
-		} else {
-			proceedWithDownload = false
-		}
-	}
-
-	if proceedWithDownload {
-		if err = iClient.downloadFile(localFile); err != nil {
+		logrus.Debug("preparing to download the latest istio release")
+		err := iClient.getLatestReleaseURL()
+		if err != nil {
 			return "", err
 		}
-		logrus.Debug("package successfully downloaded, now unzipping . . .")
+		fileName = iClient.istioReleaseVersion
+		downloadURL := iClient.istioReleaseDownloadURL
+		logrus.Debugf("retrieved latest file name: %s and download url: %s", fileName, downloadURL)
+
+		proceedWithDownload := true
+
+		lFileStat, err := os.Stat(localFile)
+		if err == nil {
+			if time.Since(lFileStat.ModTime()) > cachePeriod {
+				proceedWithDownload = true
+			} else {
+				proceedWithDownload = false
+			}
+		}
+
+		if proceedWithDownload {
+			if err = iClient.downloadFile(localFile); err != nil {
+				return "", err
+			}
+			logrus.Debug("package successfully downloaded, now unzipping . . .")
+		}
+	} else {
+		localFile = localByPassFile
+		fileName = os.Getenv("ISTIO_VERSION")
+		logrus.Debugf("using local bypass file: %s & version name from env: %s", localFile, fileName)
 	}
 	if err = iClient.untarPackage(destinationFolder, localFile); err != nil {
 		return "", err
