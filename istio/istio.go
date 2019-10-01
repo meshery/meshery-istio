@@ -24,6 +24,7 @@ import (
 	"strings"
 	"text/template"
 	"time"
+	"net/http"
 
 	"github.com/ghodss/yaml"
 	"github.com/layer5io/meshery-istio/meshes"
@@ -237,7 +238,20 @@ func (iClient *IstioClient) executeRule(ctx context.Context, data *unstructured.
 			// 	return err
 			// }
 		} else {
-			return err
+			data1, err := iClient.getResource(ctx, res, data)
+			if err != nil {
+				return err
+			}
+			data.SetCreationTimestamp(data1.GetCreationTimestamp())
+			data.SetGenerateName(data1.GetGenerateName())
+			data.SetGeneration(data1.GetGeneration())
+			data.SetSelfLink(data1.GetSelfLink())
+			data.SetResourceVersion(data1.GetResourceVersion())
+			// data.DeepCopyInto(data1)
+			if err = iClient.updateResource(ctx, res, data); err != nil {
+				return err
+			}
+			// return err
 		}
 	}
 	return nil
@@ -370,28 +384,33 @@ func (iClient *IstioClient) executeBookInfoInstall(ctx context.Context, arReq *m
 	return nil
 }
 
-func (iClient *IstioClient) executeBookInfoInstall(ctx context.Context, arReq *meshes.ApplyRuleRequest) error {
+func (iClient *IstioClient)executeHipsterShopInstall(ctx context.Context, arReq *meshes.ApplyRuleRequest) error {
 
-	bs, err := ioutil.ReadFile("/home/subham/istio-manifests.yaml")
+	resp, err := http.Get("https://raw.githubusercontent.com/GoogleCloudPlatform/microservices-demo/master/release/istio-manifests.yaml")
 	if err != nil {
 		panic(err)
 	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
 
-	if err := ioutil.WriteFile("/home/subham/merged.yaml", bs, 0644); err != nil {
+	if err := ioutil.WriteFile("merged.yaml", body, 0644); err != nil {
+		panic(err)
+	}
+	
+		resp, e := http.Get("https://raw.githubusercontent.com/GoogleCloudPlatform/microservices-demo/master/release/kubernetes-manifests.yaml")
+	if e != nil {
+		panic(e)
+	}
+	defer resp.Body.Close()
+	b, err := ioutil.ReadAll(resp.Body)
+	
+	d, err := ioutil.ReadFile("merged.yaml")
+	if err := ioutil.WriteFile("merged.yaml", append(d, b...), 0644); err != nil {
 		panic(err)
 	}
 
-	bs, err = ioutil.ReadFile("/home/subham/kubernetes-manifests.yaml")
-	if err != nil {
-		panic(err)
-	}
-
-	b, err := ioutil.ReadFile("/home/subham/merged.yaml")
-	if err := ioutil.WriteFile("/home/subham/merged.yaml", append(b, bs...), 0644); err != nil {
-		panic(err)
-	}
+	
 }
-
 // ApplyOperation is a method invoked to apply a particular operation on the mesh in a namespace
 func (iClient *IstioClient) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRuleRequest) (*meshes.ApplyRuleResponse, error) {
 	if arReq == nil {
@@ -446,7 +465,7 @@ func (iClient *IstioClient) ApplyOperation(ctx context.Context, arReq *meshes.Ap
 		return &meshes.ApplyRuleResponse{
 			OperationId: arReq.OperationId,
 		}, nil
-	case installHipsterShopCommand:
+	case googleMSSampleApplication:
         go func() {
             opName1 := "deploying"
             if arReq.DeleteOp {
@@ -456,7 +475,7 @@ func (iClient *IstioClient) ApplyOperation(ctx context.Context, arReq *meshes.Ap
                 iClient.eventChan <- &meshes.EventsResponse{
                     OperationId: arReq.OperationId,
                     EventType:   meshes.EventType_ERROR,
-                    Summary:     fmt.Sprintf("Error while %s the Hipster Shop", opName1),
+                    Summary:     fmt.Sprintf("Error while %s thegoogle micro services demo applicatio", opName1),
                     Details:     err.Error(),
                 }
                 return
@@ -468,7 +487,7 @@ func (iClient *IstioClient) ApplyOperation(ctx context.Context, arReq *meshes.Ap
             iClient.eventChan <- &meshes.EventsResponse{
                 OperationId: arReq.OperationId,
                 EventType:   meshes.EventType_INFO,
-                Summary:     fmt.Sprintf("Book Info app %s successfully", opName),
+                Summary:     fmt.Sprintf("google micro services demo application %s successfully", opName),
                 Details:     fmt.Sprintf("The Hipster Shop is now %s.", opName),
             }
             return
@@ -507,6 +526,41 @@ func (iClient *IstioClient) ApplyOperation(ctx context.Context, arReq *meshes.Ap
 		return &meshes.ApplyRuleResponse{
 			OperationId: arReq.OperationId,
 		}, nil
+	case bookInfoDefaultDestinationRules:
+		yamlFileContents, err = iClient.getBookInfoDefaultDesinationRulesYAML()
+		if err != nil {
+			return nil, err
+		}
+	case bookInfoRouteToV1AllServices:
+		yamlFileContents, err = iClient.getBookInfoRouteToV1AllServicesYAML()
+		if err != nil {
+			return nil, err
+		}
+	case bookInfoRouteToReviewsV2ForJason:
+		yamlFileContents, err = iClient.getBookInfoRouteToReviewsV2ForJasonFile()
+		if err != nil {
+			return nil, err
+		}
+	case bookInfoCanary50pcReviewsV3:
+		yamlFileContents, err = iClient.getBookInfoCanary50pcReviewsV3File()
+		if err != nil {
+			return nil, err
+		}
+	case bookInfoCanary100pcReviewsV3:
+		yamlFileContents, err = iClient.getBookInfoCanary100pcReviewsV3File()
+		if err != nil {
+			return nil, err
+		}
+	case bookInfoInjectDelayForRatingsForJason:
+		yamlFileContents, err = iClient.getBookInfoInjectDelayForRatingsForJasonFile()
+		if err != nil {
+			return nil, err
+		}
+	case bookInfoInjectHTTPAbortToRatingsForJason:
+		yamlFileContents, err = iClient.getBookInfoInjectHTTPAbortToRatingsForJasonFile()
+		if err != nil {
+			return nil, err
+		}
 	case installSMI:
 		if !arReq.DeleteOp && arReq.Namespace != "default" {
 			iClient.createNamespace(ctx, arReq.Namespace)
@@ -535,9 +589,32 @@ func (iClient *IstioClient) ApplyOperation(ctx context.Context, arReq *meshes.Ap
 		}
 	}
 
-	if err := iClient.applyConfigChange(ctx, yamlFileContents, arReq.Namespace, arReq.DeleteOp, isCustomOp); err != nil {
-		return nil, err
-	}
+	go func() {
+		logrus.Debug("in the routine. . . .")
+		opName1 := "deploying"
+		if arReq.DeleteOp {
+			opName1 = "removing"
+		}
+		if err := iClient.applyConfigChange(ctx, yamlFileContents, arReq.Namespace, arReq.DeleteOp, isCustomOp); err != nil {
+			iClient.eventChan <- &meshes.EventsResponse{
+				OperationId: arReq.OperationId,
+				EventType:   meshes.EventType_ERROR,
+				Summary:     fmt.Sprintf("Error while %s \"%s\"", opName1, op.name),
+				Details:     err.Error(),
+			}
+			return
+		}
+		opName := "deployed"
+		if arReq.DeleteOp {
+			opName = "removed"
+		}
+		iClient.eventChan <- &meshes.EventsResponse{
+			OperationId: arReq.OperationId,
+			EventType:   meshes.EventType_INFO,
+			Summary:     fmt.Sprintf("\"%s\" %s successfully", op.name, opName),
+			Details:     fmt.Sprintf("\"%s\" %s successfully", op.name, opName),
+		}
+	}()
 
 	return &meshes.ApplyRuleResponse{
 		OperationId: arReq.OperationId,
