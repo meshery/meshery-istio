@@ -25,7 +25,6 @@ type supportedOperation struct {
 }
 
 const (
-<<<<<<< HEAD
 	customOpCommand           = "custom"
 	runVet                    = "istio_vet"
 	installIstioCommand       = "istio_install"
@@ -35,15 +34,6 @@ const (
 	installSMI                = "install_smi"
 	installHTTPBin            = "install_http_bin"
 	googleMSSampleApplication = "microservices_demo_application"
-=======
-	customOpCommand                          = "custom"
-	runVet                                   = "istio_vet"
-	installIstioCommand                      = "istio_install"
-	installmTLSIstioCommand                  = "istio_mtls_install"
-	installBookInfoCommand                   = "install_book_info"
-	cbCommand                                = "cb1"
-	installSMI                               = "install_smi"
-	installHTTPBin                           = "install_http_bin"
 	bookInfoDefaultDestinationRules          = "bookInfoDefaultDestinationRules"
 	bookInfoRouteToV1AllServices             = "bookInfoRouteToV1AllServices"
 	bookInfoRouteToReviewsV2ForJason         = "bookInfoRouteToReviewsV2ForJason"
@@ -52,7 +42,7 @@ const (
 	bookInfoInjectDelayForRatingsForJason    = "bookInfoInjectDelayForRatingsForJason"
 	bookInfoInjectHTTPAbortToRatingsForJason = "bookInfoInjectHTTPAbortToRatingsForJason"
 	bookInfoProductPageCircuitBreaking       = "bookInfoProductPageCircuitBreaking"
->>>>>>> 9e07102353f23ebf1e7fd55fc1e9fda36492c089
+
 )
 
 var supportedOps = map[string]supportedOperation{

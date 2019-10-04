@@ -36,6 +36,14 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
+const(
+
+	hipsterShopIstioManifestsURL = "https://raw.githubusercontent.com/GoogleCloudPlatform/microservices-demo/master/release/istio-manifests.yaml"
+	hipsterShopKubernetesManifestsURL = "https://raw.githubusercontent.com/GoogleCloudPlatform/microservices-demo/master/release/kubernetes-manifests.yaml"
+
+) 
+
+
 func (iClient *IstioClient) CreateMeshInstance(_ context.Context, k8sReq *meshes.CreateMeshInstanceRequest) (*meshes.CreateMeshInstanceResponse, error) {
 	var k8sConfig []byte
 	contextName := ""
@@ -384,32 +392,34 @@ func (iClient *IstioClient) executeBookInfoInstall(ctx context.Context, arReq *m
 	return nil
 }
 
+
 func (iClient *IstioClient)executeHipsterShopInstall(ctx context.Context, arReq *meshes.ApplyRuleRequest) error {
+	func hipsterShopFilecontents(hipsterShopfilesURL string) (string, error) {
+        resp, err := http.Get(hipsterShopfilesURL)
+        if err != nil {
+            err = errors.Wrapf(err, "error parsing response body")
+            logrus.Error(err)
+            return  "", err
+        }
+        defer resp.Body.Close()
+        if resp.StatusCode == 200  {
+        body, err := ioutil.ReadAll(resp.Body)
+        } else {
+            return "", err
+        }
+        return string(body), nil
+    }
+	
+	var kubernetesManifestsContent = hipsterShopFilecontents(hipsterShopKubernetesManifestsURL) 
+	var istioManifestsContent = hipsterShopFilecontents(hipsterShopIstioManifestsURL)
+	
+	var yamlFileContents=string(kubernetesManifestsContent)+"\n---\n"+string(istioManifestsContent)
 
-	resp, err := http.Get("https://raw.githubusercontent.com/GoogleCloudPlatform/microservices-demo/master/release/istio-manifests.yaml")
-	if err != nil {
-		panic(err)
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-
-	if err := ioutil.WriteFile("merged.yaml", body, 0644); err != nil {
-		panic(err)
+	if err := iClient.applyConfigChange(ctx, yamlFileContents, arReq.Namespace, arReq.DeleteOp, false); err != nil {
+		return err
 	}
 	
-		resp, e := http.Get("https://raw.githubusercontent.com/GoogleCloudPlatform/microservices-demo/master/release/kubernetes-manifests.yaml")
-	if e != nil {
-		panic(e)
-	}
-	defer resp.Body.Close()
-	b, err := ioutil.ReadAll(resp.Body)
-	
-	d, err := ioutil.ReadFile("merged.yaml")
-	if err := ioutil.WriteFile("merged.yaml", append(d, b...), 0644); err != nil {
-		panic(err)
-	}
-
-	
+	return nil
 }
 // ApplyOperation is a method invoked to apply a particular operation on the mesh in a namespace
 func (iClient *IstioClient) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRuleRequest) (*meshes.ApplyRuleResponse, error) {
@@ -475,7 +485,7 @@ func (iClient *IstioClient) ApplyOperation(ctx context.Context, arReq *meshes.Ap
                 iClient.eventChan <- &meshes.EventsResponse{
                     OperationId: arReq.OperationId,
                     EventType:   meshes.EventType_ERROR,
-                    Summary:     fmt.Sprintf("Error while %s thegoogle micro services demo applicatio", opName1),
+                    Summary:     fmt.Sprintf("Error while %s the google micro services demo application", opName1),
                     Details:     err.Error(),
                 }
                 return
