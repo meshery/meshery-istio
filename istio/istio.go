@@ -503,9 +503,10 @@ func (iClient *IstioClient) ApplyOperation(ctx context.Context, arReq *meshes.Ap
 			return nil, err
 		}
 	case installSMI:
-		if !arReq.DeleteOp && arReq.Namespace != "default" {
-			iClient.createNamespace(ctx, arReq.Namespace)
-		}
+		// Always set the namespace for SMI adapter to istio-system
+		// as this is where istio is installed and how clusterrolebinding 
+		// for the SMI adapter is defined
+		arReq.Namespace = "istio-system"
 		yamlFileContents, err = getSMIYamls()
 		if err != nil {
 			return nil, err
