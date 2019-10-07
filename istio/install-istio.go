@@ -21,7 +21,7 @@ import (
 
 const (
 	repoURL     = "https://api.github.com/repos/istio/istio/releases/latest"
-	URLSuffix   = "-linux.tar.gz"
+	urlSuffix   = "-linux.tar.gz"
 	crdPattern  = "crd(.*)yaml"
 	cachePeriod = 6 * time.Hour
 )
@@ -47,19 +47,19 @@ var (
 	bookInfoInjectHTTPAbortToRatingsForJasonFile = path.Join(basePath, "samples/bookinfo/networking/virtual-service-ratings-test-abort.yaml")
 )
 
-type APIInfo struct {
+type apiInfo struct {
 	TagName    string   `json:"tag_name,omitempty"`
 	PreRelease bool     `json:"prerelease,omitempty"`
-	Assets     []*Asset `json:"assets,omitempty"`
+	Assets     []*asset `json:"assets,omitempty"`
 }
 
-type Asset struct {
+type asset struct {
 	Name        string `json:"name,omitempty"`
 	State       string `json:"state,omitempty"`
 	DownloadURL string `json:"browser_download_url,omitempty"`
 }
 
-func (iClient *IstioClient) getLatestReleaseURL() error {
+func (iClient *Client) getLatestReleaseURL() error {
 	if iClient.istioReleaseDownloadURL == "" || time.Since(iClient.istioReleaseUpdatedAt) > cachePeriod {
 		logrus.Debugf("API info url: %s", repoURL)
 		resp, err := http.Get(repoURL)
@@ -83,7 +83,7 @@ func (iClient *IstioClient) getLatestReleaseURL() error {
 			return err
 		}
 		// logrus.Debugf("Raw api info: %s", body)
-		result := &APIInfo{}
+		result := &apiInfo{}
 		err = json.Unmarshal(body, result)
 		if err != nil {
 			err = errors.Wrapf(err, "error unmarshalling response body")
@@ -93,8 +93,8 @@ func (iClient *IstioClient) getLatestReleaseURL() error {
 		logrus.Debugf("retrieved api info: %+#v", result)
 		if result != nil && result.Assets != nil && len(result.Assets) > 0 {
 			for _, asset := range result.Assets {
-				if strings.HasSuffix(asset.Name, URLSuffix) {
-					iClient.istioReleaseVersion = strings.Replace(asset.Name, URLSuffix, "", -1)
+				if strings.HasSuffix(asset.Name, urlSuffix) {
+					iClient.istioReleaseVersion = strings.Replace(asset.Name, urlSuffix, "", -1)
 					iClient.istioReleaseDownloadURL = asset.DownloadURL
 					iClient.istioReleaseUpdatedAt = time.Now()
 					return nil
@@ -108,7 +108,7 @@ func (iClient *IstioClient) getLatestReleaseURL() error {
 	return nil
 }
 
-func (iClient *IstioClient) downloadFile(localFile string) error {
+func (iClient *Client) downloadFile(localFile string) error {
 	dFile, err := os.Create(localFile)
 	if err != nil {
 		err = errors.Wrapf(err, "unable to create a file on the filesystem at %s", localFile)
@@ -140,7 +140,7 @@ func (iClient *IstioClient) downloadFile(localFile string) error {
 	return nil
 }
 
-func (iClient *IstioClient) untarPackage(destination, fileToUntar string) error {
+func (iClient *Client) untarPackage(destination, fileToUntar string) error {
 	lFile, err := os.Open(fileToUntar)
 	if err != nil {
 		err = errors.Wrapf(err, "unable to read the local file %s", fileToUntar)
@@ -198,7 +198,7 @@ func (iClient *IstioClient) untarPackage(destination, fileToUntar string) error 
 	}
 }
 
-func (iClient *IstioClient) downloadIstio() (string, error) {
+func (iClient *Client) downloadIstio() (string, error) {
 	var fileName string
 	_, err := os.Stat(localByPassFile)
 	if err != nil {
@@ -240,7 +240,7 @@ func (iClient *IstioClient) downloadIstio() (string, error) {
 	return fileName, nil
 }
 
-func (iClient *IstioClient) getIstioComponentYAML(fileName string) (string, error) {
+func (iClient *Client) getIstioComponentYAML(fileName string) (string, error) {
 	specificVersionName, err := iClient.downloadIstio()
 	if err != nil {
 		return "", err
@@ -252,11 +252,10 @@ func (iClient *IstioClient) getIstioComponentYAML(fileName string) (string, erro
 		if os.IsNotExist(err) {
 			logrus.Error(err)
 			return "", err
-		} else {
-			err = errors.Wrap(err, "unknown error")
-			logrus.Error(err)
-			return "", err
 		}
+		err = errors.Wrap(err, "unknown error")
+		logrus.Error(err)
+		return "", err
 	}
 	fileContents, err := ioutil.ReadFile(installFileLoc)
 	if err != nil {
@@ -267,7 +266,7 @@ func (iClient *IstioClient) getIstioComponentYAML(fileName string) (string, erro
 	return string(fileContents), nil
 }
 
-func (iClient *IstioClient) getCRDsYAML() ([]string, error) {
+func (iClient *Client) getCRDsYAML() ([]string, error) {
 	res := []string{}
 
 	rEx, err := regexp.Compile(crdPattern)
@@ -302,46 +301,45 @@ func (iClient *IstioClient) getCRDsYAML() ([]string, error) {
 	return res, nil
 }
 
-func (iClient *IstioClient) getLatestIstioYAML(installmTLS bool) (string, error) {
+func (iClient *Client) getLatestIstioYAML(installmTLS bool) (string, error) {
 	if installmTLS {
 		return iClient.getIstioComponentYAML(installWithmTLSFile)
-	} else {
-		return iClient.getIstioComponentYAML(installFile)
 	}
+	return iClient.getIstioComponentYAML(installFile)
 }
 
-func (iClient *IstioClient) getBookInfoAppYAML() (string, error) {
+func (iClient *Client) getBookInfoAppYAML() (string, error) {
 	return iClient.getIstioComponentYAML(bookInfoInstallFile)
 }
 
-func (iClient *IstioClient) getBookInfoGatewayYAML() (string, error) {
+func (iClient *Client) getBookInfoGatewayYAML() (string, error) {
 	return iClient.getIstioComponentYAML(bookInfoGatewayInstallFile)
 }
 
-func (iClient *IstioClient) getBookInfoDefaultDesinationRulesYAML() (string, error) {
+func (iClient *Client) getBookInfoDefaultDesinationRulesYAML() (string, error) {
 	return iClient.getIstioComponentYAML(defaultBookInfoDestRulesFile)
 }
 
-func (iClient *IstioClient) getBookInfoRouteToV1AllServicesYAML() (string, error) {
+func (iClient *Client) getBookInfoRouteToV1AllServicesYAML() (string, error) {
 	return iClient.getIstioComponentYAML(bookInfoRouteToV1AllServicesFile)
 }
 
-func (iClient *IstioClient) getBookInfoRouteToReviewsV2ForJasonFile() (string, error) {
+func (iClient *Client) getBookInfoRouteToReviewsV2ForJasonFile() (string, error) {
 	return iClient.getIstioComponentYAML(bookInfoRouteToReviewsV2ForJasonFile)
 }
 
-func (iClient *IstioClient) getBookInfoCanary50pcReviewsV3File() (string, error) {
+func (iClient *Client) getBookInfoCanary50pcReviewsV3File() (string, error) {
 	return iClient.getIstioComponentYAML(bookInfoCanary50pcReviewsV3File)
 }
 
-func (iClient *IstioClient) getBookInfoCanary100pcReviewsV3File() (string, error) {
+func (iClient *Client) getBookInfoCanary100pcReviewsV3File() (string, error) {
 	return iClient.getIstioComponentYAML(bookInfoCanary100pcReviewsV3File)
 }
 
-func (iClient *IstioClient) getBookInfoInjectDelayForRatingsForJasonFile() (string, error) {
+func (iClient *Client) getBookInfoInjectDelayForRatingsForJasonFile() (string, error) {
 	return iClient.getIstioComponentYAML(bookInfoInjectDelayForRatingsForJasonFile)
 }
 
-func (iClient *IstioClient) getBookInfoInjectHTTPAbortToRatingsForJasonFile() (string, error) {
+func (iClient *Client) getBookInfoInjectHTTPAbortToRatingsForJasonFile() (string, error) {
 	return iClient.getIstioComponentYAML(bookInfoInjectHTTPAbortToRatingsForJasonFile)
 }
