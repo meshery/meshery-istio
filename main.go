@@ -55,7 +55,7 @@ func main() {
 	s := grpc.NewServer(
 	// grpc.Creds(credentials.NewServerTLSFromCert(&insecure.Cert)),
 	)
-	mesh.RegisterMeshServiceServer(s, &istio.IstioClient{})
+	mesh.RegisterMeshServiceServer(s, &istio.Client{})
 
 	// Serve gRPC Server
 	logrus.Infof("Serving gRPC on %s", addr)
