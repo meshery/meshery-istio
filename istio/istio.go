@@ -20,11 +20,11 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net/http"
 	"path"
 	"strings"
 	"text/template"
 	"time"
-	"net/http"
 
 	"github.com/ghodss/yaml"
 	"github.com/layer5io/meshery-istio/meshes"
@@ -36,13 +36,10 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-const(
-
-	hipsterShopIstioManifestsURL = "https://raw.githubusercontent.com/GoogleCloudPlatform/microservices-demo/master/release/istio-manifests.yaml"
+const (
+	hipsterShopIstioManifestsURL      = "https://raw.githubusercontent.com/GoogleCloudPlatform/microservices-demo/master/release/istio-manifests.yaml"
 	hipsterShopKubernetesManifestsURL = "https://raw.githubusercontent.com/GoogleCloudPlatform/microservices-demo/master/release/kubernetes-manifests.yaml"
-
-) 
-
+)
 
 func (iClient *IstioClient) CreateMeshInstance(_ context.Context, k8sReq *meshes.CreateMeshInstanceRequest) (*meshes.CreateMeshInstanceResponse, error) {
 	var k8sConfig []byte
@@ -214,6 +211,10 @@ func (iClient *IstioClient) executeRule(ctx context.Context, data *unstructured.
 		kind = "logentries"
 	case "kubernetes":
 		kind = "kuberneteses"
+	case "podsecuritypolicy":
+		kind = "podsecuritypolicies"
+	case "serviceentry":
+		kind = "serviceentries"
 	default:
 		kind += "s"
 	}
@@ -392,35 +393,52 @@ func (iClient *IstioClient) executeBookInfoInstall(ctx context.Context, arReq *m
 	return nil
 }
 
+func (iClient *IstioClient) executeHipsterShopInstall(ctx context.Context, arReq *meshes.ApplyRuleRequest) error {
+	if !arReq.DeleteOp {
+		if err := iClient.labelNamespaceForAutoInjection(ctx, arReq.Namespace); err != nil {
+			return err
+		}
+	}
+	hipsterShopFilecontents := func(fileURL string) (string, error) {
+		resp, err := http.Get(fileURL)
+		if err != nil {
+			err = errors.Wrapf(err, "error getting data from %s", fileURL)
+			logrus.Error(err)
+			return "", err
+		}
+		defer resp.Body.Close()
+		if resp.StatusCode == 200 {
+			body, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				err = errors.Wrapf(err, "error parsing response from %s", fileURL)
+				logrus.Error(err)
+				return "", err
+			}
+			return string(body), nil
+		}
+		err = errors.Wrapf(err, "Call failed with response status: %s", resp.Status)
+		logrus.Error(err)
+		return "", err
+	}
 
-func (iClient *IstioClient)executeHipsterShopInstall(ctx context.Context, arReq *meshes.ApplyRuleRequest) error {
-	func hipsterShopFilecontents(hipsterShopfilesURL string) (string, error) {
-        resp, err := http.Get(hipsterShopfilesURL)
-        if err != nil {
-            err = errors.Wrapf(err, "error parsing response body")
-            logrus.Error(err)
-            return  "", err
-        }
-        defer resp.Body.Close()
-        if resp.StatusCode == 200  {
-        body, err := ioutil.ReadAll(resp.Body)
-        } else {
-            return "", err
-        }
-        return string(body), nil
-    }
-	
-	var kubernetesManifestsContent = hipsterShopFilecontents(hipsterShopKubernetesManifestsURL) 
-	var istioManifestsContent = hipsterShopFilecontents(hipsterShopIstioManifestsURL)
-	
-	var yamlFileContents=string(kubernetesManifestsContent)+"\n---\n"+string(istioManifestsContent)
+	kubernetesManifestsContent, err := hipsterShopFilecontents(hipsterShopKubernetesManifestsURL)
+	if err != nil {
+		return err
+	}
+	istioManifestsContent, err := hipsterShopFilecontents(hipsterShopIstioManifestsURL)
+	if err != nil {
+		return err
+	}
+
+	var yamlFileContents = fmt.Sprintf("%s\n---\n%s", kubernetesManifestsContent, istioManifestsContent)
 
 	if err := iClient.applyConfigChange(ctx, yamlFileContents, arReq.Namespace, arReq.DeleteOp, false); err != nil {
 		return err
 	}
-	
+
 	return nil
 }
+
 // ApplyOperation is a method invoked to apply a particular operation on the mesh in a namespace
 func (iClient *IstioClient) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRuleRequest) (*meshes.ApplyRuleResponse, error) {
 	if arReq == nil {
@@ -476,36 +494,36 @@ func (iClient *IstioClient) ApplyOperation(ctx context.Context, arReq *meshes.Ap
 			OperationId: arReq.OperationId,
 		}, nil
 	case googleMSSampleApplication:
-        go func() {
-            opName1 := "deploying"
-            if arReq.DeleteOp {
-                opName1 = "removing"
-            }
-            if err := iClient.executeHipsterShopInstall(ctx, arReq); err != nil {
-                iClient.eventChan <- &meshes.EventsResponse{
-                    OperationId: arReq.OperationId,
-                    EventType:   meshes.EventType_ERROR,
-                    Summary:     fmt.Sprintf("Error while %s the google micro services demo application", opName1),
-                    Details:     err.Error(),
-                }
-                return
-            }
-            opName := "deployed"
-            if arReq.DeleteOp {
-                opName = "removed"
-            }
-            iClient.eventChan <- &meshes.EventsResponse{
-                OperationId: arReq.OperationId,
-                EventType:   meshes.EventType_INFO,
-                Summary:     fmt.Sprintf("google micro services demo application %s successfully", opName),
-                Details:     fmt.Sprintf("The Hipster Shop is now %s.", opName),
-            }
-            return
-        }()
-        return &meshes.ApplyRuleResponse{
-            OperationId: arReq.OperationId,
+		go func() {
+			opName1 := "deploying"
+			if arReq.DeleteOp {
+				opName1 = "removing"
+			}
+			if err := iClient.executeHipsterShopInstall(ctx, arReq); err != nil {
+				iClient.eventChan <- &meshes.EventsResponse{
+					OperationId: arReq.OperationId,
+					EventType:   meshes.EventType_ERROR,
+					Summary:     fmt.Sprintf("Error while %s the Hipster Shop application", opName1),
+					Details:     err.Error(),
+				}
+				return
+			}
+			opName := "deployed"
+			if arReq.DeleteOp {
+				opName = "removed"
+			}
+			iClient.eventChan <- &meshes.EventsResponse{
+				OperationId: arReq.OperationId,
+				EventType:   meshes.EventType_INFO,
+				Summary:     fmt.Sprintf("The Hipster Shop application %s successfully", opName),
+				Details:     fmt.Sprintf("The Hipster Shop is now %s.", opName),
+			}
+			return
+		}()
+		return &meshes.ApplyRuleResponse{
+			OperationId: arReq.OperationId,
 		}, nil
-		
+
 	case installBookInfoCommand:
 		go func() {
 			opName1 := "deploying"
