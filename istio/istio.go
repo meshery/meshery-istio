@@ -41,7 +41,8 @@ const (
 	hipsterShopKubernetesManifestsURL = "https://raw.githubusercontent.com/GoogleCloudPlatform/microservices-demo/master/release/kubernetes-manifests.yaml"
 )
 
-func (iClient *IstioClient) CreateMeshInstance(_ context.Context, k8sReq *meshes.CreateMeshInstanceRequest) (*meshes.CreateMeshInstanceResponse, error) {
+//CreateMeshInstance is called from UI
+func (iClient *Client) CreateMeshInstance(_ context.Context, k8sReq *meshes.CreateMeshInstanceRequest) (*meshes.CreateMeshInstanceResponse, error) {
 	var k8sConfig []byte
 	contextName := ""
 	if k8sReq != nil {
@@ -64,7 +65,7 @@ func (iClient *IstioClient) CreateMeshInstance(_ context.Context, k8sReq *meshes
 	return &meshes.CreateMeshInstanceResponse{}, nil
 }
 
-func (iClient *IstioClient) createResource(ctx context.Context, res schema.GroupVersionResource, data *unstructured.Unstructured) error {
+func (iClient *Client) createResource(ctx context.Context, res schema.GroupVersionResource, data *unstructured.Unstructured) error {
 	_, err := iClient.k8sDynamicClient.Resource(res).Namespace(data.GetNamespace()).Create(data, metav1.CreateOptions{})
 	if err != nil {
 		err = errors.Wrapf(err, "unable to create the requested resource, attempting operation without namespace")
@@ -80,7 +81,7 @@ func (iClient *IstioClient) createResource(ctx context.Context, res schema.Group
 	return nil
 }
 
-func (iClient *IstioClient) deleteResource(ctx context.Context, res schema.GroupVersionResource, data *unstructured.Unstructured) error {
+func (iClient *Client) deleteResource(ctx context.Context, res schema.GroupVersionResource, data *unstructured.Unstructured) error {
 	if iClient.k8sDynamicClient == nil {
 		return errors.New("mesh client has not been created")
 	}
@@ -120,7 +121,7 @@ func (iClient *IstioClient) deleteResource(ctx context.Context, res schema.Group
 	return nil
 }
 
-func (iClient *IstioClient) getResource(ctx context.Context, res schema.GroupVersionResource, data *unstructured.Unstructured) (*unstructured.Unstructured, error) {
+func (iClient *Client) getResource(ctx context.Context, res schema.GroupVersionResource, data *unstructured.Unstructured) (*unstructured.Unstructured, error) {
 	data1, err := iClient.k8sDynamicClient.Resource(res).Namespace(data.GetNamespace()).Get(data.GetName(), metav1.GetOptions{})
 	if err != nil {
 		err = errors.Wrap(err, "unable to retrieve the resource with a matching name, attempting operation without namespace")
@@ -137,7 +138,7 @@ func (iClient *IstioClient) getResource(ctx context.Context, res schema.GroupVer
 	return data1, nil
 }
 
-func (iClient *IstioClient) updateResource(ctx context.Context, res schema.GroupVersionResource, data *unstructured.Unstructured) error {
+func (iClient *Client) updateResource(ctx context.Context, res schema.GroupVersionResource, data *unstructured.Unstructured) error {
 	if _, err := iClient.k8sDynamicClient.Resource(res).Namespace(data.GetNamespace()).Update(data, metav1.UpdateOptions{}); err != nil {
 		err = errors.Wrap(err, "unable to update resource with the given name, attempting operation without namespace")
 		logrus.Warn(err)
@@ -153,11 +154,11 @@ func (iClient *IstioClient) updateResource(ctx context.Context, res schema.Group
 }
 
 // MeshName just returns the name of the mesh the client is representing
-func (iClient *IstioClient) MeshName(context.Context, *meshes.MeshNameRequest) (*meshes.MeshNameResponse, error) {
+func (iClient *Client) MeshName(context.Context, *meshes.MeshNameRequest) (*meshes.MeshNameResponse, error) {
 	return &meshes.MeshNameResponse{Name: "Istio"}, nil
 }
 
-func (iClient *IstioClient) applyRulePayload(ctx context.Context, namespace string, newBytes []byte, delete, isCustomOp bool) error {
+func (iClient *Client) applyRulePayload(ctx context.Context, namespace string, newBytes []byte, delete, isCustomOp bool) error {
 	if iClient.k8sDynamicClient == nil {
 		return errors.New("mesh client has not been created")
 	}
@@ -189,7 +190,7 @@ func (iClient *IstioClient) applyRulePayload(ctx context.Context, namespace stri
 	return nil
 }
 
-func (iClient *IstioClient) executeRule(ctx context.Context, data *unstructured.Unstructured, namespace string, delete, isCustomOp bool) error {
+func (iClient *Client) executeRule(ctx context.Context, data *unstructured.Unstructured, namespace string, delete, isCustomOp bool) error {
 	// logrus.Debug("========================================================")
 	// logrus.Debugf("Received data: %+#v", data)
 	if namespace != "" {
@@ -266,7 +267,7 @@ func (iClient *IstioClient) executeRule(ctx context.Context, data *unstructured.
 	return nil
 }
 
-func (iClient *IstioClient) applyIstioCRDs(ctx context.Context, delete bool) error {
+func (iClient *Client) applyIstioCRDs(ctx context.Context, delete bool) error {
 	crdYAMLs, err := iClient.getCRDsYAML()
 	if err != nil {
 		return err
@@ -280,7 +281,7 @@ func (iClient *IstioClient) applyIstioCRDs(ctx context.Context, delete bool) err
 	return nil
 }
 
-func (iClient *IstioClient) labelNamespaceForAutoInjection(ctx context.Context, namespace string) error {
+func (iClient *Client) labelNamespaceForAutoInjection(ctx context.Context, namespace string) error {
 	ns := &unstructured.Unstructured{}
 	res := schema.GroupVersionResource{
 		Version:  "v1",
@@ -319,7 +320,7 @@ func (iClient *IstioClient) labelNamespaceForAutoInjection(ctx context.Context, 
 	return nil
 }
 
-func (iClient *IstioClient) createNamespace(ctx context.Context, namespace string) error {
+func (iClient *Client) createNamespace(ctx context.Context, namespace string) error {
 	logrus.Debugf("creating namespace: %s", namespace)
 	yamlFileContents, err := iClient.executeTemplate(ctx, "", namespace, "namespace.yml")
 	if err != nil {
@@ -331,7 +332,7 @@ func (iClient *IstioClient) createNamespace(ctx context.Context, namespace strin
 	return nil
 }
 
-func (iClient *IstioClient) executeTemplate(ctx context.Context, username, namespace, templateName string) (string, error) {
+func (iClient *Client) executeTemplate(ctx context.Context, username, namespace, templateName string) (string, error) {
 	tmpl, err := template.ParseFiles(path.Join("istio", "config_templates", templateName))
 	if err != nil {
 		err = errors.Wrapf(err, "unable to parse template")
@@ -351,7 +352,7 @@ func (iClient *IstioClient) executeTemplate(ctx context.Context, username, names
 	return buf.String(), nil
 }
 
-func (iClient *IstioClient) executeInstall(ctx context.Context, installmTLS bool, arReq *meshes.ApplyRuleRequest) error {
+func (iClient *Client) executeInstall(ctx context.Context, installmTLS bool, arReq *meshes.ApplyRuleRequest) error {
 	arReq.Namespace = ""
 	if arReq.DeleteOp {
 		defer iClient.applyIstioCRDs(ctx, arReq.DeleteOp)
@@ -370,7 +371,7 @@ func (iClient *IstioClient) executeInstall(ctx context.Context, installmTLS bool
 	return nil
 }
 
-func (iClient *IstioClient) executeBookInfoInstall(ctx context.Context, arReq *meshes.ApplyRuleRequest) error {
+func (iClient *Client) executeBookInfoInstall(ctx context.Context, arReq *meshes.ApplyRuleRequest) error {
 	if !arReq.DeleteOp {
 		if err := iClient.labelNamespaceForAutoInjection(ctx, arReq.Namespace); err != nil {
 			return err
@@ -393,7 +394,7 @@ func (iClient *IstioClient) executeBookInfoInstall(ctx context.Context, arReq *m
 	return nil
 }
 
-func (iClient *IstioClient) executeHipsterShopInstall(ctx context.Context, arReq *meshes.ApplyRuleRequest) error {
+func (iClient *Client) executeHipsterShopInstall(ctx context.Context, arReq *meshes.ApplyRuleRequest) error {
 	if !arReq.DeleteOp {
 		if err := iClient.labelNamespaceForAutoInjection(ctx, arReq.Namespace); err != nil {
 			return err
@@ -440,7 +441,7 @@ func (iClient *IstioClient) executeHipsterShopInstall(ctx context.Context, arReq
 }
 
 // ApplyOperation is a method invoked to apply a particular operation on the mesh in a namespace
-func (iClient *IstioClient) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRuleRequest) (*meshes.ApplyRuleResponse, error) {
+func (iClient *Client) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRuleRequest) (*meshes.ApplyRuleResponse, error) {
 	if arReq == nil {
 		return nil, errors.New("mesh client has not been created")
 	}
@@ -649,7 +650,7 @@ func (iClient *IstioClient) ApplyOperation(ctx context.Context, arReq *meshes.Ap
 	}, nil
 }
 
-func (iClient *IstioClient) applyConfigChange(ctx context.Context, yamlFileContents, namespace string, delete, isCustomOp bool) error {
+func (iClient *Client) applyConfigChange(ctx context.Context, yamlFileContents, namespace string, delete, isCustomOp bool) error {
 	// yamls := strings.Split(yamlFileContents, "---")
 	yamls, err := iClient.splitYAML(yamlFileContents)
 	if err != nil {
@@ -681,7 +682,7 @@ func (iClient *IstioClient) applyConfigChange(ctx context.Context, yamlFileConte
 }
 
 // SupportedOperations - returns a list of supported operations on the mesh
-func (iClient *IstioClient) SupportedOperations(context.Context, *meshes.SupportedOperationsRequest) (*meshes.SupportedOperationsResponse, error) {
+func (iClient *Client) SupportedOperations(context.Context, *meshes.SupportedOperationsRequest) (*meshes.SupportedOperationsResponse, error) {
 	supportedOpsCount := len(supportedOps)
 	result := make([]*meshes.SupportedOperation, supportedOpsCount)
 	i := 0
@@ -699,7 +700,7 @@ func (iClient *IstioClient) SupportedOperations(context.Context, *meshes.Support
 }
 
 // StreamEvents - streams generated/collected events to the client
-func (iClient *IstioClient) StreamEvents(in *meshes.EventsRequest, stream meshes.MeshService_StreamEventsServer) error {
+func (iClient *Client) StreamEvents(in *meshes.EventsRequest, stream meshes.MeshService_StreamEventsServer) error {
 	logrus.Debugf("waiting on event stream. . .")
 	for {
 		select {
@@ -722,7 +723,7 @@ func (iClient *IstioClient) StreamEvents(in *meshes.EventsRequest, stream meshes
 	return nil
 }
 
-func (iClient *IstioClient) splitYAML(yamlContents string) ([]string, error) {
+func (iClient *Client) splitYAML(yamlContents string) ([]string, error) {
 	yamlDecoder, ok := NewDocumentDecoder(ioutil.NopCloser(bytes.NewReader([]byte(yamlContents)))).(*YAMLDecoder)
 	if !ok {
 		err := fmt.Errorf("unable to create a yaml decoder")

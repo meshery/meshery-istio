@@ -35,7 +35,7 @@ func (m *metaInformerFactory) Istio() istioinformer.SharedInformerFactory {
 	return m.istio
 }
 
-func (iClient *IstioClient) runVet() error {
+func (iClient *Client) runVet() error {
 	istioClient, err := istioclient.New(iClient.config)
 	if err != nil {
 		err = errors.Wrap(err, "unable to create a new istio client")
