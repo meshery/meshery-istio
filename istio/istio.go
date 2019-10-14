@@ -68,10 +68,18 @@ func (iClient *Client) CreateMeshInstance(_ context.Context, k8sReq *meshes.Crea
 func (iClient *Client) createResource(ctx context.Context, res schema.GroupVersionResource, data *unstructured.Unstructured) error {
 	_, err := iClient.k8sDynamicClient.Resource(res).Namespace(data.GetNamespace()).Create(data, metav1.CreateOptions{})
 	if err != nil {
+		if strings.Contains(err.Error(), "already exists") {
+			// 	if err1 := iClient.deleteResource(ctx, res, data); err1 != nil {
+
+			// 	}
+			return errors.Wrap(err, "resource already exists")
+		}
 		err = errors.Wrapf(err, "unable to create the requested resource, attempting operation without namespace")
 		logrus.Warn(err)
-		_, err = iClient.k8sDynamicClient.Resource(res).Create(data, metav1.CreateOptions{})
-		if err != nil {
+		if _, err = iClient.k8sDynamicClient.Resource(res).Create(data, metav1.CreateOptions{}); err != nil {
+			if strings.Contains(err.Error(), "already exists") {
+				return errors.Wrap(err, "resource already exists")
+			}
 			err = errors.Wrapf(err, "unable to create the requested resource, attempting to update")
 			logrus.Error(err)
 			return err
@@ -140,10 +148,18 @@ func (iClient *Client) getResource(ctx context.Context, res schema.GroupVersionR
 
 func (iClient *Client) updateResource(ctx context.Context, res schema.GroupVersionResource, data *unstructured.Unstructured) error {
 	if _, err := iClient.k8sDynamicClient.Resource(res).Namespace(data.GetNamespace()).Update(data, metav1.UpdateOptions{}); err != nil {
+		if strings.Contains(err.Error(), "the server does not allow this method on the requested resource") {
+			logrus.Error(err)
+			return err
+		}
 		err = errors.Wrap(err, "unable to update resource with the given name, attempting operation without namespace")
 		logrus.Warn(err)
 
 		if _, err = iClient.k8sDynamicClient.Resource(res).Update(data, metav1.UpdateOptions{}); err != nil {
+			if strings.Contains(err.Error(), "the server does not allow this method on the requested resource") {
+				logrus.Error(err)
+				return err
+			}
 			err = errors.Wrap(err, "unable to update resource with the given name, while attempting to apply the config")
 			logrus.Error(err)
 			return err
@@ -230,7 +246,8 @@ func (iClient *Client) executeRule(ctx context.Context, data *unstructured.Unstr
 	if delete {
 		return iClient.deleteResource(ctx, res, data)
 	}
-
+	trackRetry := 0
+RETRY:
 	if err := iClient.createResource(ctx, res, data); err != nil {
 		if isCustomOp {
 			if err := iClient.deleteResource(ctx, res, data); err != nil {
@@ -259,6 +276,14 @@ func (iClient *Client) executeRule(ctx context.Context, data *unstructured.Unstr
 			data.SetResourceVersion(data1.GetResourceVersion())
 			// data.DeepCopyInto(data1)
 			if err = iClient.updateResource(ctx, res, data); err != nil {
+				if strings.Contains(err.Error(), "the server does not allow this method on the requested resource") {
+					logrus.Info("attempting to delete resource. . . ")
+					iClient.deleteResource(ctx, res, data)
+					trackRetry++
+					if trackRetry <= 3 {
+						goto RETRY
+					} // else return error
+				}
 				return err
 			}
 			// return err
