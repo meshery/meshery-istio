@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net/http"
 	"path"
 	"strings"
 	"text/template"
@@ -33,6 +34,11 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+)
+
+const (
+	hipsterShopIstioManifestsURL      = "https://raw.githubusercontent.com/GoogleCloudPlatform/microservices-demo/master/release/istio-manifests.yaml"
+	hipsterShopKubernetesManifestsURL = "https://raw.githubusercontent.com/GoogleCloudPlatform/microservices-demo/master/release/kubernetes-manifests.yaml"
 )
 
 //CreateMeshInstance is called from UI
@@ -62,10 +68,18 @@ func (iClient *Client) CreateMeshInstance(_ context.Context, k8sReq *meshes.Crea
 func (iClient *Client) createResource(ctx context.Context, res schema.GroupVersionResource, data *unstructured.Unstructured) error {
 	_, err := iClient.k8sDynamicClient.Resource(res).Namespace(data.GetNamespace()).Create(data, metav1.CreateOptions{})
 	if err != nil {
+		if strings.Contains(err.Error(), "already exists") {
+			// 	if err1 := iClient.deleteResource(ctx, res, data); err1 != nil {
+
+			// 	}
+			return errors.Wrap(err, "resource already exists")
+		}
 		err = errors.Wrapf(err, "unable to create the requested resource, attempting operation without namespace")
 		logrus.Warn(err)
-		_, err = iClient.k8sDynamicClient.Resource(res).Create(data, metav1.CreateOptions{})
-		if err != nil {
+		if _, err = iClient.k8sDynamicClient.Resource(res).Create(data, metav1.CreateOptions{}); err != nil {
+			if strings.Contains(err.Error(), "already exists") {
+				return errors.Wrap(err, "resource already exists")
+			}
 			err = errors.Wrapf(err, "unable to create the requested resource, attempting to update")
 			logrus.Error(err)
 			return err
@@ -134,10 +148,18 @@ func (iClient *Client) getResource(ctx context.Context, res schema.GroupVersionR
 
 func (iClient *Client) updateResource(ctx context.Context, res schema.GroupVersionResource, data *unstructured.Unstructured) error {
 	if _, err := iClient.k8sDynamicClient.Resource(res).Namespace(data.GetNamespace()).Update(data, metav1.UpdateOptions{}); err != nil {
+		if strings.Contains(err.Error(), "the server does not allow this method on the requested resource") {
+			logrus.Error(err)
+			return err
+		}
 		err = errors.Wrap(err, "unable to update resource with the given name, attempting operation without namespace")
 		logrus.Warn(err)
 
 		if _, err = iClient.k8sDynamicClient.Resource(res).Update(data, metav1.UpdateOptions{}); err != nil {
+			if strings.Contains(err.Error(), "the server does not allow this method on the requested resource") {
+				logrus.Error(err)
+				return err
+			}
 			err = errors.Wrap(err, "unable to update resource with the given name, while attempting to apply the config")
 			logrus.Error(err)
 			return err
@@ -206,6 +228,10 @@ func (iClient *Client) executeRule(ctx context.Context, data *unstructured.Unstr
 		kind = "logentries"
 	case "kubernetes":
 		kind = "kuberneteses"
+	case "podsecuritypolicy":
+		kind = "podsecuritypolicies"
+	case "serviceentry":
+		kind = "serviceentries"
 	default:
 		kind += "s"
 	}
@@ -220,7 +246,8 @@ func (iClient *Client) executeRule(ctx context.Context, data *unstructured.Unstr
 	if delete {
 		return iClient.deleteResource(ctx, res, data)
 	}
-
+	trackRetry := 0
+RETRY:
 	if err := iClient.createResource(ctx, res, data); err != nil {
 		if isCustomOp {
 			if err := iClient.deleteResource(ctx, res, data); err != nil {
@@ -249,6 +276,14 @@ func (iClient *Client) executeRule(ctx context.Context, data *unstructured.Unstr
 			data.SetResourceVersion(data1.GetResourceVersion())
 			// data.DeepCopyInto(data1)
 			if err = iClient.updateResource(ctx, res, data); err != nil {
+				if strings.Contains(err.Error(), "the server does not allow this method on the requested resource") {
+					logrus.Info("attempting to delete resource. . . ")
+					iClient.deleteResource(ctx, res, data)
+					trackRetry++
+					if trackRetry <= 3 {
+						goto RETRY
+					} // else return error
+				}
 				return err
 			}
 			// return err
@@ -384,6 +419,52 @@ func (iClient *Client) executeBookInfoInstall(ctx context.Context, arReq *meshes
 	return nil
 }
 
+func (iClient *Client) executeHipsterShopInstall(ctx context.Context, arReq *meshes.ApplyRuleRequest) error {
+	if !arReq.DeleteOp {
+		if err := iClient.labelNamespaceForAutoInjection(ctx, arReq.Namespace); err != nil {
+			return err
+		}
+	}
+	hipsterShopFilecontents := func(fileURL string) (string, error) {
+		resp, err := http.Get(fileURL)
+		if err != nil {
+			err = errors.Wrapf(err, "error getting data from %s", fileURL)
+			logrus.Error(err)
+			return "", err
+		}
+		defer resp.Body.Close()
+		if resp.StatusCode == 200 {
+			body, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				err = errors.Wrapf(err, "error parsing response from %s", fileURL)
+				logrus.Error(err)
+				return "", err
+			}
+			return string(body), nil
+		}
+		err = errors.Wrapf(err, "Call failed with response status: %s", resp.Status)
+		logrus.Error(err)
+		return "", err
+	}
+
+	kubernetesManifestsContent, err := hipsterShopFilecontents(hipsterShopKubernetesManifestsURL)
+	if err != nil {
+		return err
+	}
+	istioManifestsContent, err := hipsterShopFilecontents(hipsterShopIstioManifestsURL)
+	if err != nil {
+		return err
+	}
+
+	var yamlFileContents = fmt.Sprintf("%s\n---\n%s", kubernetesManifestsContent, istioManifestsContent)
+
+	if err := iClient.applyConfigChange(ctx, yamlFileContents, arReq.Namespace, arReq.DeleteOp, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // ApplyOperation is a method invoked to apply a particular operation on the mesh in a namespace
 func (iClient *Client) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRuleRequest) (*meshes.ApplyRuleResponse, error) {
 	if arReq == nil {
@@ -438,6 +519,37 @@ func (iClient *Client) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRu
 		return &meshes.ApplyRuleResponse{
 			OperationId: arReq.OperationId,
 		}, nil
+	case googleMSSampleApplication:
+		go func() {
+			opName1 := "deploying"
+			if arReq.DeleteOp {
+				opName1 = "removing"
+			}
+			if err := iClient.executeHipsterShopInstall(ctx, arReq); err != nil {
+				iClient.eventChan <- &meshes.EventsResponse{
+					OperationId: arReq.OperationId,
+					EventType:   meshes.EventType_ERROR,
+					Summary:     fmt.Sprintf("Error while %s the Hipster Shop application", opName1),
+					Details:     err.Error(),
+				}
+				return
+			}
+			opName := "deployed"
+			if arReq.DeleteOp {
+				opName = "removed"
+			}
+			iClient.eventChan <- &meshes.EventsResponse{
+				OperationId: arReq.OperationId,
+				EventType:   meshes.EventType_INFO,
+				Summary:     fmt.Sprintf("The Hipster Shop application %s successfully", opName),
+				Details:     fmt.Sprintf("The Hipster Shop is now %s.", opName),
+			}
+			return
+		}()
+		return &meshes.ApplyRuleResponse{
+			OperationId: arReq.OperationId,
+		}, nil
+
 	case installBookInfoCommand:
 		go func() {
 			opName1 := "deploying"
@@ -504,10 +616,9 @@ func (iClient *Client) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRu
 			return nil, err
 		}
 	case installSMI:
-		// Always set the namespace for SMI adapter to istio-system
-		// as this is where istio is installed and how clusterrolebinding 
-		// for the SMI adapter is defined
-		arReq.Namespace = "istio-system"
+		if !arReq.DeleteOp && arReq.Namespace != "default" {
+			iClient.createNamespace(ctx, arReq.Namespace)
+		}
 		yamlFileContents, err = getSMIYamls()
 		if err != nil {
 			return nil, err

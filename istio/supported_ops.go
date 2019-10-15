@@ -33,6 +33,7 @@ const (
 	cbCommand                                = "cb1"
 	installSMI                               = "install_smi"
 	installHTTPBin                           = "install_http_bin"
+	googleMSSampleApplication                = "google_microservices_demo_application"
 	bookInfoDefaultDestinationRules          = "bookInfoDefaultDestinationRules"
 	bookInfoRouteToV1AllServices             = "bookInfoRouteToV1AllServices"
 	bookInfoRouteToReviewsV2ForJason         = "bookInfoRouteToReviewsV2ForJason"
@@ -115,5 +116,9 @@ var supportedOps = map[string]supportedOperation{
 	customOpCommand: {
 		name:   "Custom YAML",
 		opType: meshes.OpCategory_CUSTOM,
+	},
+	googleMSSampleApplication: {
+		name:   "Hipster Shop Application",
+		opType: meshes.OpCategory_SAMPLE_APPLICATION,
 	},
 }
