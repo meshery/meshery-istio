@@ -13,6 +13,15 @@
       "contributions": [
         "tool"
       ]
+    },
+    {
+      "login": "leecalcote",
+      "name": "Lee Calcote",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/7570704?v=4",
+      "profile": "https://calcote.dev/about",
+      "contributions": [
+        "tool"
+      ]
     }
   ],
   "contributorsPerLine": 7,
