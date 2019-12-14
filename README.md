@@ -1,5 +1,7 @@
 <a href="https://layer5.io/meshery"><img align="left" src="https://raw.githubusercontent.com/layer5io/meshery/master/ui/static/img/meshery-logo/meshery-logo-light-text.png"  width="25%" /></a>
-<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)<!-- ALL-CONTRIBUTORS-BADGE:END -->
+<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+[![All Contributors](https://img.shields.io/badge/all_contributors-2-orange.svg?style=flat-square)](#contributors-)
+<!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 [![Docker Pulls](https://img.shields.io/docker/pulls/layer5/meshery-istio.svg)](https://hub.docker.com/r/layer5/meshery-istio)
 [![Go Report Card](https://goreportcard.com/badge/github.com/layer5io/meshery-istio)](https://goreportcard.com/report/github.com/layer5io/meshery-istio)
@@ -41,7 +43,8 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <!-- markdownlint-disable -->
 <table>
   <tr>
-    <td align="center"><a href="https://www.linkedin.com/in/gunjan-paul-8a2806152/"><img src="https://avatars2.githubusercontent.com/u/46948185?v=4" width="100px;" alt="Gunjan Paul"/><br /><sub><b>Gunjan Paul</b></sub></a><br /><a href="#tool-gunjanmimo" title="Tools">🔧</a></td>
+    <td align="center"><a href="https://www.linkedin.com/in/gunjan-paul-8a2806152/"><img src="https://avatars2.githubusercontent.com/u/46948185?v=4" width="100px;" alt=""/><br /><sub><b>Gunjan Paul</b></sub></a><br /><a href="#tool-gunjanmimo" title="Tools">🔧</a></td>
+    <td align="center"><a href="https://github.com/ashiscs"><img src="https://avatars1.githubusercontent.com/u/49238464?v=4" width="100px;" alt=""/><br /><sub><b>Ashis Kumar Singh</b></sub></a><br /><a href="#tool-ashiscs" title="Tools">🔧</a></td>
   </tr>
 </table>
 
