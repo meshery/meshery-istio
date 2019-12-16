@@ -45,6 +45,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
   <tr>
     <td align="center"><a href="https://www.linkedin.com/in/gunjan-paul-8a2806152/"><img src="https://avatars2.githubusercontent.com/u/46948185?v=4" width="100px;" alt=""/><br /><sub><b>Gunjan Paul</b></sub></a><br /><a href="#tool-gunjanmimo" title="Tools">🔧</a></td>
     <td align="center"><a href="http://otomato.link"><img src="https://avatars0.githubusercontent.com/u/3274734?v=4" width="100px;" alt=""/><br /><sub><b>Ant Weiss</b></sub></a><br /><a href="#tool-antweiss" title="Tools">🔧</a></td>
+    <td align="center"><a href="https://venilnoronha.io"><img src="https://avatars1.githubusercontent.com/u/1722758?v=4" width="100px;" alt=""/><br /><sub><b>Venil Noronha</b></sub></a><br /><a href="#tool-venilnoronha" title="Tools">🔧</a></td>
   </tr>
 </table>
 
