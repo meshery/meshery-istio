@@ -321,7 +321,7 @@ func (iClient *Client) labelNamespaceForAutoInjection(ctx context.Context, names
 			}
 
 			ns := &unstructured.Unstructured{}
-			_ ns.SetName(namespace)
+			ns.SetName(namespace)
 			ns, err = iClient.getResource(ctx, res, ns)
 			if err != nil {
 				return err
