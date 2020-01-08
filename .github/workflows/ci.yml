@@ -35,7 +35,7 @@ jobs:
       uses: actions/setup-go@v1
       with:
         go-version: ${{ secrets.GO_VERSION }}
-    - run: GOPROXY=direct GOSUMDB=off GO111MODULE=on go build
+    - run: GOPROXY=direct GOSUMDB=off GO111MODULE=on go get -u github.com/kisielk/errcheck; /home/runner/go/bin/errcheck -tags draft ./...
   static_check:
     name: Static check
     runs-on: ubuntu-latest
@@ -48,7 +48,7 @@ jobs:
       uses: actions/setup-go@v1
       with:
         go-version: ${{ secrets.GO_VERSION }}
-    - run: GOPROXY=direct GOSUMDB=off GO111MODULE=on go build # https://staticcheck.io/docs/checks
+    - run: GOPROXY=direct GOSUMDB=off GO111MODULE=on go get -u honnef.co/go/tools/cmd/staticcheck; /home/runner/go/bin/staticcheck -checks all ./... # https://staticcheck.io/docs/checks
   vet:
     name: Vet
     runs-on: ubuntu-latest
@@ -61,7 +61,7 @@ jobs:
       uses: actions/setup-go@v1
       with:
         go-version: ${{ secrets.GO_VERSION }}
-    - run: GOPROXY=direct GOSUMDB=off GO111MODULE=on go build
+    - run: GOPROXY=direct GOSUMDB=off GO111MODULE=on go vet ./...
   sec_check:
     name: Security check
     runs-on: ubuntu-latest
@@ -74,7 +74,7 @@ jobs:
       uses: actions/setup-go@v1
       with:
         go-version: ${{ secrets.GO_VERSION }}
-    - run: GOPROXY=direct GOSUMDB=off GO111MODULE=on go build # https://github.com/securego/gosec
+    - run: GOPROXY=direct GOSUMDB=off GO111MODULE=on go get github.com/securego/gosec/cmd/gosec; /home/runner/go/bin/gosec ./... # https://github.com/securego/gosec
   tests:
     # needs: [lint, error_check, static_check, vet, sec_check]
     name: Tests
@@ -88,7 +88,7 @@ jobs:
       uses: actions/setup-go@v1
       with:
         go-version: ${{ secrets.GO_VERSION }}
-    - run: GOPROXY=direct GOSUMDB=off GO111MODULE=on go build
+    - run: GOPROXY=direct GOSUMDB=off GO111MODULE=on go test ./...
   build:
     name: Build check
     runs-on: ubuntu-latest
