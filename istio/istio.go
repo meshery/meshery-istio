@@ -514,7 +514,7 @@ func (iClient *Client) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRu
 				Summary:     fmt.Sprintf("Istio %s successfully", opName),
 				Details:     fmt.Sprintf("The latest version of Istio is now %s.", opName),
 			}
-			return
+			
 		}()
 		return &meshes.ApplyRuleResponse{
 			OperationId: arReq.OperationId,
@@ -544,7 +544,7 @@ func (iClient *Client) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRu
 				Summary:     fmt.Sprintf("The Hipster Shop application %s successfully", opName),
 				Details:     fmt.Sprintf("The Hipster Shop is now %s.", opName),
 			}
-			return
+			
 		}()
 		return &meshes.ApplyRuleResponse{
 			OperationId: arReq.OperationId,
@@ -575,7 +575,7 @@ func (iClient *Client) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRu
 				Summary:     fmt.Sprintf("Book Info app %s successfully", opName),
 				Details:     fmt.Sprintf("The Istio canonical Book Info app is now %s.", opName),
 			}
-			return
+			
 		}()
 		return &meshes.ApplyRuleResponse{
 			OperationId: arReq.OperationId,
@@ -745,7 +745,7 @@ func (iClient *Client) StreamEvents(in *meshes.EventsRequest, stream meshes.Mesh
 		}
 		time.Sleep(500 * time.Millisecond)
 	}
-	return nil
+	
 }
 
 func (iClient *Client) splitYAML(yamlContents string) ([]string, error) {
