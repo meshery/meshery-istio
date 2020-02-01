@@ -13,5 +13,8 @@
 
 
 .vscode
+.idea
+
+.DS_Store
 
 meshery-istio
