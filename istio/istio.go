@@ -322,7 +322,7 @@ func (iClient *Client) labelNamespaceForAutoInjection(ctx context.Context, names
 
 			ns := &unstructured.Unstructured{}
 			ns.SetName(namespace)
-			ns, err = iClient.getResource(ctx, res, ns)
+			_, err = iClient.getResource(ctx, res, ns)
 			if err != nil {
 				return err
 			}
@@ -377,7 +377,7 @@ func (iClient *Client) executeTemplate(ctx context.Context, username, namespace,
 	return buf.String(), nil
 }
 
-func (iClient *Client) executeInstall(ctx context.Context, installmTLS bool, arReq *meshes.ApplyRuleRequest) error {
+func (iClient *Client) executeInstall(ctx context.Context, arReq *meshes.ApplyRuleRequest) error {
 	arReq.Namespace = ""
 	if arReq.DeleteOp {
 		defer iClient.applyIstioCRDs(ctx, arReq.DeleteOp)
@@ -386,7 +386,7 @@ func (iClient *Client) executeInstall(ctx context.Context, installmTLS bool, arR
 			return err
 		}
 	}
-	yamlFileContents, err := iClient.getLatestIstioYAML(installmTLS)
+	yamlFileContents, err := iClient.getLatestIstioYAML()
 	if err != nil {
 		return err
 	}
@@ -482,20 +482,16 @@ func (iClient *Client) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRu
 
 	var yamlFileContents string
 	var err error
-	installWithmTLS := false
 	isCustomOp := false
 
 	switch arReq.OpName {
 	case installmTLSIstioCommand:
-		installWithmTLS = true
-		fallthrough
-	case installIstioCommand:
 		go func() {
 			opName1 := "deploying"
 			if arReq.DeleteOp {
 				opName1 = "removing"
 			}
-			if err := iClient.executeInstall(ctx, installWithmTLS, arReq); err != nil {
+			if err := iClient.executeInstall(ctx, arReq); err != nil {
 				iClient.eventChan <- &meshes.EventsResponse{
 					OperationId: arReq.OperationId,
 					EventType:   meshes.EventType_ERROR,
@@ -514,7 +510,7 @@ func (iClient *Client) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRu
 				Summary:     fmt.Sprintf("Istio %s successfully", opName),
 				Details:     fmt.Sprintf("The latest version of Istio is now %s.", opName),
 			}
-			return
+
 		}()
 		return &meshes.ApplyRuleResponse{
 			OperationId: arReq.OperationId,
@@ -544,7 +540,7 @@ func (iClient *Client) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRu
 				Summary:     fmt.Sprintf("The Hipster Shop application %s successfully", opName),
 				Details:     fmt.Sprintf("The Hipster Shop is now %s.", opName),
 			}
-			return
+
 		}()
 		return &meshes.ApplyRuleResponse{
 			OperationId: arReq.OperationId,
@@ -575,7 +571,7 @@ func (iClient *Client) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRu
 				Summary:     fmt.Sprintf("Book Info app %s successfully", opName),
 				Details:     fmt.Sprintf("The Istio canonical Book Info app is now %s.", opName),
 			}
-			return
+
 		}()
 		return &meshes.ApplyRuleResponse{
 			OperationId: arReq.OperationId,
