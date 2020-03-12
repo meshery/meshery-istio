@@ -3,12 +3,15 @@
 
 package meshes
 
-import proto "github.com/golang/protobuf/proto"
-import fmt "fmt"
-import math "math"
-
 import (
+	fmt "fmt"
+
+	proto "github.com/golang/protobuf/proto"
+
+	math "math"
+
 	context "golang.org/x/net/context"
+
 	grpc "google.golang.org/grpc"
 )
 
@@ -20,17 +23,18 @@ var _ = math.Inf
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
 // A compilation error at this line likely means your copy of the
-// proto package needs to be updated.
+// ProtoPackageIsVersion2 proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
 
 type OpCategory int32
 
 const (
-	OpCategory_INSTALL            OpCategory = 0
-	OpCategory_SAMPLE_APPLICATION OpCategory = 1
-	OpCategory_CONFIGURE          OpCategory = 2
-	OpCategory_VALIDATE           OpCategory = 3
-	OpCategory_CUSTOM             OpCategory = 4
+	OpCategoryINSTALL           OpCategory = 0
+	OpCategorySAMPLEAPPLICATION OpCategory = 1
+	OpCategoryCONFIGURE         OpCategory = 2
+	OpCategoryVALIDATE          OpCategory = 3
+	OpCategorygitCUSTOM         OpCategory = 4
+	OpCategoryCUSTOM            OpCategory = 0
 )
 
 var OpCategory_name = map[int32]string{
@@ -476,7 +480,7 @@ func (m *SupportedOperation) GetCategory() OpCategory {
 	if m != nil {
 		return m.Category
 	}
-	return OpCategory_INSTALL
+	return OpCategoryINSTALL
 }
 
 type EventsRequest struct {

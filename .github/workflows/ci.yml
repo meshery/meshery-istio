@@ -34,7 +34,7 @@ jobs:
       uses: actions/setup-go@v1
       with:
         go-version: ${{ secrets.GO_VERSION }}
-    - run: GOPROXY=direct GOSUMDB=off GO111MODULE=on go get -u github.com/kisielk/errcheck; /home/runner/go/bin/errcheck -tags draft ./...
+    - run: GOPROXY=direct GOSUMDB=off GO111MODULE=on go build
   static_check:
     name: Static check
     runs-on: ubuntu-latest
@@ -47,7 +47,7 @@ jobs:
       uses: actions/setup-go@v1
       with:
         go-version: ${{ secrets.GO_VERSION }}
-    - run: GOPROXY=direct GOSUMDB=off GO111MODULE=on go get -u honnef.co/go/tools/cmd/staticcheck; /home/runner/go/bin/staticcheck -tags draft -checks all ./... # https://staticcheck.io/docs/checks
+    - run: GOPROXY=direct GOSUMDB=off GO111MODULE=on go get -u honnef.co/go/tools/cmd/staticcheck; /home/runner/go/bin/staticcheck -tags draft -checks all ./istio/... # https://staticcheck.io/docs/checks
 #   vet:
 #     name: Vet
 #     runs-on: ubuntu-latest

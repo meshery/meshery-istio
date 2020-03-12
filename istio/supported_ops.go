@@ -27,8 +27,7 @@ type supportedOperation struct {
 const (
 	customOpCommand                          = "custom"
 	runVet                                   = "istio_vet"
-	installIstioCommand                      = "istio_install"
-	installmTLSIstioCommand                  = "istio_mtls_install"
+	installmTLSIstioCommand                  = "istio_install"
 	installBookInfoCommand                   = "install_book_info"
 	cbCommand                                = "cb1"
 	installSMI                               = "install_smi"
@@ -45,80 +44,75 @@ const (
 )
 
 var supportedOps = map[string]supportedOperation{
-	installIstioCommand: {
-		name: "Latest Istio without mTLS",
-		// templateName: "install_istio.tmpl",
-		opType: meshes.OpCategory_INSTALL,
-	},
 	installmTLSIstioCommand: {
 		name:   "Latest Istio with mTLS",
-		opType: meshes.OpCategory_INSTALL,
+		opType: meshes.OpCategoryINSTALL,
 	},
 	installBookInfoCommand: {
 		name: "BookInfo Application",
 		// templateName: "install_istio.tmpl",
-		opType: meshes.OpCategory_SAMPLE_APPLICATION,
+		opType: meshes.OpCategorySAMPLEAPPLICATION,
 	},
 	runVet: {
 		name:   "Check configuration",
-		opType: meshes.OpCategory_VALIDATE,
+		opType: meshes.OpCategoryVALIDATE,
 		// templateName: "istio_vet.tmpl",
 		// appLabel:     "istio-vet",
 		// returnLogs:   true,
 	},
 	cbCommand: {
 		name:         "httpbin: Configure circuit breaker with only one connection",
-		opType:       meshes.OpCategory_CONFIGURE,
+		opType:       meshes.OpCategoryCONFIGURE,
 		templateName: "circuit_breaking.tmpl",
 	},
 	bookInfoDefaultDestinationRules: {
 		name:   "BookInfo: Default BookInfo destination rules (defines subsets)",
-		opType: meshes.OpCategory_CONFIGURE,
+		opType: meshes.OpCategoryCONFIGURE,
 	},
 	bookInfoRouteToV1AllServices: {
 		name:   "BookInfo: Route traffic to V1 of all BookInfo services",
-		opType: meshes.OpCategory_CONFIGURE,
+		opType: meshes.OpCategoryCONFIGURE,
 	},
 	bookInfoRouteToReviewsV2ForJason: {
 		name:   "BookInfo: Route traffic to V2 of BookInfo reviews service for user Jason",
-		opType: meshes.OpCategory_CONFIGURE,
+		opType: meshes.OpCategoryCONFIGURE,
 	},
 	bookInfoCanary50pcReviewsV3: {
 		name:   "BookInfo: Route 50% of the traffic to BookInfo reviews V3",
-		opType: meshes.OpCategory_CONFIGURE,
+		opType: meshes.OpCategoryCONFIGURE,
 	},
 	bookInfoCanary100pcReviewsV3: {
 		name:   "BookInfo: Route 100% of the traffic to BookInfo reviews V3",
-		opType: meshes.OpCategory_CONFIGURE,
+		opType: meshes.OpCategoryCONFIGURE,
 	},
 	bookInfoInjectDelayForRatingsForJason: {
 		name:   "BookInfo: Inject a 7s delay in the traffic to BookInfo ratings service for user Jason",
-		opType: meshes.OpCategory_CONFIGURE,
+		opType: meshes.OpCategoryCONFIGURE,
 	},
 	bookInfoInjectHTTPAbortToRatingsForJason: {
 		name:   "BookInfo: Inject HTTP abort to BookInfo ratings service for user Jason",
-		opType: meshes.OpCategory_CONFIGURE,
+		opType: meshes.OpCategoryCONFIGURE,
 	},
 	bookInfoProductPageCircuitBreaking: {
 		name:         "BookInfo: Configure circuit breaking with max 1 request per connection and max 1 pending request to BookInfo productpage service",
-		opType:       meshes.OpCategory_CONFIGURE,
+		opType:       meshes.OpCategoryCONFIGURE,
 		templateName: "book_info_product_page_circuit_breaking.tmpl",
 	},
 	installSMI: {
 		name:   "Service Mesh Interface (SMI) Istio Adapter",
-		opType: meshes.OpCategory_INSTALL,
+		opType: meshes.OpCategoryINSTALL,
 	},
 	installHTTPBin: {
 		name:         "httpbin Application",
 		templateName: "httpbin.yaml",
-		opType:       meshes.OpCategory_SAMPLE_APPLICATION,
+		opType:       meshes.OpCategorySAMPLEAPPLICATION,
 	},
 	customOpCommand: {
 		name:   "Custom YAML",
-		opType: meshes.OpCategory_CUSTOM,
+		opType: meshes.OpCategoryCUSTOM,
 	},
 	googleMSSampleApplication: {
 		name:   "Hipster Shop Application",
-		opType: meshes.OpCategory_SAMPLE_APPLICATION,
+		opType: meshes.OpCategorySAMPLEAPPLICATION,
 	},
 }
