@@ -32,8 +32,7 @@ var (
 	localFile                  = path.Join(os.TempDir(), "istio.tar.gz")
 	destinationFolder          = path.Join(os.TempDir(), "istio")
 	basePath                   = path.Join(destinationFolder, "%s")
-	installFile                = path.Join(basePath, "install/kubernetes/istio-demo.yaml")
-	installWithmTLSFile        = path.Join(basePath, "install/kubernetes/istio-demo-auth.yaml")
+	installWithmTLSFile        = path.Join(basePath, "install/kubernetes/istio-demo.yaml")
 	bookInfoInstallFile        = path.Join(basePath, "samples/bookinfo/platform/kube/bookinfo.yaml")
 	bookInfoGatewayInstallFile = path.Join(basePath, "samples/bookinfo/networking/bookinfo-gateway.yaml")
 	crdFolder                  = path.Join(basePath, "install/kubernetes/helm/istio-init/files/")
@@ -301,11 +300,8 @@ func (iClient *Client) getCRDsYAML() ([]string, error) {
 	return res, nil
 }
 
-func (iClient *Client) getLatestIstioYAML(installmTLS bool) (string, error) {
-	if installmTLS {
-		return iClient.getIstioComponentYAML(installWithmTLSFile)
-	}
-	return iClient.getIstioComponentYAML(installFile)
+func (iClient *Client) getLatestIstioYAML() (string, error) {
+	return iClient.getIstioComponentYAML(installWithmTLSFile)
 }
 
 func (iClient *Client) getBookInfoAppYAML() (string, error) {
