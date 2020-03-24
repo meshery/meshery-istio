@@ -15,9 +15,14 @@ Meshery Adapter for Istio
 
 <p align="center"><i>If you’re using Meshery or if you like the project, please <a href="https://github.com/layer5io/meshery/stargazers">★</a> star this repository to show your support! 🤩</i></p>
 
-## [Meshery](https://layer5.io/meshery)
-
-A service mesh playground to faciliate learning about functionality and performance of different service meshes. Meshery incorporates the collection and display of metrics from applications running in the playground.
+<p style="clear:both;">
+<h2><a href="https://layer5.io/meshery">Meshery</a></h2>
+<a href="https://meshery.io"><img src="assets/images/meshery/meshery-logo.svg"
+style="margin:10px;" width="125px" 
+alt="Meshery - Service Mesh Management Plane" align="left" /></a>
+<a href="https://meshery.io">Meshery</a> is a multi-service mesh management plane offering lifecycle management of more types of service meshes than any other tool available today. Meshery facilitates adopting, configuring, operating and managing performance of different service meshes and incorporates the collection and display of metrics from applications running on top of any service mesh. 
+<br /><br /><br />
+</p>
 
 <p style="clear:both;">
 <h1><a name="contributing"></a><a name="community"></a> <a href="http://slack.layer5.io">Community</a> and <a href="https://github.com/layer5io/layer5/blob/master/CONTRIBUTING.md">Contributing</a></h1>
@@ -36,7 +41,7 @@ Jump into our <a href="http://slack.layer5.io"><img src="https://raw.githubuserc
 <p>
 <i>Not sure where to start?</i> Grab an open issue with the <a href="https://github.com/issues?utf8=✓&q=is%3Aopen+is%3Aissue+archived%3Afalse+org%3Alayer5io+label%3A%22help+wanted%22+">help-wanted label</a>
 </p>
-<p>Find us on Twitter: <a href="https://twitter.com/layer5"><img src="assets/images/twitter.png" height="16px"
+<p>Find us on Twitter: <a href="https://twitter.com/layer5"><img src="https://raw.githubusercontent.com/layer5io/layer5/master/assets/images/twitter.png" height="16px"
 align="bottom" />@layer5</a> and <a href="https://twitter.com/mesheryio">@mesheryio</a>
 </p>
 
