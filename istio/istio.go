@@ -741,7 +741,7 @@ func (iClient *Client) StreamEvents(in *meshes.EventsRequest, stream meshes.Mesh
 		}
 		time.Sleep(500 * time.Millisecond)
 	}
-	return nil
+	
 }
 
 func (iClient *Client) splitYAML(yamlContents string) ([]string, error) {
