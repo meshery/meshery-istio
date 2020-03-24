@@ -17,7 +17,7 @@ Meshery Adapter for Istio
 
 <p style="clear:both;">
 <h2><a href="https://layer5.io/meshery">Meshery</a></h2>
-<a href="https://meshery.io"><img src="assets/images/meshery/meshery-logo.svg"
+<a href="https://meshery.io"><img src="https://raw.githubusercontent.com/layer5io/layer5/master/assets/images/meshery/meshery-logo.svg"
 style="margin:10px;" width="125px" 
 alt="Meshery - Service Mesh Management Plane" align="left" /></a>
 <a href="https://meshery.io">Meshery</a> is a multi-service mesh management plane offering lifecycle management of more types of service meshes than any other tool available today. Meshery facilitates adopting, configuring, operating and managing performance of different service meshes and incorporates the collection and display of metrics from applications running on top of any service mesh. 
