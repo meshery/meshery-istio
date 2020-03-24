@@ -68,6 +68,7 @@ func (d *YAMLDecoder) Close() error {
 }
 
 const yamlSeparator = "\n---"
+const separator = "---"
 
 // splitYAMLDocument is a bufio.SplitFunc for splitting YAML streams into individual documents.
 func splitYAMLDocument(data []byte, atEOF bool) (advance int, token []byte, err error) {

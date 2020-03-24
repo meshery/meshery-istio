@@ -27,7 +27,8 @@ type supportedOperation struct {
 const (
 	customOpCommand                          = "custom"
 	runVet                                   = "istio_vet"
-	installmTLSIstioCommand                  = "istio_install"
+	installIstioCommand                      = "istio_install"
+	installmTLSIstioCommand                  = "istio_mtls_install"
 	installBookInfoCommand                   = "install_book_info"
 	cbCommand                                = "cb1"
 	installSMI                               = "install_smi"
@@ -44,6 +45,11 @@ const (
 )
 
 var supportedOps = map[string]supportedOperation{
+	installIstioCommand: {
+		name: "Latest Istio without mTLS",
+		// templateName: "install_istio.tmpl",
+		opType: meshes.OpCategory_INSTALL,
+	},
 	installmTLSIstioCommand: {
 		name:   "Latest Istio with mTLS",
 		opType: meshes.OpCategory_INSTALL,
