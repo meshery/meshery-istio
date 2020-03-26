@@ -17,7 +17,7 @@
 style="margin:10px;" width="125px" 
 alt="Meshery - the Service Mesh Management Plane" align="left" /></a>
 <a href="https://meshery.io">Meshery</a> is a multi-service mesh management plane offering lifecycle management of more types of service meshes than any other tool available today. Meshery facilitates adopting, configuring, operating and managing performance of different service meshes and incorporates the collection and display of metrics from applications running on top of any service mesh. 
-<br /><p align="center"><i>If you’re using Meshery or if you like the project, please <a href="https://github.com/layer5io/meshery/stargazers">★</a> star this repository to show your support! 🤩</i></p><br /><br />
+<br /><br /><p align="center"><i>If you’re using Meshery or if you like the project, please <a href="https://github.com/layer5io/meshery/stargazers">★</a> star this repository to show your support! 🤩</i></p>
 </p>
 
 <p style="clear:both;">
@@ -43,7 +43,7 @@ Our projects are community-built and welcome collaboration. 👍 Be sure to see 
 
 This repository and site are available as open source under the terms of the [Apache 2.0 License](https://opensource.org/licenses/Apache-2.0).
 
-### About Layer5
+## About Layer5
 
 **Community First**
 <p>The <a href="https://layer5.io">Layer5</a> community represents the largest collection of service mesh projects and their maintainers in the world.</p>
