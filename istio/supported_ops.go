@@ -27,12 +27,7 @@ type supportedOperation struct {
 const (
 	customOpCommand                          = "custom"
 	runVet                                   = "istio_vet"
-	installmTLSIstioCommand                  = "istio_mtls_install" // Demo profile with mTLS
-	installDemoIstioCommand                  = "istio_demo_install" // Demo profile without mTLS
-	installminimalIstioCommand               = "istio_minimal_install"
-	installRemoteIstioCommand                = "istio_remote_install"
-	installSeparateIstioCommand              = "istio_separate_install"
-	instalDefaultIstioCommand                = "istio_default_install"
+	installmTLSIstioCommand                  = "istio_mtls_install"
 	installBookInfoCommand                   = "install_book_info"
 	cbCommand                                = "cb1"
 	installSMI                               = "install_smi"
@@ -50,27 +45,7 @@ const (
 
 var supportedOps = map[string]supportedOperation{
 	installmTLSIstioCommand: {
-		name:   "Latest Istio with mTLS, configuration designed to showcase Istio functionality with modest resource requirements.",
-		opType: meshes.OpCategory_INSTALL,
-	},
-	installDemoIstioCommand: {
-		name:   "Latest Istio without mTLS, configuration designed to showcase Istio functionality with modest resource requirements excluding mTLS.",
-		opType: meshes.OpCategory_INSTALL,
-	},
-	installminimalIstioCommand: {
-		name:   "Latest Istio with the minimal set of components necessary to use Istio’s traffic management features",
-		opType: meshes.OpCategory_INSTALL,
-	},
-	installRemoteIstioCommand: {
-		name:   "Latest Istio for configuring remote clusters of a multicluster mesh with a shared control plane configuration.",
-		opType: meshes.OpCategory_INSTALL,
-	},
-	installSeparateIstioCommand: {
-		name:   "Latest Istio with the legacy micro-services model. This profile is not recommended because it won’t be supported in future releases.",
-		opType: meshes.OpCategory_INSTALL,
-	},
-	instalDefaultIstioCommand: {
-		name:   "Latest Istio with components according to the default settings of the IstioOperator API (recommend for production deployments).",
+		name:   "Latest Istio with mTLS",
 		opType: meshes.OpCategory_INSTALL,
 	},
 	installBookInfoCommand: {

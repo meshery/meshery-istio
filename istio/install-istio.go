@@ -9,10 +9,9 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"os/exec"
 	"path"
 	"path/filepath"
-	"runtime"
+	"regexp"
 	"strings"
 	"time"
 
@@ -22,19 +21,21 @@ import (
 
 const (
 	repoURL     = "https://api.github.com/repos/istio/istio/releases/latest"
+	urlSuffix   = "-linux.tar.gz"
 	crdPattern  = "crd(.*)yaml"
 	cachePeriod = 6 * time.Hour
 )
 
 var (
-	urlSuffix       = "-linux.tar.gz"
 	localByPassFile = "/app/istio.tar.gz"
 
 	localFile                  = path.Join(os.TempDir(), "istio.tar.gz")
 	destinationFolder          = path.Join(os.TempDir(), "istio")
 	basePath                   = path.Join(destinationFolder, "%s")
+	installWithmTLSFile        = path.Join(basePath, "install/kubernetes/istio-demo.yaml")
 	bookInfoInstallFile        = path.Join(basePath, "samples/bookinfo/platform/kube/bookinfo.yaml")
 	bookInfoGatewayInstallFile = path.Join(basePath, "samples/bookinfo/networking/bookinfo-gateway.yaml")
+	crdFolder                  = path.Join(basePath, "install/kubernetes/helm/istio-init/files/")
 
 	defaultBookInfoDestRulesFile                 = path.Join(basePath, "samples/bookinfo/networking/destination-rule-all-mtls.yaml")
 	bookInfoRouteToV1AllServicesFile             = path.Join(basePath, "samples/bookinfo/networking/virtual-service-all-v1.yaml")
@@ -93,9 +94,6 @@ func (iClient *Client) getLatestReleaseURL() error {
 			return err
 		}
 		logrus.Debugf("retrieved api info: %+#v", result)
-		if runtime.GOOS == "darwin" {
-			urlSuffix = "-osx.tar.gz"
-		}
 		if result != nil && result.Assets != nil && len(result.Assets) > 0 {
 			for _, asset := range result.Assets {
 				if strings.HasSuffix(asset.Name, urlSuffix) {
@@ -286,65 +284,43 @@ func (iClient *Client) getIstioComponentYAML(fileName string) (string, error) {
 	return string(fileContents), nil
 }
 
-func (iClient *Client) installIstio(option string, delete bool) error {
-	specificVersionName, err := iClient.downloadIstio()
-	rootCmd := destinationFolder + "/" + specificVersionName + "/bin/istioctl"
-	args := []string{"manifest", "apply"}
+func (iClient *Client) getCRDsYAML() ([]string, error) {
+	res := []string{}
 
-	if delete {
-		args[1] = "generate"
-	}
+	rEx, err := regexp.Compile(crdPattern)
 	if err != nil {
-		return err
-	}
-	switch option {
-	case installDemoIstioCommand:
-		args = append(args, "--set", "profile=demo")
-	case installmTLSIstioCommand:
-		args = append(args, "--set", "profile=demo", "--set", "values.global.mtls.enabled=true",
-			"--set", "components.citadel.enabled=true", "--set", "values.global.mountMtlsCerts=true")
-	case instalDefaultIstioCommand:
-		args = append(args, "--set", "profile=default")
-	case installminimalIstioCommand:
-		args = append(args, "--set", "profile=minimal")
-	case installRemoteIstioCommand:
-		args = append(args, "--set", "profile=remote")
-	case installSeparateIstioCommand:
-		args = append(args, "--set", "profile=separate")
-	}
-	cmd := exec.Command(rootCmd, args...)
-
-	if !delete {
-		return cmd.Run()
-	}
-	cmd = exec.Command(rootCmd, args...)
-	kubeCmd := exec.Command("kubectl", "delete", "-f", "-")
-	pr, pw, err := os.Pipe()
-	cmd.Stdout = pw
-	cmd.Stderr = logrus.New().Writer()
-	kubeCmd.Stdin = pr
-	kubeCmd.Stdout = logrus.New().Writer()
-	kubeCmd.Stderr = logrus.New().Writer()
-	if err != nil {
-		return err
-	}
-	err = cmd.Start()
-	if err != nil {
-		return err
-	}
-	err = kubeCmd.Start()
-	if err != nil {
-		return err
-	}
-	err = cmd.Wait()
-	if err != nil {
-		return err
-	}
-	err = kubeCmd.Wait()
-	if err != nil {
+		err = errors.Wrap(err, "unable to compile crd pattern")
 		logrus.Error(err)
+		return nil, err
 	}
-	return nil
+
+	specificVersionName, err := iClient.downloadIstio()
+	if err != nil {
+		return nil, err
+	}
+	startFolder := fmt.Sprintf(crdFolder, specificVersionName)
+	err = filepath.Walk(startFolder, func(currentPath string, info os.FileInfo, err error) error {
+		if err == nil && rEx.MatchString(info.Name()) {
+			contents, err := ioutil.ReadFile(currentPath)
+			if err != nil {
+				err = errors.Wrap(err, "unable to read file")
+				logrus.Error(err)
+				return err
+			}
+			res = append(res, string(contents))
+		}
+		return nil
+	})
+	if err != nil {
+		err = errors.Wrap(err, "unable to read the directory")
+		logrus.Error(err)
+		return nil, err
+	}
+	return res, nil
+}
+
+func (iClient *Client) getLatestIstioYAML() (string, error) {
+	return iClient.getIstioComponentYAML(installWithmTLSFile)
 }
 
 func (iClient *Client) getBookInfoAppYAML() (string, error) {
