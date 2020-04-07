@@ -294,6 +294,20 @@ RETRY:
 	return nil
 }
 
+func (iClient *Client) applyIstioCRDs(ctx context.Context, delete bool) error {
+	crdYAMLs, err := iClient.getCRDsYAML()
+	if err != nil {
+		return err
+	}
+	logrus.Debug("processing crds. . .")
+	for _, crdYAML := range crdYAMLs {
+		if err := iClient.applyConfigChange(ctx, crdYAML, "", delete, false); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (iClient *Client) labelNamespaceForAutoInjection(ctx context.Context, namespace string) error {
 	ns := &unstructured.Unstructured{}
 	res := schema.GroupVersionResource{
@@ -367,7 +381,22 @@ func (iClient *Client) executeTemplate(ctx context.Context, username, namespace,
 
 func (iClient *Client) executeInstall(ctx context.Context, arReq *meshes.ApplyRuleRequest) error {
 	arReq.Namespace = ""
-	if err := iClient.installIstio(arReq.OpName, arReq.DeleteOp); err != nil {
+	if arReq.DeleteOp {
+		defer func() {
+			if err := iClient.applyIstioCRDs(ctx, arReq.DeleteOp); err != nil {
+				logrus.Error(err)
+			}
+		}()
+	} else {
+		if err := iClient.applyIstioCRDs(ctx, arReq.DeleteOp); err != nil {
+			return err
+		}
+	}
+	yamlFileContents, err := iClient.getLatestIstioYAML()
+	if err != nil {
+		return err
+	}
+	if err := iClient.applyConfigChange(ctx, yamlFileContents, arReq.Namespace, arReq.DeleteOp, false); err != nil {
 		return err
 	}
 	return nil
@@ -466,9 +495,7 @@ func (iClient *Client) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRu
 	isCustomOp := false
 
 	switch arReq.OpName {
-	case installmTLSIstioCommand, installminimalIstioCommand,
-		installDemoIstioCommand, installRemoteIstioCommand, installSeparateIstioCommand,
-		instalDefaultIstioCommand:
+	case installmTLSIstioCommand:
 		go func() {
 			opName1 := "deploying"
 			if arReq.DeleteOp {
