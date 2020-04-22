@@ -17,3 +17,9 @@ docker-run:
 
 run:
 	DEBUG=true GOPROXY=direct GOSUMDB=off go run main.go
+
+test: 
+	brew install nektos/tap/act
+	act
+	
+
