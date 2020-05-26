@@ -6,7 +6,7 @@ proto:
 	protoc -I meshes/ meshes/meshops.proto --go_out=plugins=grpc:./meshes/
 
 docker:
-	DOCKER_BUILDKIT=1 docker build -t layer5/meshery-istio .
+	DOCKER_BUILDKIT=1 docker build -t layer5/sudeep-istio .
 
 docker-run:
 	(docker rm -f meshery-istio) || true
