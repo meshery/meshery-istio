@@ -9,21 +9,22 @@ require (
 	github.com/cnf/structhash v0.0.0-20180104161610-62a607eb0224 // indirect
 	github.com/ghodss/yaml v1.0.0
 	github.com/gogo/protobuf v1.3.0 // indirect
-	github.com/golang/protobuf v1.4.1
+	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
+	github.com/golang/protobuf v1.4.2
 	github.com/googleapis/gnostic v0.3.1 // indirect
 	github.com/gophercloud/gophercloud v0.4.0 // indirect
 	github.com/hashicorp/golang-lru v0.5.3 // indirect
 	github.com/imdario/mergo v0.3.7 // indirect
 	github.com/json-iterator/go v1.1.7 // indirect
 	github.com/modern-go/reflect2 v1.0.1 // indirect
+	github.com/onsi/ginkgo v1.12.2 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.6.0
 	github.com/spf13/pflag v1.0.3 // indirect
-	golang.org/x/lint v0.0.0-20190930215403-16217165b5de // indirect
-	golang.org/x/net v0.0.0-20200226121028-0de0cce0169b
+	golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550 // indirect
+	golang.org/x/net v0.0.0-20200520004742-59133d7f0dd7
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45 // indirect
 	golang.org/x/time v0.0.0-20190308202827-9d24e82272b4 // indirect
-	golang.org/x/tools v0.0.0-20200325010219-a49f79bcc224 // indirect
 	google.golang.org/grpc v1.29.1
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	istio.io/api v0.0.0-20190905172106-906cbe6415a5 // indirect
