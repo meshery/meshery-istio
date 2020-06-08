@@ -20,7 +20,7 @@ import (
 )
 
 const (
-	repoURL     = "https://api.github.com/repos/istio/istio/releases/latest"
+	repoURL     = "https://api.github.com/repos/istio/istio/releases/24270913"
 	urlSuffix   = "-linux.tar.gz"
 	crdPattern  = "crd(.*)yaml"
 	cachePeriod = 6 * time.Hour
