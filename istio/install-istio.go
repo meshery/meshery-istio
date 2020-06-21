@@ -2,6 +2,7 @@ package istio
 
 import (
 	"archive/tar"
+	"bytes"
 	"compress/gzip"
 	"encoding/json"
 	"fmt"
@@ -9,6 +10,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"os/exec"
 	"path"
 	"path/filepath"
 	"regexp"
@@ -21,12 +23,13 @@ import (
 
 const (
 	repoURL     = "https://api.github.com/repos/istio/istio/releases/latest"
-	urlSuffix   = "-linux.tar.gz"
 	crdPattern  = "crd(.*)yaml"
 	cachePeriod = 6 * time.Hour
 )
 
 var (
+	urlSuffix = fmt.Sprintf("linux-%s.tar.gz", getArch())
+
 	localByPassFile = "/app/istio.tar.gz"
 
 	localFile                  = path.Join(os.TempDir(), "istio.tar.gz")
@@ -45,6 +48,18 @@ var (
 	bookInfoInjectDelayForRatingsForJasonFile    = path.Join(basePath, "samples/bookinfo/networking/virtual-service-ratings-test-delay.yaml")
 	bookInfoInjectHTTPAbortToRatingsForJasonFile = path.Join(basePath, "samples/bookinfo/networking/virtual-service-ratings-test-abort.yaml")
 )
+
+func getArch() string {
+	cmd := exec.Command("dpkg", "--print-architecture")
+	var out bytes.Buffer
+	cmd.Stdout = &out
+	err := cmd.Run()
+	if err != nil {
+		err = errors.Wrapf(err, "error getting system architecture")
+		logrus.Error(err)
+	}
+	return out.String()[:len(out.String())-1]
+}
 
 type apiInfo struct {
 	TagName    string   `json:"tag_name,omitempty"`
