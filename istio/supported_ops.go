@@ -41,6 +41,7 @@ const (
 	bookInfoInjectDelayForRatingsForJason    = "bookInfoInjectDelayForRatingsForJason"
 	bookInfoInjectHTTPAbortToRatingsForJason = "bookInfoInjectHTTPAbortToRatingsForJason"
 	bookInfoProductPageCircuitBreaking       = "bookInfoProductPageCircuitBreaking"
+	smiConformanceCommand                    = "smiConformanceTest"
 )
 
 var supportedOps = map[string]supportedOperation{
@@ -114,5 +115,9 @@ var supportedOps = map[string]supportedOperation{
 	googleMSSampleApplication: {
 		name:   "Hipster Shop Application",
 		opType: meshes.OpCategory_SAMPLE_APPLICATION,
+	},
+	smiConformanceCommand: {
+		name:   "Run SMI conformance test",
+		opType: meshes.OpCategory_VALIDATE,
 	},
 }

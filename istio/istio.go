@@ -640,6 +640,11 @@ func (iClient *Client) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRu
 	case customOpCommand:
 		yamlFileContents = arReq.CustomBody
 		isCustomOp = true
+	case smiConformanceCommand:
+		err = iClient.runConformanceTest("linkerd", arReq)
+		if err != nil {
+			return nil, err
+		}
 	default:
 		if !arReq.DeleteOp {
 			if err := iClient.labelNamespaceForAutoInjection(ctx, arReq.Namespace); err != nil {
