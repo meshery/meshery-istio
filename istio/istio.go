@@ -641,7 +641,7 @@ func (iClient *Client) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRu
 		yamlFileContents = arReq.CustomBody
 		isCustomOp = true
 	case smiConformanceCommand:
-		err = iClient.runConformanceTest("linkerd", arReq)
+		err = iClient.runConformanceTest("istio", arReq)
 		if err != nil {
 			return nil, err
 		}
