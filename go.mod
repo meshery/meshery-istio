@@ -19,6 +19,6 @@ require (
 	github.com/sirupsen/logrus v1.6.0
 	golang.org/x/net v0.0.0-20200520004742-59133d7f0dd7
 	google.golang.org/grpc v1.30.0
-	k8s.io/apimachinery v0.17.3
+	k8s.io/apimachinery v0.18.6
 	k8s.io/client-go v0.17.3
 )
