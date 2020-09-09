@@ -5,7 +5,7 @@ go 1.13
 replace github.com/kudobuilder/kuttl => github.com/layer5io/kuttl v0.4.1-0.20200723152044-916f10574334
 
 require (
-	github.com/Azure/go-autorest/autorest/adal v0.9.0
+	github.com/Azure/go-autorest/autorest/adal v0.9.3
 	github.com/aspenmesh/istio-client-go v0.0.0-20200122202704-9695ccefca79
 	github.com/aspenmesh/istio-vet v0.0.0-20190708155745-fac74e54e2e6
 	github.com/cnf/structhash v0.0.0-20180104161610-62a607eb0224 // indirect
