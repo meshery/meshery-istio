@@ -17,8 +17,8 @@ require (
 	github.com/onsi/ginkgo v1.13.0 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.6.0
-	golang.org/x/net v0.0.0-20200520004742-59133d7f0dd7
+	golang.org/x/net v0.0.0-20200707034311-ab3426394381
 	google.golang.org/grpc v1.30.0
-	k8s.io/apimachinery v0.17.3
+	k8s.io/apimachinery v0.19.2
 	k8s.io/client-go v0.17.3
 )
