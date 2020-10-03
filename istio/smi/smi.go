@@ -1,3 +1,4 @@
+// Package smi to create, connect and run smi conformance test
 package smi
 
 import (
@@ -24,8 +25,8 @@ var (
 	namespace = "meshery"
 )
 
-// SmiTest holds the values for running the test
-type SmiTest struct {
+// Test holds the values for running the test
+type Test struct {
 	id             string
 	adaptorVersion string
 	adaptorName    string
@@ -54,7 +55,7 @@ type Detail struct {
 	SmiSpecification string `json:"smi_specification,omitempty"`
 	SmiVersion       string `json:"smi_version,omitempty"`
 	Time             string `json:"time,omitempty"`
-	Assertions       string `json:"assertions,omitemtpy"`
+	Assertions       string `json:"assertions,omitempty"`
 	Result           string `json:"result,omitempty"`
 	Reason           string `json:"reason,omitempty"`
 	Capability       string `json:"capability,omitempty"`
@@ -62,7 +63,7 @@ type Detail struct {
 }
 
 // New initializes the test
-func New(ctx context.Context, id string, version string, name string, client *kubernetes.Clientset) (*SmiTest, error) {
+func New(ctx context.Context, id string, version string, name string, client *kubernetes.Clientset) (*Test, error) {
 
 	if len(name) < 2 {
 		return nil, ErrSmiInit("Adaptor name is nil")
@@ -72,22 +73,22 @@ func New(ctx context.Context, id string, version string, name string, client *ku
 		return nil, ErrSmiInit("Client set is nil")
 	}
 
-	test := &SmiTest{
+	test := &Test{
 		ctx:            ctx,
 		id:             id,
 		adaptorVersion: version,
 		kubeClient:     client,
 		kubeConfigPath: fmt.Sprintf("%s/.kube/config", utils.GetHome()),
 		adaptorName:    name,
-		labels:         make(map[string]string, 0),
-		annotations:    make(map[string]string, 0),
+		labels:         map[string]string{},
+		annotations:    map[string]string{},
 	}
 
 	return test, nil
 }
 
 // Run runs the test
-func (test *SmiTest) Run(labels, annotations map[string]string) (Response, error) {
+func (test *Test) Run(labels, annotations map[string]string) (Response, error) {
 
 	if labels != nil {
 		test.labels = labels
@@ -136,7 +137,7 @@ func (test *SmiTest) Run(labels, annotations map[string]string) (Response, error
 }
 
 // installConformanceTool installs the smi conformance tool
-func (test *SmiTest) installConformanceTool() error {
+func (test *Test) installConformanceTool() error {
 
 	_, err := test.kubeClient.CoreV1().Namespaces().Create(context.TODO(), &corev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
@@ -183,7 +184,7 @@ func (test *SmiTest) installConformanceTool() error {
 }
 
 // deleteConformanceTool deletes the smi conformance tool
-func (test *SmiTest) deleteConformanceTool() error {
+func (test *Test) deleteConformanceTool() error {
 	err := test.kubeClient.CoreV1().Namespaces().Delete(context.TODO(), namespace, metav1.DeleteOptions{})
 	if err != nil {
 		return err
@@ -192,7 +193,7 @@ func (test *SmiTest) deleteConformanceTool() error {
 }
 
 // connectConformanceTool initiates the connection
-func (test *SmiTest) connectConformanceTool() error {
+func (test *Test) connectConformanceTool() error {
 	var host string
 	var port int32
 
@@ -205,7 +206,7 @@ func (test *SmiTest) connectConformanceTool() error {
 	if err != nil {
 		return err
 	}
-	addresses := make(map[string]string, 0)
+	addresses := map[string]string{}
 	for _, addr := range nodes.Items[0].Status.Addresses {
 		addresses[string(addr.Type)] = addr.Address
 	}
@@ -232,7 +233,7 @@ func tcpCheck(ip string, port int32) bool {
 }
 
 // runConformanceTest runs the conformance test
-func (test *SmiTest) runConformanceTest(response *Response) error {
+func (test *Test) runConformanceTest(response *Response) error {
 
 	cClient, err := conformance.CreateClient(context.TODO(), test.smiAddress)
 	if err != nil {
