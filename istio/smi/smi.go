@@ -24,6 +24,7 @@ var (
 	namespace = "meshery"
 )
 
+// SmiTest holds the values for running the test
 type SmiTest struct {
 	id             string
 	adaptorVersion string
@@ -36,8 +37,9 @@ type SmiTest struct {
 	labels         map[string]string
 }
 
+// Response is the response format of the result output
 type Response struct {
-	Id                string    `json:"id,omitempty"`
+	ID                string    `json:"id,omitempty"`
 	Date              string    `json:"date,omitempty"`
 	MeshName          string    `json:"mesh_name,omitempty"`
 	MeshVersion       string    `json:"mesh_version,omitempty"`
@@ -47,6 +49,7 @@ type Response struct {
 	MoreDetails       []*Detail `json:"more_details,omitempty"`
 }
 
+// Detail is the format of every test spec
 type Detail struct {
 	SmiSpecification string `json:"smi_specification,omitempty"`
 	SmiVersion       string `json:"smi_version,omitempty"`
@@ -58,6 +61,7 @@ type Detail struct {
 	Status           string `json:"status,omitempty"`
 }
 
+// New initializes the test
 func New(ctx context.Context, id string, version string, name string, client *kubernetes.Clientset) (*SmiTest, error) {
 
 	if len(name) < 2 {
@@ -82,6 +86,7 @@ func New(ctx context.Context, id string, version string, name string, client *ku
 	return test, nil
 }
 
+// Run runs the test
 func (test *SmiTest) Run(labels, annotations map[string]string) (Response, error) {
 
 	if labels != nil {
@@ -93,7 +98,7 @@ func (test *SmiTest) Run(labels, annotations map[string]string) (Response, error
 	}
 
 	response := Response{
-		Id:                test.id,
+		ID:                test.id,
 		Date:              time.Now().String(),
 		MeshName:          test.adaptorName,
 		MeshVersion:       test.adaptorVersion,
