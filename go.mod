@@ -7,7 +7,6 @@ replace github.com/kudobuilder/kuttl => github.com/layer5io/kuttl v0.4.1-0.20200
 require (
 	cloud.google.com/go v0.46.3 // indirect
 	github.com/Azure/go-autorest/autorest/adal v0.9.0 // indirect
-	github.com/aspenmesh/istio-client-go v0.0.0-20200122202704-9695ccefca79
 	github.com/aspenmesh/istio-vet v0.0.0-20200806222806-9c8e9a962b9f
 	github.com/ghodss/yaml v1.0.0
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
@@ -26,6 +25,7 @@ require (
 	google.golang.org/grpc v1.31.0
 	google.golang.org/protobuf v1.25.0 // indirect
 	helm.sh/helm/v3 v3.3.1
+	istio.io/client-go v0.0.0-20200708142230-d7730fd90478
 	k8s.io/api v0.18.8
 	k8s.io/apimachinery v0.18.8
 	k8s.io/client-go v0.18.8

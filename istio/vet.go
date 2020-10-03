@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	istioinformer "github.com/aspenmesh/istio-client-go/pkg/client/informers/externalversions"
+	istioinformer "istio.io/client-go/pkg/informers/externalversions"
 	"github.com/aspenmesh/istio-vet/pkg/istioclient"
 	"github.com/aspenmesh/istio-vet/pkg/vetter"
 	"github.com/aspenmesh/istio-vet/pkg/vetter/applabel"
