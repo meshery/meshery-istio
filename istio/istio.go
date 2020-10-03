@@ -21,6 +21,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"path"
 	"strings"
 	"text/template"
@@ -66,7 +67,7 @@ func (iClient *Client) CreateMeshInstance(_ context.Context, k8sReq *meshes.Crea
 }
 
 func (iClient *Client) createResource(ctx context.Context, res schema.GroupVersionResource, data *unstructured.Unstructured) error {
-	_, err := iClient.k8sDynamicClient.Resource(res).Namespace(data.GetNamespace()).Create(data, metav1.CreateOptions{})
+	_, err := iClient.k8sDynamicClient.Resource(res).Namespace(data.GetNamespace()).Create(context.TODO(), data, metav1.CreateOptions{})
 	if err != nil {
 		if strings.Contains(err.Error(), "already exists") {
 			// 	if err1 := iClient.deleteResource(ctx, res, data); err1 != nil {
@@ -76,7 +77,7 @@ func (iClient *Client) createResource(ctx context.Context, res schema.GroupVersi
 		}
 		err = errors.Wrapf(err, "unable to create the requested resource, attempting operation without namespace")
 		logrus.Warn(err)
-		if _, err = iClient.k8sDynamicClient.Resource(res).Create(data, metav1.CreateOptions{}); err != nil {
+		if _, err = iClient.k8sDynamicClient.Resource(res).Create(context.TODO(), data, metav1.CreateOptions{}); err != nil {
 			if strings.Contains(err.Error(), "already exists") {
 				return errors.Wrap(err, "resource already exists")
 			}
@@ -113,12 +114,12 @@ func (iClient *Client) deleteResource(ctx context.Context, res schema.GroupVersi
 		}
 	}
 
-	err := iClient.k8sDynamicClient.Resource(res).Namespace(data.GetNamespace()).Delete(data.GetName(), &metav1.DeleteOptions{})
+	err := iClient.k8sDynamicClient.Resource(res).Namespace(data.GetNamespace()).Delete(context.TODO(), data.GetName(), metav1.DeleteOptions{})
 	if err != nil {
 		err = errors.Wrapf(err, "unable to delete the requested resource, attempting operation without namespace")
 		logrus.Warn(err)
 
-		err := iClient.k8sDynamicClient.Resource(res).Delete(data.GetName(), &metav1.DeleteOptions{})
+		err := iClient.k8sDynamicClient.Resource(res).Delete(context.TODO(), data.GetName(), metav1.DeleteOptions{})
 		if err != nil {
 			err = errors.Wrapf(err, "unable to delete the requested resource")
 			logrus.Error(err)
@@ -130,12 +131,12 @@ func (iClient *Client) deleteResource(ctx context.Context, res schema.GroupVersi
 }
 
 func (iClient *Client) getResource(ctx context.Context, res schema.GroupVersionResource, data *unstructured.Unstructured) (*unstructured.Unstructured, error) {
-	data1, err := iClient.k8sDynamicClient.Resource(res).Namespace(data.GetNamespace()).Get(data.GetName(), metav1.GetOptions{})
+	data1, err := iClient.k8sDynamicClient.Resource(res).Namespace(data.GetNamespace()).Get(context.TODO(), data.GetName(), metav1.GetOptions{})
 	if err != nil {
 		err = errors.Wrap(err, "unable to retrieve the resource with a matching name, attempting operation without namespace")
 		logrus.Warn(err)
 
-		data1, err = iClient.k8sDynamicClient.Resource(res).Get(data.GetName(), metav1.GetOptions{})
+		data1, err = iClient.k8sDynamicClient.Resource(res).Get(context.TODO(), data.GetName(), metav1.GetOptions{})
 		if err != nil {
 			err = errors.Wrap(err, "unable to retrieve the resource with a matching name, while attempting to apply the config")
 			logrus.Error(err)
@@ -147,7 +148,7 @@ func (iClient *Client) getResource(ctx context.Context, res schema.GroupVersionR
 }
 
 func (iClient *Client) updateResource(ctx context.Context, res schema.GroupVersionResource, data *unstructured.Unstructured) error {
-	if _, err := iClient.k8sDynamicClient.Resource(res).Namespace(data.GetNamespace()).Update(data, metav1.UpdateOptions{}); err != nil {
+	if _, err := iClient.k8sDynamicClient.Resource(res).Namespace(data.GetNamespace()).Update(context.TODO(), data, metav1.UpdateOptions{}); err != nil {
 		if strings.Contains(err.Error(), "the server does not allow this method on the requested resource") {
 			logrus.Error(err)
 			return err
@@ -155,7 +156,7 @@ func (iClient *Client) updateResource(ctx context.Context, res schema.GroupVersi
 		err = errors.Wrap(err, "unable to update resource with the given name, attempting operation without namespace")
 		logrus.Warn(err)
 
-		if _, err = iClient.k8sDynamicClient.Resource(res).Update(data, metav1.UpdateOptions{}); err != nil {
+		if _, err = iClient.k8sDynamicClient.Resource(res).Update(context.TODO(), data, metav1.UpdateOptions{}); err != nil {
 			if strings.Contains(err.Error(), "the server does not allow this method on the requested resource") {
 				logrus.Error(err)
 				return err
@@ -632,16 +633,16 @@ func (iClient *Client) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRu
 		if err != nil {
 			return nil, err
 		}
-	case runVet:
-		err = iClient.runVet()
-		return &meshes.ApplyRuleResponse{
-			OperationId: arReq.OperationId,
-		}, err
+	// case runVet:
+	// 	err = iClient.runVet()
+	// 	return &meshes.ApplyRuleResponse{
+	// 		OperationId: arReq.OperationId,
+	// 	}, err
 	case customOpCommand:
 		yamlFileContents = arReq.CustomBody
 		isCustomOp = true
 	case smiConformanceCommand:
-		err = iClient.runConformanceTest("istio", arReq)
+		err = iClient.runConformanceTest(arReq.OperationId, "istio", os.Getenv("ISTIO_VERSION"))
 		if err != nil {
 			return nil, err
 		}

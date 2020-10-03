@@ -4,14 +4,13 @@ import (
 	"fmt"
 	"strings"
 
-	istioinformer "github.com/aspenmesh/istio-client-go/pkg/client/informers/externalversions"
+	istioinformer "istio.io/client-go/pkg/informers/externalversions"
 	"github.com/aspenmesh/istio-vet/pkg/istioclient"
 	"github.com/aspenmesh/istio-vet/pkg/vetter"
 	"github.com/aspenmesh/istio-vet/pkg/vetter/applabel"
 	"github.com/aspenmesh/istio-vet/pkg/vetter/conflictingvirtualservicehost"
 	"github.com/aspenmesh/istio-vet/pkg/vetter/danglingroutedestinationhost"
 	"github.com/aspenmesh/istio-vet/pkg/vetter/meshversion"
-	"github.com/aspenmesh/istio-vet/pkg/vetter/mtlsprobes"
 	"github.com/aspenmesh/istio-vet/pkg/vetter/podsinmesh"
 	"github.com/aspenmesh/istio-vet/pkg/vetter/serviceassociation"
 	"github.com/aspenmesh/istio-vet/pkg/vetter/serviceportprefix"
@@ -52,7 +51,6 @@ func (iClient *Client) runVet() error {
 	vList := []vetter.Vetter{
 		vetter.Vetter(podsinmesh.NewVetter(informerFactory)),
 		vetter.Vetter(meshversion.NewVetter(informerFactory)),
-		vetter.Vetter(mtlsprobes.NewVetter(informerFactory)),
 		vetter.Vetter(applabel.NewVetter(informerFactory)),
 		vetter.Vetter(serviceportprefix.NewVetter(informerFactory)),
 		vetter.Vetter(serviceassociation.NewVetter(informerFactory)),
