@@ -27,11 +27,13 @@ type supportedOperation struct {
 const (
 	customOpCommand                          = "custom"
 	runVet                                   = "istio_vet"
+	installv173IstioCommand                  = "istio_install_v173"
+	installOperatorIstioCommand              = "istio_install_operator"
 	installmTLSIstioCommand                  = "istio_mtls_install"
 	installBookInfoCommand                   = "install_book_info"
 	cbCommand                                = "cb1"
 	installSMI                               = "install_smi"
-	installHTTPBin                           = "install_http_bin"
+	installHttpbinCommand                    = "install_http_bin"
 	googleMSSampleApplication                = "google_microservices_demo_application"
 	bookInfoDefaultDestinationRules          = "bookInfoDefaultDestinationRules"
 	bookInfoRouteToV1AllServices             = "bookInfoRouteToV1AllServices"
@@ -45,8 +47,16 @@ const (
 )
 
 var supportedOps = map[string]supportedOperation{
+	installv173IstioCommand: {
+		name:   "Istio 1.7.3 with mTLS",
+		opType: meshes.OpCategory_INSTALL,
+	},
+	installOperatorIstioCommand: {
+		name:   "Istio with Operator",
+		opType: meshes.OpCategory_INSTALL,
+	},
 	installmTLSIstioCommand: {
-		name:   "Latest Istio with mTLS",
+		name:   "Istio 1.5.1 with mTLS",
 		opType: meshes.OpCategory_INSTALL,
 	},
 	installBookInfoCommand: {
@@ -103,7 +113,7 @@ var supportedOps = map[string]supportedOperation{
 		name:   "Service Mesh Interface (SMI) Istio Adapter",
 		opType: meshes.OpCategory_INSTALL,
 	},
-	installHTTPBin: {
+	installHttpbinCommand: {
 		name:         "httpbin Application",
 		templateName: "httpbin.yaml",
 		opType:       meshes.OpCategory_SAMPLE_APPLICATION,

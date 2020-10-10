@@ -31,6 +31,7 @@ import (
 	"github.com/layer5io/meshery-istio/meshes"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	kubeerror "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -69,16 +70,16 @@ func (iClient *Client) CreateMeshInstance(_ context.Context, k8sReq *meshes.Crea
 func (iClient *Client) createResource(ctx context.Context, res schema.GroupVersionResource, data *unstructured.Unstructured) error {
 	_, err := iClient.k8sDynamicClient.Resource(res).Namespace(data.GetNamespace()).Create(context.TODO(), data, metav1.CreateOptions{})
 	if err != nil {
-		if strings.Contains(err.Error(), "already exists") {
+		if kubeerror.IsAlreadyExists(err) {
 			// 	if err1 := iClient.deleteResource(ctx, res, data); err1 != nil {
 
 			// 	}
-			return errors.Wrap(err, "resource already exists")
+			logrus.Warn(errors.Wrap(err, "resource already exists"))
 		}
 		err = errors.Wrapf(err, "unable to create the requested resource, attempting operation without namespace")
 		logrus.Warn(err)
 		if _, err = iClient.k8sDynamicClient.Resource(res).Create(context.TODO(), data, metav1.CreateOptions{}); err != nil {
-			if strings.Contains(err.Error(), "already exists") {
+			if kubeerror.IsAlreadyExists(err) {
 				return errors.Wrap(err, "resource already exists")
 			}
 			err = errors.Wrapf(err, "unable to create the requested resource, attempting to update")
@@ -228,7 +229,7 @@ func (iClient *Client) executeRule(ctx context.Context, data *unstructured.Unstr
 	case "logentry":
 		kind = "logentries"
 	case "kubernetes":
-		kind = "kuberneteses"
+		kind = "kubernetes"
 	case "podsecuritypolicy":
 		kind = "podsecuritypolicies"
 	case "serviceentry":
@@ -403,6 +404,37 @@ func (iClient *Client) executeInstall(ctx context.Context, arReq *meshes.ApplyRu
 	return nil
 }
 
+func (iClient *Client) executeHttpbinInstall(ctx context.Context, arReq *meshes.ApplyRuleRequest) error {
+	Executable, err := exec.LookPath("./scripts/installHttpbin.sh")
+	if err != nil {
+		return err
+	}
+
+	if arReq.DeleteOp {
+		Executable, err = exec.LookPath("./scripts/deleteHttpbin.sh")
+		if err != nil {
+			return err
+		}
+	}
+
+	cmd := &exec.Cmd{
+		Path:   Executable,
+		Args:   []string{Executable},
+		Stdout: os.Stdout,
+		Stderr: os.Stdout,
+	}
+
+	err = cmd.Start()
+	if err != nil {
+		return err
+	}
+	err = cmd.Wait()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (iClient *Client) executeBookInfoInstall(ctx context.Context, arReq *meshes.ApplyRuleRequest) error {
 	if !arReq.DeleteOp {
 		if err := iClient.labelNamespaceForAutoInjection(ctx, arReq.Namespace); err != nil {
@@ -496,6 +528,35 @@ func (iClient *Client) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRu
 	isCustomOp := false
 
 	switch arReq.OpName {
+	case installv173IstioCommand, installOperatorIstioCommand:
+		go func() {
+			opName1 := "deploying"
+			if arReq.DeleteOp {
+				opName1 = "removing"
+			}
+			if err := iClient.executev173Install(ctx, arReq); err != nil {
+				iClient.eventChan <- &meshes.EventsResponse{
+					OperationId: arReq.OperationId,
+					EventType:   meshes.EventType_ERROR,
+					Summary:     fmt.Sprintf("Error while %s Istio", opName1),
+					Details:     err.Error(),
+				}
+				return
+			}
+			opName := "deployed"
+			if arReq.DeleteOp {
+				opName = "removed"
+			}
+			iClient.eventChan <- &meshes.EventsResponse{
+				OperationId: arReq.OperationId,
+				EventType:   meshes.EventType_INFO,
+				Summary:     fmt.Sprintf("Istio %s successfully", opName),
+				Details:     fmt.Sprintf("The latest version of Istio is now %s.", opName),
+			}
+		}()
+		return &meshes.ApplyRuleResponse{
+			OperationId: arReq.OperationId,
+		}, nil
 	case installmTLSIstioCommand:
 		go func() {
 			opName1 := "deploying"
@@ -557,6 +618,35 @@ func (iClient *Client) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRu
 			OperationId: arReq.OperationId,
 		}, nil
 
+	case installHttpbinCommand:
+		go func() {
+			opName1 := "deploying"
+			if arReq.DeleteOp {
+				opName1 = "removing"
+			}
+			if err := iClient.executeHttpbinInstall(ctx, arReq); err != nil {
+				iClient.eventChan <- &meshes.EventsResponse{
+					OperationId: arReq.OperationId,
+					EventType:   meshes.EventType_ERROR,
+					Summary:     fmt.Sprintf("Error while %s the canonical Httpbin App", opName1),
+					Details:     err.Error(),
+				}
+				return
+			}
+			opName := "deployed"
+			if arReq.DeleteOp {
+				opName = "removed"
+			}
+			iClient.eventChan <- &meshes.EventsResponse{
+				OperationId: arReq.OperationId,
+				EventType:   meshes.EventType_INFO,
+				Summary:     fmt.Sprintf("Httpbin app %s successfully", opName),
+				Details:     fmt.Sprintf("The Istio canonical Httpbin app is now %s.", opName),
+			}
+		}()
+		return &meshes.ApplyRuleResponse{
+			OperationId: arReq.OperationId,
+		}, nil
 	case installBookInfoCommand:
 		go func() {
 			opName1 := "deploying"
@@ -673,16 +763,16 @@ func (iClient *Client) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRu
 			}
 			return
 		}
-		opName := "deployed"
-		if arReq.DeleteOp {
-			opName = "removed"
-		}
-		iClient.eventChan <- &meshes.EventsResponse{
-			OperationId: arReq.OperationId,
-			EventType:   meshes.EventType_INFO,
-			Summary:     fmt.Sprintf("\"%s\" %s successfully", op.name, opName),
-			Details:     fmt.Sprintf("\"%s\" %s successfully", op.name, opName),
-		}
+		// opName := "deployed"
+		// if arReq.DeleteOp {
+		// 	opName = "removed"
+		// }
+		// iClient.eventChan <- &meshes.EventsResponse{
+		// 	OperationId: arReq.OperationId,
+		// 	EventType:   meshes.EventType_INFO,
+		// 	Summary:     fmt.Sprintf("\"%s\" %s successfully", op.name, opName),
+		// 	Details:     fmt.Sprintf("\"%s\" %s successfully", op.name, opName),
+		// }
 	}()
 
 	return &meshes.ApplyRuleResponse{

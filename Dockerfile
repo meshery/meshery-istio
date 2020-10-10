@@ -4,7 +4,7 @@ WORKDIR /github.com/layer5io/meshery-istio
 ADD . .
 RUN GOPROXY=direct GOSUMDB=off go build -ldflags="-w -s" -a -o /meshery-istio .
 RUN find . -name "*.go" -type f -delete; mv istio /
-RUN wget -O /istio.tar.gz https://github.com/istio/istio/releases/download/1.7.3/istio-1.7.3-linux-amd64.tar.gz
+RUN wget -O /istio.tar.gz https://github.com/istio/istio/releases/download/1.5.1/istio-1.5.1-linux.tar.gz
 
 FROM alpine
 RUN apk --update add ca-certificates
@@ -13,7 +13,8 @@ COPY --from=bd /meshery-istio /app/
 COPY --from=bd /istio /app/istio
 COPY --from=bd /istio.tar.gz /app/
 COPY --from=bd /etc/passwd /etc/passwd
-ENV ISTIO_VERSION=istio-1.7.3
+COPY --from=bd //github.com/layer5io/meshery-istio/scripts /app/scripts/.
+ENV ISTIO_VERSION=istio-1.5.1
 USER appuser
 WORKDIR /app
 CMD ./meshery-istio

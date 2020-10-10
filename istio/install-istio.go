@@ -3,18 +3,21 @@ package istio
 import (
 	"archive/tar"
 	"compress/gzip"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
+	"os/exec"
 	"path"
 	"path/filepath"
 	"regexp"
 	"strings"
 	"time"
 
+	"github.com/layer5io/meshery-istio/meshes"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
@@ -35,6 +38,8 @@ var (
 	installWithmTLSFile        = path.Join(basePath, "install/kubernetes/istio-demo.yaml")
 	bookInfoInstallFile        = path.Join(basePath, "samples/bookinfo/platform/kube/bookinfo.yaml")
 	bookInfoGatewayInstallFile = path.Join(basePath, "samples/bookinfo/networking/bookinfo-gateway.yaml")
+	httpbinInstallFile         = path.Join(basePath, "samples/httpbin/httpbin.yaml")
+	httpbinGatewayInstallFile  = path.Join(basePath, "samples/httpbin/httpbin-gateway.yaml")
 	crdFolder                  = path.Join(basePath, "install/kubernetes/helm/istio-init/files/")
 
 	defaultBookInfoDestRulesFile                 = path.Join(basePath, "samples/bookinfo/networking/destination-rule-all-mtls.yaml")
@@ -56,6 +61,49 @@ type asset struct {
 	Name        string `json:"name,omitempty"`
 	State       string `json:"state,omitempty"`
 	DownloadURL string `json:"browser_download_url,omitempty"`
+}
+
+func (iClient *Client) executev173Install(ctx context.Context, arReq *meshes.ApplyRuleRequest) error {
+	Executable, err := exec.LookPath("./scripts/install.sh")
+	if err != nil {
+		return err
+	}
+
+	if arReq.DeleteOp {
+		Executable, err = exec.LookPath("./scripts/delete.sh")
+		if err != nil {
+			return err
+		}
+	}
+
+	cmd := &exec.Cmd{
+		Path:   Executable,
+		Args:   []string{Executable},
+		Stdout: os.Stdout,
+		Stderr: os.Stdout,
+	}
+
+	mode := "istioctl"
+	if arReq.OpName == installOperatorIstioCommand {
+		mode = "operator"
+	}
+
+	cmd.Env = append(os.Environ(),
+		"ISTIO_VERSION=1.7.3",
+		fmt.Sprintf("ISTIO_MODE=%s", mode),
+		"ISTIO_PROFILE=demo",
+	)
+
+	err = cmd.Start()
+	if err != nil {
+		return err
+	}
+	err = cmd.Wait()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (iClient *Client) getLatestReleaseURL() error {
