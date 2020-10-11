@@ -54,6 +54,27 @@ const (
 	installHttpbinCommandV1 = "install_http_binv1"
 	installHttpbinCommandV2 = "install_http_binv2"
 
+	// Labs
+	enablePrometheus = "enable_prometheus"
+	enableGrafana    = "enable_grafana"
+	enableKiali      = "enable_kiali"
+	denyAllPolicy    = "deny_all_policy"
+	strictMtls       = "strict_mtls"
+	mutualMtls       = "mutual_mtls"
+	disableMtls      = "disable_mtls"
+
+	bookInfoRouteV1ForUser                 = "bookinfo_route_v1_for_user"
+	bookInfoMirrorTrafficToV2              = "bookinfo_mirror_traffic_to_v2"
+	bookInfoRetrySpecForReviews            = "bookinfo_retry_spec_for_reviews"
+	bookInfoCanaryDeploy20V3               = "bookinfo_canary_deploy_20_v3"
+	bookInfoCanaryDeploy80V3               = "bookinfo_canary_deploy_80_v3"
+	bookInfoCanaryDeploy100V3              = "bookinfo_canary_deploy_100_v3"
+	bookInfoInjectDelayFaultRatings        = "bookinfo_inject_delay_fault_ratings"
+	bookInfoInjectDelayFaultReviews        = "bookinfo_inject_delay_fault_reviews"
+	bookInfoConfigureConnectionPoolOutlier = "bookinfo_configure_connection_pool_outlier"
+	bookInfoAllowGet                       = "bookinfo_allow_get"
+	bookInfoAllowReviewsForUser            = "bookinfo_allow_reviews_for_user"
+
 	// SMI conformance test
 	smiConformanceCommand = "smiConformanceTest"
 	installSMI            = "install_smi"
@@ -151,5 +172,77 @@ var supportedOps = map[string]supportedOperation{
 	smiConformanceCommand: {
 		name:   "Run SMI conformance test",
 		opType: meshes.OpCategory_VALIDATE,
+	},
+	enablePrometheus: {
+		name:   "Enable Prometheus monitoring",
+		opType: meshes.OpCatergory_INSTALL,
+	},
+	enableGrafana: {
+		name:   "Enable Grafana dashboard",
+		opType: meshes.OpCatergory_INSTALL,
+	},
+	enableKiali: {
+		name:   "Enable Prometheus dashboard",
+		opType: meshes.OpCatergory_INSTALL,
+	},
+	denyAllPolicy: {
+		name:   "Deny-All policy on the namespace",
+		opType: meshes.OpCatergory_CONFIGURE,
+	},
+	strictMtls: {
+		name:   "Strict Mtls policy",
+		opType: meshes.OpCatergory_CONFIGURE,
+	},
+	mutualMtls: {
+		name:   "Mutual Mtls policy",
+		opType: meshes.OpCatergory_CONFIGURE,
+	},
+	disableMtls: {
+		name:   "Disable Mtls policy",
+		opType: meshes.OpCatergory_CONFIGURE,
+	},
+	bookInfoRouteV1ForUser: {
+		name:   "Configure bookinfo page to version v1",
+		opType: meshes.OpCategory_CONFIGURE,
+	},
+	bookInfoMirrorTrafficToV2: {
+		name:   "Configure bookinfo page mirror traffic from v1 to v2",
+		opType: meshes.OpCategory_CONFIGURE,
+	},
+	bookInfoRetrySpecForReviews: {
+		name:   "Configure bookinfo page to retry for reviews application",
+		opType: meshes.OpCategory_CONFIGURE,
+	},
+	bookInfoCanaryDeploy20V3: {
+		name:   "Configure bookinfo to forward 20 percent traffic to v2",
+		opType: meshes.OpCategory_CONFIGURE,
+	},
+	bookInfoCanaryDeploy80V3: {
+		name:   "Configure bookinfo to forward 80 percent traffic to v2",
+		opType: meshes.OpCategory_CONFIGURE,
+	},
+	bookInfoCanaryDeploy100V3: {
+		name:   "Configure bookinfo to forward 100 percent traffic to v2",
+		opType: meshes.OpCategory_CONFIGURE,
+	},
+	bookInfoInjectDelayFaultRatings: {
+		name:   "Configure bookinfo to add delay to ratings application",
+		opType: meshes.OpCategory_CONFIGURE,
+	},
+	bookInfoInjectDelayFaultReviews: {
+		name:   "Configure bookinfo to add delay to ratings application",
+		opType: meshes.OpCategory_CONFIGURE,
+	},
+	bookInfoConfigureConnectionPoolOutlier: {
+		name:   "Configure bookinfo for connection pool limits and outlier detection",
+		opType: meshes.OpCategory_CONFIGURE,
+	},
+	bookInfoAllowGet: {
+		name:   "Configure bookinfo to allow only GET requests",
+		opType: meshes.OpCategory_CONFIGURE,
+	},
+	bookInfoAllowReviewsForUser: {
+		name:   "Configure bookinfo to allow reviews only for user",
+		opType: meshes.OpCategory_CONFIGURE,
 	},
 }
