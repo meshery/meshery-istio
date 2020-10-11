@@ -20,28 +20,30 @@ import (
 	"github.com/layer5io/meshery-istio/meshes"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 const (
 	repoURL     = "https://api.github.com/repos/istio/istio/releases/latest"
-	urlSuffix   = "-linux.tar.gz"
+	urlSuffix   = "-osx.tar.gz"
 	crdPattern  = "crd(.*)yaml"
 	cachePeriod = 6 * time.Hour
 )
 
 var (
-	localByPassFile = "/app/istio.tar.gz"
+	localByPassFile = "/tmp/istio.tar.gz"
 
-	localFile                  = path.Join(os.TempDir(), "istio.tar.gz")
-	destinationFolder          = path.Join(os.TempDir(), "istio")
-	basePath                   = path.Join(destinationFolder, "%s")
-	installWithmTLSFile        = path.Join(basePath, "install/kubernetes/istio-demo.yaml")
-	bookInfoInstallFile        = path.Join(basePath, "samples/bookinfo/platform/kube/bookinfo.yaml")
-	bookInfoGatewayInstallFile = path.Join(basePath, "samples/bookinfo/networking/bookinfo-gateway.yaml")
-	httpbinInstallFile         = path.Join(basePath, "samples/httpbin/httpbin.yaml")
-	httpbinGatewayInstallFile  = path.Join(basePath, "samples/httpbin/httpbin-gateway.yaml")
-	crdFolder                  = path.Join(basePath, "install/kubernetes/helm/istio-init/files/")
+	localFile           = path.Join(os.TempDir(), "istio.tar.gz")
+	destinationFolder   = path.Join(os.TempDir(), "istio")
+	basePath            = path.Join(destinationFolder, "%s")
+	installWithmTLSFile = path.Join(basePath, "install/kubernetes/istio-demo.yaml")
+	crdFolder           = path.Join(basePath, "install/kubernetes/helm/istio-init/files/")
 
+	httpbinInstallFile        = path.Join(basePath, "samples/httpbin/httpbin.yaml")
+	httpbinGatewayInstallFile = path.Join(basePath, "samples/httpbin/httpbin-gateway.yaml")
+
+	bookInfoGatewayInstallFile                   = path.Join(basePath, "samples/bookinfo/networking/bookinfo-gateway.yaml")
+	bookInfoInstallFile                          = path.Join(basePath, "samples/bookinfo/platform/kube/bookinfo.yaml")
 	defaultBookInfoDestRulesFile                 = path.Join(basePath, "samples/bookinfo/networking/destination-rule-all-mtls.yaml")
 	bookInfoRouteToV1AllServicesFile             = path.Join(basePath, "samples/bookinfo/networking/virtual-service-all-v1.yaml")
 	bookInfoRouteToReviewsV2ForJasonFile         = path.Join(basePath, "samples/bookinfo/networking/virtual-service-reviews-test-v2.yaml")
@@ -61,6 +63,30 @@ type asset struct {
 	Name        string `json:"name,omitempty"`
 	State       string `json:"state,omitempty"`
 	DownloadURL string `json:"browser_download_url,omitempty"`
+}
+
+func (iClient *Client) AddLabel(namespace string, remove bool) error {
+	ns, err := iClient.k8sClientset.CoreV1().Namespaces().Get(context.TODO(), namespace, metav1.GetOptions{})
+	if err != nil {
+		err = errors.Wrapf(err, "Unable to get namespace")
+		return err
+	}
+
+	if ns.ObjectMeta.Labels == nil {
+		ns.ObjectMeta.Labels = map[string]string{}
+	}
+	ns.ObjectMeta.Labels["istio-injection"] = "enabled"
+
+	if remove {
+		delete(ns.ObjectMeta.Labels, "istio-injection")
+	}
+
+	_, err = iClient.k8sClientset.CoreV1().Namespaces().Update(context.TODO(), ns, metav1.UpdateOptions{})
+	if err != nil {
+		err = errors.Wrapf(err, "Unable to update namespace with Label")
+		return err
+	}
+	return nil
 }
 
 func (iClient *Client) executev173Install(ctx context.Context, arReq *meshes.ApplyRuleRequest) error {
@@ -377,6 +403,14 @@ func (iClient *Client) getBookInfoAppYAML() (string, error) {
 
 func (iClient *Client) getBookInfoGatewayYAML() (string, error) {
 	return iClient.getIstioComponentYAML(bookInfoGatewayInstallFile)
+}
+
+func (iClient *Client) getHttpbinAppYAML() (string, error) {
+	return iClient.getIstioComponentYAML(httpbinInstallFile)
+}
+
+func (iClient *Client) getHttpbinGatewayYAML() (string, error) {
+	return iClient.getIstioComponentYAML(httpbinGatewayInstallFile)
 }
 
 func (iClient *Client) getBookInfoDefaultDesinationRulesYAML() (string, error) {

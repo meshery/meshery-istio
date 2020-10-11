@@ -39,6 +39,7 @@ import (
 )
 
 const (
+	httpbinv2name                     = "httpbinv2"
 	hipsterShopIstioManifestsURL      = "https://raw.githubusercontent.com/GoogleCloudPlatform/microservices-demo/master/release/istio-manifests.yaml"
 	hipsterShopKubernetesManifestsURL = "https://raw.githubusercontent.com/GoogleCloudPlatform/microservices-demo/master/release/kubernetes-manifests.yaml"
 )
@@ -69,19 +70,10 @@ func (iClient *Client) CreateMeshInstance(_ context.Context, k8sReq *meshes.Crea
 
 func (iClient *Client) createResource(ctx context.Context, res schema.GroupVersionResource, data *unstructured.Unstructured) error {
 	_, err := iClient.k8sDynamicClient.Resource(res).Namespace(data.GetNamespace()).Create(context.TODO(), data, metav1.CreateOptions{})
-	if err != nil {
-		if kubeerror.IsAlreadyExists(err) {
-			// 	if err1 := iClient.deleteResource(ctx, res, data); err1 != nil {
-
-			// 	}
-			logrus.Warn(errors.Wrap(err, "resource already exists"))
-		}
+	if err != nil && !kubeerror.IsAlreadyExists(err) {
 		err = errors.Wrapf(err, "unable to create the requested resource, attempting operation without namespace")
 		logrus.Warn(err)
-		if _, err = iClient.k8sDynamicClient.Resource(res).Create(context.TODO(), data, metav1.CreateOptions{}); err != nil {
-			if kubeerror.IsAlreadyExists(err) {
-				return errors.Wrap(err, "resource already exists")
-			}
+		if _, err = iClient.k8sDynamicClient.Resource(res).Create(context.TODO(), data, metav1.CreateOptions{}); err != nil && !kubeerror.IsAlreadyExists(err) {
 			err = errors.Wrapf(err, "unable to create the requested resource, attempting to update")
 			logrus.Error(err)
 			return err
@@ -118,8 +110,7 @@ func (iClient *Client) deleteResource(ctx context.Context, res schema.GroupVersi
 	err := iClient.k8sDynamicClient.Resource(res).Namespace(data.GetNamespace()).Delete(context.TODO(), data.GetName(), metav1.DeleteOptions{})
 	if err != nil {
 		err = errors.Wrapf(err, "unable to delete the requested resource, attempting operation without namespace")
-		logrus.Warn(err)
-
+		logrus.Error(err)
 		err := iClient.k8sDynamicClient.Resource(res).Delete(context.TODO(), data.GetName(), metav1.DeleteOptions{})
 		if err != nil {
 			err = errors.Wrapf(err, "unable to delete the requested resource")
@@ -404,32 +395,57 @@ func (iClient *Client) executeInstall(ctx context.Context, arReq *meshes.ApplyRu
 	return nil
 }
 
-func (iClient *Client) executeHttpbinInstall(ctx context.Context, arReq *meshes.ApplyRuleRequest) error {
-	Executable, err := exec.LookPath("./scripts/installHttpbin.sh")
-	if err != nil {
-		return err
+func (iClient *Client) executeHttpbinInstall(ctx context.Context, arReq *meshes.ApplyRuleRequest, version string) error {
+	if version == "v2" {
+		if arReq.DeleteOp {
+			err := iClient.k8sClientset.AppsV1().Deployments(arReq.Namespace).Delete(context.TODO(), httpbinv2name, metav1.DeleteOptions{})
+			if err != nil {
+				err = errors.Wrapf(err, "Unable to delete deployment httpbin v2")
+				logrus.Error(err)
+				return err
+			}
+		}
+
+		deploy, err := iClient.k8sClientset.AppsV1().Deployments(arReq.Namespace).Get(context.TODO(), "httpbin", metav1.GetOptions{})
+		if err != nil {
+			err = errors.Wrapf(err, "Unable to get deployment httpbin")
+			logrus.Error(err)
+			return err
+		}
+
+		if deploy.ObjectMeta.Labels == nil {
+			deploy.ObjectMeta.Labels = map[string]string{}
+		}
+		deploy.ObjectMeta.Labels["version"] = "v2"
+		deploy.ObjectMeta.Name = httpbinv2name
+		deploy.ObjectMeta.ResourceVersion = ""
+
+		_, err = iClient.k8sClientset.AppsV1().Deployments(arReq.Namespace).Create(context.TODO(), deploy, metav1.CreateOptions{})
+		if err != nil && !kubeerror.IsAlreadyExists(err) {
+			err = errors.Wrapf(err, "Unable to create deployment httpbin version 2")
+			logrus.Error(err)
+			return err
+		}
+		return nil
 	}
 
-	if arReq.DeleteOp {
-		Executable, err = exec.LookPath("./scripts/deleteHttpbin.sh")
-		if err != nil {
+	if !arReq.DeleteOp {
+		if err := iClient.labelNamespaceForAutoInjection(ctx, arReq.Namespace); err != nil {
 			return err
 		}
 	}
-
-	cmd := &exec.Cmd{
-		Path:   Executable,
-		Args:   []string{Executable},
-		Stdout: os.Stdout,
-		Stderr: os.Stdout,
-	}
-
-	err = cmd.Start()
+	yamlFileContents, err := iClient.getHttpbinAppYAML()
 	if err != nil {
 		return err
 	}
-	err = cmd.Wait()
+	if err := iClient.applyConfigChange(ctx, yamlFileContents, arReq.Namespace, arReq.DeleteOp, false); err != nil {
+		return err
+	}
+	yamlFileContents, err = iClient.getHttpbinGatewayYAML()
 	if err != nil {
+		return err
+	}
+	if err := iClient.applyConfigChange(ctx, yamlFileContents, arReq.Namespace, arReq.DeleteOp, false); err != nil {
 		return err
 	}
 	return nil
@@ -618,13 +634,13 @@ func (iClient *Client) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRu
 			OperationId: arReq.OperationId,
 		}, nil
 
-	case installHttpbinCommand:
+	case installHttpbinCommandV1, installHttpbinCommandV2:
 		go func() {
 			opName1 := "deploying"
 			if arReq.DeleteOp {
 				opName1 = "removing"
 			}
-			if err := iClient.executeHttpbinInstall(ctx, arReq); err != nil {
+			if err := iClient.executeHttpbinInstall(ctx, arReq, op.templateName); err != nil {
 				iClient.eventChan <- &meshes.EventsResponse{
 					OperationId: arReq.OperationId,
 					EventType:   meshes.EventType_ERROR,
@@ -790,20 +806,15 @@ func (iClient *Client) applyConfigChange(ctx context.Context, yamlFileContents, 
 	}
 	for _, yml := range yamls {
 		if strings.TrimSpace(yml) != "" {
-			if err := iClient.applyRulePayload(ctx, namespace, []byte(yml), delete, isCustomOp); err != nil {
-				errStr := strings.TrimSpace(err.Error())
-				if delete {
-					if strings.HasSuffix(errStr, "not found") ||
-						strings.HasSuffix(errStr, "the server could not find the requested resource") {
-						// logrus.Debugf("skipping error. . .")
-						continue
-					}
-				} else {
-					if strings.HasSuffix(errStr, "already exists") {
-						continue
-					}
-				}
-				// logrus.Debugf("returning error: %v", err)
+			err := iClient.applyRulePayload(ctx, namespace, []byte(yml), delete, isCustomOp)
+			if err != nil && !kubeerror.IsAlreadyExists(err) {
+				err = errors.Wrap(err, "error while applying rule payload yaml")
+				logrus.Error(err)
+				return err
+			}
+			if delete && !kubeerror.IsNotFound(err) && !kubeerror.IsInvalid(err) && !kubeerror.IsGone(err) && !kubeerror.IsResourceExpired(err) {
+				err = errors.Wrap(err, "error while deleting rule payload yaml")
+				logrus.Error(err)
 				return err
 			}
 		}
