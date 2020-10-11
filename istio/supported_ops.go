@@ -119,31 +119,31 @@ var supportedOps = map[string]supportedOperation{
 		opType: meshes.OpCategory_CONFIGURE,
 	},
 	bookInfoRouteToV1AllServices: {
-		name:   "BookInfo: Route traffic to V1 of all BookInfo services",
+		name:   "BookInfo: Route traffic to v1 of all BookInfo services",
 		opType: meshes.OpCategory_CONFIGURE,
 	},
 	bookInfoRouteToReviewsV2ForJason: {
-		name:   "BookInfo: Route traffic to V2 of BookInfo reviews service for user Jason",
+		name:   "BookInfo: Route traffic to Reviews v2 for user Jason",
 		opType: meshes.OpCategory_CONFIGURE,
 	},
 	bookInfoCanary50pcReviewsV3: {
-		name:   "BookInfo: Route 50% of the traffic to BookInfo reviews V3",
+		name:   "BookInfo: Route 50% of the traffic to Reviews v3",
 		opType: meshes.OpCategory_CONFIGURE,
 	},
 	bookInfoCanary100pcReviewsV3: {
-		name:   "BookInfo: Route 100% of the traffic to BookInfo reviews V3",
+		name:   "BookInfo: Route 100% of the traffic to Reviews v3",
 		opType: meshes.OpCategory_CONFIGURE,
 	},
 	bookInfoInjectDelayForRatingsForJason: {
-		name:   "BookInfo: Inject a 7s delay in the traffic to BookInfo ratings service for user Jason",
+		name:   "BookInfo: Inject a 7s delay in the traffic to Ratings for user Jason",
 		opType: meshes.OpCategory_CONFIGURE,
 	},
 	bookInfoInjectHTTPAbortToRatingsForJason: {
-		name:   "BookInfo: Inject HTTP abort to BookInfo ratings service for user Jason",
+		name:   "BookInfo: Inject HTTP abort to Ratings for user Jason",
 		opType: meshes.OpCategory_CONFIGURE,
 	},
 	bookInfoProductPageCircuitBreaking: {
-		name:         "BookInfo: Configure circuit breaking with max 1 request per connection and max 1 pending request to BookInfo productpage service",
+		name:         "BookInfo: Configure circuit breaking with max 1 request per connection and max 1 pending request to Productpage service",
 		opType:       meshes.OpCategory_CONFIGURE,
 		templateName: "book_info_product_page_circuit_breaking.tmpl",
 	},
@@ -174,75 +174,75 @@ var supportedOps = map[string]supportedOperation{
 		opType: meshes.OpCategory_VALIDATE,
 	},
 	enablePrometheus: {
-		name:   "Enable Prometheus monitoring",
+		name:   "Enable Prometheus add-on",
 		opType: meshes.OpCategory_INSTALL,
 	},
 	enableGrafana: {
-		name:   "Enable Grafana dashboard",
+		name:   "Enable Grafana add-on",
 		opType: meshes.OpCategory_INSTALL,
 	},
 	enableKiali: {
-		name:   "Enable Prometheus dashboard",
+		name:   "Enable Kiali add-on",
 		opType: meshes.OpCategory_INSTALL,
 	},
 	denyAllPolicy: {
-		name:   "Deny-All policy on the namespace",
+		name:   "Deny-all policy on the namespace",
 		opType: meshes.OpCategory_CONFIGURE,
 	},
 	strictMtls: {
-		name:   "Strict Mtls policy",
+		name:   "Strict mTLS policy",
 		opType: meshes.OpCategory_CONFIGURE,
 	},
 	mutualMtls: {
-		name:   "Mutual Mtls policy",
+		name:   "Mutual mTLS policy",
 		opType: meshes.OpCategory_CONFIGURE,
 	},
 	disableMtls: {
-		name:   "Disable Mtls policy",
+		name:   "Disable mTLS policy",
 		opType: meshes.OpCategory_CONFIGURE,
 	},
 	bookInfoRouteV1ForUser: {
-		name:   "Configure bookinfo page to version v1",
+		name:   "BookInfo: Productpage to version v1",
 		opType: meshes.OpCategory_CONFIGURE,
 	},
 	bookInfoMirrorTrafficToV2: {
-		name:   "Configure bookinfo page mirror traffic from v1 to v2",
+		name:   "BookInfo: Productpage mirror traffic from v1 to v2",
 		opType: meshes.OpCategory_CONFIGURE,
 	},
 	bookInfoRetrySpecForReviews: {
-		name:   "Configure bookinfo page to retry for reviews application",
+		name:   "BookInfo: Productpage to retry for Reviews application",
 		opType: meshes.OpCategory_CONFIGURE,
 	},
 	bookInfoCanaryDeploy20V3: {
-		name:   "Configure bookinfo to forward 20 percent traffic to v2",
+		name:   "BookInfo: Forward 20 percent traffic to Reviews v2",
 		opType: meshes.OpCategory_CONFIGURE,
 	},
 	bookInfoCanaryDeploy80V3: {
-		name:   "Configure bookinfo to forward 80 percent traffic to v2",
+		name:   "BookInfo: Forward 80 percent traffic to Reviews v2",
 		opType: meshes.OpCategory_CONFIGURE,
 	},
 	bookInfoCanaryDeploy100V3: {
-		name:   "Configure bookinfo to forward 100 percent traffic to v2",
+		name:   "BookInfo: Forward 100 percent traffic to Reviews v2",
 		opType: meshes.OpCategory_CONFIGURE,
 	},
 	bookInfoInjectDelayFaultRatings: {
-		name:   "Configure bookinfo to add delay to ratings application",
+		name:   "BookInfo: Add delay to Ratings",
 		opType: meshes.OpCategory_CONFIGURE,
 	},
 	bookInfoInjectDelayFaultReviews: {
-		name:   "Configure bookinfo to add delay to ratings application",
+		name:   "BookInfo: Add delay in Ratings",
 		opType: meshes.OpCategory_CONFIGURE,
 	},
 	bookInfoConfigureConnectionPoolOutlier: {
-		name:   "Configure bookinfo for connection pool limits and outlier detection",
+		name:   "BookInfo: Connection pool limits and outlier detection",
 		opType: meshes.OpCategory_CONFIGURE,
 	},
 	bookInfoAllowGet: {
-		name:   "Configure bookinfo to allow only GET requests",
+		name:   "BookInfo: Allow only GET requests",
 		opType: meshes.OpCategory_CONFIGURE,
 	},
 	bookInfoAllowReviewsForUser: {
-		name:   "Configure bookinfo to allow reviews only for user",
+		name:   "BookInfo: Allow Reviews only for user",
 		opType: meshes.OpCategory_CONFIGURE,
 	},
 }
