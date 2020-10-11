@@ -175,31 +175,31 @@ var supportedOps = map[string]supportedOperation{
 	},
 	enablePrometheus: {
 		name:   "Enable Prometheus monitoring",
-		opType: meshes.OpCatergory_INSTALL,
+		opType: meshes.OpCategory_INSTALL,
 	},
 	enableGrafana: {
 		name:   "Enable Grafana dashboard",
-		opType: meshes.OpCatergory_INSTALL,
+		opType: meshes.OpCategory_INSTALL,
 	},
 	enableKiali: {
 		name:   "Enable Prometheus dashboard",
-		opType: meshes.OpCatergory_INSTALL,
+		opType: meshes.OpCategory_INSTALL,
 	},
 	denyAllPolicy: {
 		name:   "Deny-All policy on the namespace",
-		opType: meshes.OpCatergory_CONFIGURE,
+		opType: meshes.OpCategory_CONFIGURE,
 	},
 	strictMtls: {
 		name:   "Strict Mtls policy",
-		opType: meshes.OpCatergory_CONFIGURE,
+		opType: meshes.OpCategory_CONFIGURE,
 	},
 	mutualMtls: {
 		name:   "Mutual Mtls policy",
-		opType: meshes.OpCatergory_CONFIGURE,
+		opType: meshes.OpCategory_CONFIGURE,
 	},
 	disableMtls: {
 		name:   "Disable Mtls policy",
-		opType: meshes.OpCatergory_CONFIGURE,
+		opType: meshes.OpCategory_CONFIGURE,
 	},
 	bookInfoRouteV1ForUser: {
 		name:   "Configure bookinfo page to version v1",
