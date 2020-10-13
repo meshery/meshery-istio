@@ -16,6 +16,8 @@
 package istio
 
 import (
+	"fmt"
+	"io/ioutil"
 	"time"
 
 	"github.com/layer5io/meshery-istio/meshes"
@@ -29,6 +31,12 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/ghodss/yaml"
+	"github.com/layer5io/gokit/models"
+	"github.com/layer5io/gokit/utils"
+)
+
+var (
+	kubeConfigPath = fmt.Sprintf("%s/.kube/config", utils.GetHome())
 )
 
 // Client represents an Istio client in Meshery
@@ -51,6 +59,10 @@ func configClient(kubeconfig []byte, contextName string) (*rest.Config, error) {
 		}
 		if contextName != "" {
 			ccfg.CurrentContext = contextName
+		}
+		err = writeKubeconfig(kubeconfig, contextName, kubeConfigPath)
+		if err != nil {
+			return nil, err
 		}
 
 		return clientcmd.NewDefaultClientConfig(*ccfg, &clientcmd.ConfigOverrides{}).ClientConfig()
@@ -118,4 +130,28 @@ func monkeyPatchingToSupportInsecureConn(data []byte) []byte {
 		return data
 	}
 	return data1
+}
+
+// writeKubeconfig creates kubeconfig in local container
+func writeKubeconfig(kubeconfig []byte, contextName string, path string) error {
+
+	yamlConfig := models.Kubeconfig{}
+	err := yaml.Unmarshal(kubeconfig, &yamlConfig)
+	if err != nil {
+		return err
+	}
+
+	yamlConfig.CurrentContext = contextName
+
+	d, err := yaml.Marshal(yamlConfig)
+	if err != nil {
+		return err
+	}
+
+	err = ioutil.WriteFile(path, d, 0600)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -25,7 +25,7 @@ import (
 
 const (
 	repoURL     = "https://api.github.com/repos/istio/istio/releases/latest"
-	urlSuffix   = "-osx.tar.gz"
+	urlSuffix   = "-linux-amd64.tar.gz"
 	crdPattern  = "crd(.*)yaml"
 	cachePeriod = 6 * time.Hour
 )
@@ -42,6 +42,9 @@ var (
 	httpbinInstallFile        = path.Join(basePath, "samples/httpbin/httpbin.yaml")
 	httpbinGatewayInstallFile = path.Join(basePath, "samples/httpbin/httpbin-gateway.yaml")
 
+	emojiVotoInstallFile        = path.Join(basePath, "istio/config_templates/emojivoto.yaml")
+	emojiVotoGatewayInstallFile = path.Join(basePath, "istio/config_templates/emojivoto-gateway.yaml")
+
 	bookInfoGatewayInstallFile                   = path.Join(basePath, "samples/bookinfo/networking/bookinfo-gateway.yaml")
 	bookInfoInstallFile                          = path.Join(basePath, "samples/bookinfo/platform/kube/bookinfo.yaml")
 	defaultBookInfoDestRulesFile                 = path.Join(basePath, "samples/bookinfo/networking/destination-rule-all-mtls.yaml")
@@ -51,6 +54,13 @@ var (
 	bookInfoCanary100pcReviewsV3File             = path.Join(basePath, "samples/bookinfo/networking/virtual-service-reviews-v3.yaml")
 	bookInfoInjectDelayForRatingsForJasonFile    = path.Join(basePath, "samples/bookinfo/networking/virtual-service-ratings-test-delay.yaml")
 	bookInfoInjectHTTPAbortToRatingsForJasonFile = path.Join(basePath, "samples/bookinfo/networking/virtual-service-ratings-test-abort.yaml")
+
+	prometheusInstallFile = path.Join(basePath, "samples/addons/prometheus.yaml")
+	kialiInstallFile      = path.Join(basePath, "samples/addons/kiali.yaml")
+	grafanaInstallFile    = path.Join(basePath, "samples/addons/grafana.yaml")
+	jaegerInstallFile     = path.Join(basePath, "samples/addons/jaeger.yaml")
+	zipkinInstallFile     = path.Join(basePath, "samples/addons/extras/zipkin.yaml")
+	operatorInstallFile   = path.Join(basePath, "samples/addons/extras/prometheus-operator.yaml")
 )
 
 type apiInfo struct {
@@ -65,6 +75,7 @@ type asset struct {
 	DownloadURL string `json:"browser_download_url,omitempty"`
 }
 
+// AddLabel injects label into namespace
 func (iClient *Client) AddLabel(namespace string, remove bool) error {
 	ns, err := iClient.k8sClientset.CoreV1().Namespaces().Get(context.TODO(), namespace, metav1.GetOptions{})
 	if err != nil {
@@ -393,6 +404,30 @@ func (iClient *Client) getCRDsYAML() ([]string, error) {
 	return res, nil
 }
 
+func (iClient *Client) getPrometheusYAML() (string, error) {
+	return iClient.getIstioComponentYAML(prometheusInstallFile)
+}
+
+func (iClient *Client) getKialiYAML() (string, error) {
+	return iClient.getIstioComponentYAML(kialiInstallFile)
+}
+
+func (iClient *Client) getGrafanaYAML() (string, error) {
+	return iClient.getIstioComponentYAML(grafanaInstallFile)
+}
+
+func (iClient *Client) getJaegerYAML() (string, error) {
+	return iClient.getIstioComponentYAML(jaegerInstallFile)
+}
+
+func (iClient *Client) getZipkinYAML() (string, error) {
+	return iClient.getIstioComponentYAML(zipkinInstallFile)
+}
+
+func (iClient *Client) getOperatorYAML() (string, error) {
+	return iClient.getIstioComponentYAML(operatorInstallFile)
+}
+
 func (iClient *Client) getLatestIstioYAML() (string, error) {
 	return iClient.getIstioComponentYAML(installWithmTLSFile)
 }
@@ -411,6 +446,14 @@ func (iClient *Client) getHttpbinAppYAML() (string, error) {
 
 func (iClient *Client) getHttpbinGatewayYAML() (string, error) {
 	return iClient.getIstioComponentYAML(httpbinGatewayInstallFile)
+}
+
+func (iClient *Client) getEmojiVotoAppYAML() (string, error) {
+	return iClient.getIstioComponentYAML(emojiVotoInstallFile)
+}
+
+func (iClient *Client) getEmojiVotoGatewayYAML() (string, error) {
+	return iClient.getIstioComponentYAML(emojiVotoGatewayInstallFile)
 }
 
 func (iClient *Client) getBookInfoDefaultDesinationRulesYAML() (string, error) {

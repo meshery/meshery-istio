@@ -30,12 +30,15 @@ const (
 
 	// Install istio
 	installv173IstioCommand     = "istio_install_v173"
-	installv173IstioCommandTls  = "istio_install_v173_tls"
+	installv173IstioCommandTLS  = "istio_install_v173_tls"
 	installOperatorIstioCommand = "istio_install_operator"
 	installmTLSIstioCommand     = "istio_mtls_install"
 	verifyInstallation          = "verify_installation" // requires
 	installAddons               = "install_addons"
 	injectLabels                = "inject_labels"
+
+	// EmojiVoto
+	installEmojiVoto = "install_emojivoto"
 
 	// Bookinfo
 	installBookInfoCommand                   = "install_book_info"
@@ -51,29 +54,32 @@ const (
 	bookInfoProductPageCircuitBreaking       = "bookInfoProductPageCircuitBreaking"
 
 	// HTTPbin
-	installHttpbinCommandV1 = "install_http_binv1"
-	installHttpbinCommandV2 = "install_http_binv2"
+	installHttpbinCommand = "install_http_bin"
 
-	// Labs
+	// Addons
 	enablePrometheus = "enable_prometheus"
 	enableGrafana    = "enable_grafana"
 	enableKiali      = "enable_kiali"
-	denyAllPolicy    = "deny_all_policy"
-	strictMtls       = "strict_mtls"
-	mutualMtls       = "mutual_mtls"
-	disableMtls      = "disable_mtls"
+	enableZipkin     = "enable_zipkin"
+	enableOperator   = "enable_operator"
+	enableJaeger     = "enable_jaeger"
 
-	bookInfoRouteV1ForUser                 = "bookinfo_route_v1_for_user"
-	bookInfoMirrorTrafficToV2              = "bookinfo_mirror_traffic_to_v2"
-	bookInfoRetrySpecForReviews            = "bookinfo_retry_spec_for_reviews"
-	bookInfoCanaryDeploy20V3               = "bookinfo_canary_deploy_20_v3"
-	bookInfoCanaryDeploy80V3               = "bookinfo_canary_deploy_80_v3"
-	bookInfoCanaryDeploy100V3              = "bookinfo_canary_deploy_100_v3"
-	bookInfoInjectDelayFaultRatings        = "bookinfo_inject_delay_fault_ratings"
-	bookInfoInjectDelayFaultReviews        = "bookinfo_inject_delay_fault_reviews"
-	bookInfoConfigureConnectionPoolOutlier = "bookinfo_configure_connection_pool_outlier"
-	bookInfoAllowGet                       = "bookinfo_allow_get"
-	bookInfoAllowReviewsForUser            = "bookinfo_allow_reviews_for_user"
+	denyAllPolicy = "deny_all_policy"
+	strictMtls    = "strict_mtls"
+	mutualMtls    = "mutual_mtls"
+	disableMtls   = "disable_mtls"
+
+	// bookInfoRouteV1ForUser                 = "bookinfo_route_v1_for_user"
+	// bookInfoMirrorTrafficToV2              = "bookinfo_mirror_traffic_to_v2"
+	// bookInfoRetrySpecForReviews            = "bookinfo_retry_spec_for_reviews"
+	// bookInfoCanaryDeploy20V3               = "bookinfo_canary_deploy_20_v3"
+	// bookInfoCanaryDeploy80V3               = "bookinfo_canary_deploy_80_v3"
+	// bookInfoCanaryDeploy100V3              = "bookinfo_canary_deploy_100_v3"
+	// bookInfoInjectDelayFaultRatings        = "bookinfo_inject_delay_fault_ratings"
+	// bookInfoInjectDelayFaultReviews        = "bookinfo_inject_delay_fault_reviews"
+	// bookInfoConfigureConnectionPoolOutlier = "bookinfo_configure_connection_pool_outlier"
+	// bookInfoAllowGet                       = "bookinfo_allow_get"
+	// bookInfoAllowReviewsForUser            = "bookinfo_allow_reviews_for_user"
 
 	// SMI conformance test
 	smiConformanceCommand = "smiConformanceTest"
@@ -85,7 +91,7 @@ var supportedOps = map[string]supportedOperation{
 		name:   "Istio 1.7.3",
 		opType: meshes.OpCategory_INSTALL,
 	},
-	installv173IstioCommandTls: {
+	installv173IstioCommandTLS: {
 		name:   "Istio 1.7.3 with mTLS",
 		opType: meshes.OpCategory_INSTALL,
 	},
@@ -102,6 +108,11 @@ var supportedOps = map[string]supportedOperation{
 		// templateName: "install_istio.tmpl",
 		opType: meshes.OpCategory_SAMPLE_APPLICATION,
 	},
+	installEmojiVoto: {
+		name: "EmojiVoto Application",
+		// templateName: "install_istio.tmpl",
+		opType: meshes.OpCategory_SAMPLE_APPLICATION,
+	},
 	runVet: {
 		name:   "Check configuration",
 		opType: meshes.OpCategory_VALIDATE,
@@ -114,51 +125,46 @@ var supportedOps = map[string]supportedOperation{
 		opType:       meshes.OpCategory_CONFIGURE,
 		templateName: "circuit_breaking.tmpl",
 	},
-	bookInfoDefaultDestinationRules: {
-		name:   "BookInfo: Default BookInfo destination rules (defines subsets)",
-		opType: meshes.OpCategory_CONFIGURE,
-	},
-	bookInfoRouteToV1AllServices: {
-		name:   "BookInfo: Route traffic to v1 of all BookInfo services",
-		opType: meshes.OpCategory_CONFIGURE,
-	},
-	bookInfoRouteToReviewsV2ForJason: {
-		name:   "BookInfo: Route traffic to Reviews v2 for user Jason",
-		opType: meshes.OpCategory_CONFIGURE,
-	},
-	bookInfoCanary50pcReviewsV3: {
-		name:   "BookInfo: Route 50% of the traffic to Reviews v3",
-		opType: meshes.OpCategory_CONFIGURE,
-	},
-	bookInfoCanary100pcReviewsV3: {
-		name:   "BookInfo: Route 100% of the traffic to Reviews v3",
-		opType: meshes.OpCategory_CONFIGURE,
-	},
-	bookInfoInjectDelayForRatingsForJason: {
-		name:   "BookInfo: Inject a 7s delay in the traffic to Ratings for user Jason",
-		opType: meshes.OpCategory_CONFIGURE,
-	},
-	bookInfoInjectHTTPAbortToRatingsForJason: {
-		name:   "BookInfo: Inject HTTP abort to Ratings for user Jason",
-		opType: meshes.OpCategory_CONFIGURE,
-	},
-	bookInfoProductPageCircuitBreaking: {
-		name:         "BookInfo: Configure circuit breaking with max 1 request per connection and max 1 pending request to Productpage service",
-		opType:       meshes.OpCategory_CONFIGURE,
-		templateName: "book_info_product_page_circuit_breaking.tmpl",
-	},
+	// bookInfoDefaultDestinationRules: {
+	// 	name:   "BookInfo: Default BookInfo destination rules (defines subsets)",
+	// 	opType: meshes.OpCategory_CONFIGURE,
+	// },
+	// bookInfoRouteToV1AllServices: {
+	// 	name:   "BookInfo: Route traffic to V1 of all BookInfo services",
+	// 	opType: meshes.OpCategory_CONFIGURE,
+	// },
+	// bookInfoRouteToReviewsV2ForJason: {
+	// 	name:   "BookInfo: Route traffic to V2 of BookInfo reviews service for user Jason",
+	// 	opType: meshes.OpCategory_CONFIGURE,
+	// },
+	// bookInfoCanary50pcReviewsV3: {
+	// 	name:   "BookInfo: Route 50% of the traffic to BookInfo reviews V3",
+	// 	opType: meshes.OpCategory_CONFIGURE,
+	// },
+	// bookInfoCanary100pcReviewsV3: {
+	// 	name:   "BookInfo: Route 100% of the traffic to BookInfo reviews V3",
+	// 	opType: meshes.OpCategory_CONFIGURE,
+	// },
+	// bookInfoInjectDelayForRatingsForJason: {
+	// 	name:   "BookInfo: Inject a 7s delay in the traffic to BookInfo ratings service for user Jason",
+	// 	opType: meshes.OpCategory_CONFIGURE,
+	// },
+	// bookInfoInjectHTTPAbortToRatingsForJason: {
+	// 	name:   "BookInfo: Inject HTTP abort to BookInfo ratings service for user Jason",
+	// 	opType: meshes.OpCategory_CONFIGURE,
+	// },
+	// bookInfoProductPageCircuitBreaking: {
+	// 	name:         "BookInfo: Configure circuit breaking with max 1 request per connection and max 1 pending request to BookInfo productpage service",
+	// 	opType:       meshes.OpCategory_CONFIGURE,
+	// 	templateName: "book_info_product_page_circuit_breaking.tmpl",
+	// },
 	installSMI: {
 		name:   "Service Mesh Interface (SMI) Istio Adapter",
 		opType: meshes.OpCategory_INSTALL,
 	},
-	installHttpbinCommandV1: {
-		name:         "httpbin Application V1",
+	installHttpbinCommand: {
+		name:         "httpbin Application",
 		templateName: "v1",
-		opType:       meshes.OpCategory_SAMPLE_APPLICATION,
-	},
-	installHttpbinCommandV2: {
-		name:         "httpbin Application V2 (Needs V1 installed)",
-		templateName: "v2",
 		opType:       meshes.OpCategory_SAMPLE_APPLICATION,
 	},
 	customOpCommand: {
@@ -174,75 +180,87 @@ var supportedOps = map[string]supportedOperation{
 		opType: meshes.OpCategory_VALIDATE,
 	},
 	enablePrometheus: {
-		name:   "Enable Prometheus add-on",
-		opType: meshes.OpCategory_INSTALL,
+		name:   "Prometheus monitoring",
+		opType: meshes.OpCategory_CONFIGURE,
 	},
 	enableGrafana: {
-		name:   "Enable Grafana add-on",
-		opType: meshes.OpCategory_INSTALL,
+		name:   "Grafana dashboard",
+		opType: meshes.OpCategory_CONFIGURE,
 	},
 	enableKiali: {
-		name:   "Enable Kiali add-on",
-		opType: meshes.OpCategory_INSTALL,
+		name:   "Kiali dashboard",
+		opType: meshes.OpCategory_CONFIGURE,
+	},
+	enableZipkin: {
+		name:   "Zipkin dashboard",
+		opType: meshes.OpCategory_CONFIGURE,
+	},
+	enableOperator: {
+		name:   "Istio Operator",
+		opType: meshes.OpCategory_CONFIGURE,
+	},
+	enableJaeger: {
+		name:   "Jaeger Dashboard",
+		opType: meshes.OpCategory_CONFIGURE,
 	},
 	denyAllPolicy: {
-		name:   "Deny-all policy on the namespace",
-		opType: meshes.OpCategory_CONFIGURE,
+		name:   "Deny-All policy on the namespace",
+		opType: meshes.OpCategory_CONFIGURE, // Yet to implement
 	},
 	strictMtls: {
-		name:   "Strict mTLS policy",
-		opType: meshes.OpCategory_CONFIGURE,
+		name:   "Strict Mtls policy",
+		opType: meshes.OpCategory_CONFIGURE, // Yet to implement
 	},
 	mutualMtls: {
-		name:   "Mutual mTLS policy",
-		opType: meshes.OpCategory_CONFIGURE,
+		name:   "Mutual Mtls policy",
+		opType: meshes.OpCategory_CONFIGURE, // Yet to implement
 	},
 	disableMtls: {
-		name:   "Disable mTLS policy",
-		opType: meshes.OpCategory_CONFIGURE,
+		name:   "Disable Mtls policy",
+		opType: meshes.OpCategory_CONFIGURE, // Yet to implement
 	},
-	bookInfoRouteV1ForUser: {
-		name:   "BookInfo: Productpage to version v1",
-		opType: meshes.OpCategory_CONFIGURE,
-	},
-	bookInfoMirrorTrafficToV2: {
-		name:   "BookInfo: Productpage mirror traffic from v1 to v2",
-		opType: meshes.OpCategory_CONFIGURE,
-	},
-	bookInfoRetrySpecForReviews: {
-		name:   "BookInfo: Productpage to retry for Reviews application",
-		opType: meshes.OpCategory_CONFIGURE,
-	},
-	bookInfoCanaryDeploy20V3: {
-		name:   "BookInfo: Forward 20 percent traffic to Reviews v2",
-		opType: meshes.OpCategory_CONFIGURE,
-	},
-	bookInfoCanaryDeploy80V3: {
-		name:   "BookInfo: Forward 80 percent traffic to Reviews v2",
-		opType: meshes.OpCategory_CONFIGURE,
-	},
-	bookInfoCanaryDeploy100V3: {
-		name:   "BookInfo: Forward 100 percent traffic to Reviews v2",
-		opType: meshes.OpCategory_CONFIGURE,
-	},
-	bookInfoInjectDelayFaultRatings: {
-		name:   "BookInfo: Add delay to Ratings",
-		opType: meshes.OpCategory_CONFIGURE,
-	},
-	bookInfoInjectDelayFaultReviews: {
-		name:   "BookInfo: Add delay in Ratings",
-		opType: meshes.OpCategory_CONFIGURE,
-	},
-	bookInfoConfigureConnectionPoolOutlier: {
-		name:   "BookInfo: Connection pool limits and outlier detection",
-		opType: meshes.OpCategory_CONFIGURE,
-	},
-	bookInfoAllowGet: {
-		name:   "BookInfo: Allow only GET requests",
-		opType: meshes.OpCategory_CONFIGURE,
-	},
-	bookInfoAllowReviewsForUser: {
-		name:   "BookInfo: Allow Reviews only for user",
-		opType: meshes.OpCategory_CONFIGURE,
-	},
+	// bookInfoRouteV1ForUser: {
+	// 	name:   "Configure bookinfo page to version v1",
+	// 	opType: meshes.OpCategory_CONFIGURE,
+	// },
+	// bookInfoMirrorTrafficToV2: {
+	// 	name:   "Configure bookinfo page mirror traffic from v1 to v2",
+	// 	opType: meshes.OpCategory_CONFIGURE,
+	// },
+	// bookInfoRetrySpecForReviews: {
+	// 	name:   "Configure bookinfo page to retry for reviews application",
+	// 	opType: meshes.OpCategory_CONFIGURE,
+	// },
+	// bookInfoCanaryDeploy20V3: {
+	// 	name:   "Configure bookinfo to forward 20 percent traffic to v2",
+	// 	opType: meshes.OpCategory_CONFIGURE,
+	// },
+	// bookInfoCanaryDeploy80V3: {
+	// 	name:   "Configure bookinfo to forward 80 percent traffic to v2",
+	// 	opType: meshes.OpCategory_CONFIGURE,
+	// },
+	// bookInfoCanaryDeploy100V3: {
+	// 	name:   "Configure bookinfo to forward 100 percent traffic to v2",
+	// 	opType: meshes.OpCategory_CONFIGURE,
+	// },
+	// bookInfoInjectDelayFaultRatings: {
+	// 	name:   "Configure bookinfo to add delay to ratings application",
+	// 	opType: meshes.OpCategory_CONFIGURE,
+	// },
+	// bookInfoInjectDelayFaultReviews: {
+	// 	name:   "Configure bookinfo to add delay to ratings application",
+	// 	opType: meshes.OpCategory_CONFIGURE,
+	// },
+	// bookInfoConfigureConnectionPoolOutlier: {
+	// 	name:   "Configure bookinfo for connection pool limits and outlier detection",
+	// 	opType: meshes.OpCategory_CONFIGURE,
+	// },
+	// bookInfoAllowGet: {
+	// 	name:   "Configure bookinfo to allow only GET requests",
+	// 	opType: meshes.OpCategory_CONFIGURE,
+	// },
+	// bookInfoAllowReviewsForUser: {
+	// 	name:   "Configure bookinfo to allow reviews only for user",
+	// 	opType: meshes.OpCategory_CONFIGURE,
+	// },
 }

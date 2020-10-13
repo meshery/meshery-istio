@@ -43,10 +43,18 @@ if ! curl -L "$URL" | tar xz; then
   exit 8
 fi
 
-if ! ./istio-$ISTIO_VERSION/bin/istioctl install --set profile=$ISTIO_PROFILE --set meshConfig.accessLogFile=/dev/stdout; then
-	exit 9
+if [ "$ISTIO_MODE" = "operator" ]; then
+  if ! ./istio-$ISTIO_VERSION/bin/istioctl operator init; then
+    exit 9
+  fi
+else 
+  if ! ./istio-$ISTIO_VERSION/bin/istioctl install --set profile=$ISTIO_PROFILE --set meshConfig.accessLogFile=/dev/stdout; then
+  	exit 10
+  fi
 fi
 
-mv istio-$ISTIO_VERSION /tmp/istio
+if ! mv istio-$ISTIO_VERSION /tmp/istio; then
+  exit 11
+fi
 
 

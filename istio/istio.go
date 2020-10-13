@@ -395,39 +395,7 @@ func (iClient *Client) executeInstall(ctx context.Context, arReq *meshes.ApplyRu
 	return nil
 }
 
-func (iClient *Client) executeHttpbinInstall(ctx context.Context, arReq *meshes.ApplyRuleRequest, version string) error {
-	if version == "v2" {
-		if arReq.DeleteOp {
-			err := iClient.k8sClientset.AppsV1().Deployments(arReq.Namespace).Delete(context.TODO(), httpbinv2name, metav1.DeleteOptions{})
-			if err != nil {
-				err = errors.Wrapf(err, "Unable to delete deployment httpbin v2")
-				logrus.Error(err)
-				return err
-			}
-		}
-
-		deploy, err := iClient.k8sClientset.AppsV1().Deployments(arReq.Namespace).Get(context.TODO(), "httpbin", metav1.GetOptions{})
-		if err != nil {
-			err = errors.Wrapf(err, "Unable to get deployment httpbin")
-			logrus.Error(err)
-			return err
-		}
-
-		if deploy.ObjectMeta.Labels == nil {
-			deploy.ObjectMeta.Labels = map[string]string{}
-		}
-		deploy.ObjectMeta.Labels["version"] = "v2"
-		deploy.ObjectMeta.Name = httpbinv2name
-		deploy.ObjectMeta.ResourceVersion = ""
-
-		_, err = iClient.k8sClientset.AppsV1().Deployments(arReq.Namespace).Create(context.TODO(), deploy, metav1.CreateOptions{})
-		if err != nil && !kubeerror.IsAlreadyExists(err) {
-			err = errors.Wrapf(err, "Unable to create deployment httpbin version 2")
-			logrus.Error(err)
-			return err
-		}
-		return nil
-	}
+func (iClient *Client) executeHttpbinInstall(ctx context.Context, arReq *meshes.ApplyRuleRequest) error {
 
 	if !arReq.DeleteOp {
 		if err := iClient.labelNamespaceForAutoInjection(ctx, arReq.Namespace); err != nil {
@@ -465,6 +433,29 @@ func (iClient *Client) executeBookInfoInstall(ctx context.Context, arReq *meshes
 		return err
 	}
 	yamlFileContents, err = iClient.getBookInfoGatewayYAML()
+	if err != nil {
+		return err
+	}
+	if err := iClient.applyConfigChange(ctx, yamlFileContents, arReq.Namespace, arReq.DeleteOp, false); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (iClient *Client) executeEmojiVotoInstall(ctx context.Context, arReq *meshes.ApplyRuleRequest) error {
+	if !arReq.DeleteOp {
+		if err := iClient.labelNamespaceForAutoInjection(ctx, arReq.Namespace); err != nil {
+			return err
+		}
+	}
+	yamlFileContents, err := iClient.getEmojiVotoAppYAML()
+	if err != nil {
+		return err
+	}
+	if err := iClient.applyConfigChange(ctx, yamlFileContents, arReq.Namespace, arReq.DeleteOp, false); err != nil {
+		return err
+	}
+	yamlFileContents, err = iClient.getEmojiVotoGatewayYAML()
 	if err != nil {
 		return err
 	}
@@ -544,6 +535,180 @@ func (iClient *Client) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRu
 	isCustomOp := false
 
 	switch arReq.OpName {
+	case enablePrometheus:
+		go func() {
+			opName1 := "deploying"
+			if arReq.DeleteOp {
+				opName1 = "removing"
+			}
+			if err := iClient.executePrometheusInstall(ctx, arReq); err != nil {
+				iClient.eventChan <- &meshes.EventsResponse{
+					OperationId: arReq.OperationId,
+					EventType:   meshes.EventType_ERROR,
+					Summary:     fmt.Sprintf("Error while %s Istio", opName1),
+					Details:     err.Error(),
+				}
+				return
+			}
+			opName := "deployed"
+			if arReq.DeleteOp {
+				opName = "removed"
+			}
+			iClient.eventChan <- &meshes.EventsResponse{
+				OperationId: arReq.OperationId,
+				EventType:   meshes.EventType_INFO,
+				Summary:     fmt.Sprintf("Istio %s successfully", opName),
+				Details:     fmt.Sprintf("The latest version of Istio is now %s.", opName),
+			}
+		}()
+		return &meshes.ApplyRuleResponse{
+			OperationId: arReq.OperationId,
+		}, nil
+	case enableGrafana:
+		go func() {
+			opName1 := "deploying"
+			if arReq.DeleteOp {
+				opName1 = "removing"
+			}
+			if err := iClient.executeGrafanaInstall(ctx, arReq); err != nil {
+				iClient.eventChan <- &meshes.EventsResponse{
+					OperationId: arReq.OperationId,
+					EventType:   meshes.EventType_ERROR,
+					Summary:     fmt.Sprintf("Error while %s Istio", opName1),
+					Details:     err.Error(),
+				}
+				return
+			}
+			opName := "deployed"
+			if arReq.DeleteOp {
+				opName = "removed"
+			}
+			iClient.eventChan <- &meshes.EventsResponse{
+				OperationId: arReq.OperationId,
+				EventType:   meshes.EventType_INFO,
+				Summary:     fmt.Sprintf("Istio %s successfully", opName),
+				Details:     fmt.Sprintf("The latest version of Istio is now %s.", opName),
+			}
+		}()
+		return &meshes.ApplyRuleResponse{
+			OperationId: arReq.OperationId,
+		}, nil
+	case enableKiali:
+		go func() {
+			opName1 := "deploying"
+			if arReq.DeleteOp {
+				opName1 = "removing"
+			}
+			if err := iClient.executeKialiInstall(ctx, arReq); err != nil {
+				iClient.eventChan <- &meshes.EventsResponse{
+					OperationId: arReq.OperationId,
+					EventType:   meshes.EventType_ERROR,
+					Summary:     fmt.Sprintf("Error while %s Istio", opName1),
+					Details:     err.Error(),
+				}
+				return
+			}
+			opName := "deployed"
+			if arReq.DeleteOp {
+				opName = "removed"
+			}
+			iClient.eventChan <- &meshes.EventsResponse{
+				OperationId: arReq.OperationId,
+				EventType:   meshes.EventType_INFO,
+				Summary:     fmt.Sprintf("Istio %s successfully", opName),
+				Details:     fmt.Sprintf("The latest version of Istio is now %s.", opName),
+			}
+		}()
+		return &meshes.ApplyRuleResponse{
+			OperationId: arReq.OperationId,
+		}, nil
+	case enableZipkin:
+		go func() {
+			opName1 := "deploying"
+			if arReq.DeleteOp {
+				opName1 = "removing"
+			}
+			if err := iClient.executeZipkinInstall(ctx, arReq); err != nil {
+				iClient.eventChan <- &meshes.EventsResponse{
+					OperationId: arReq.OperationId,
+					EventType:   meshes.EventType_ERROR,
+					Summary:     fmt.Sprintf("Error while %s Istio", opName1),
+					Details:     err.Error(),
+				}
+				return
+			}
+			opName := "deployed"
+			if arReq.DeleteOp {
+				opName = "removed"
+			}
+			iClient.eventChan <- &meshes.EventsResponse{
+				OperationId: arReq.OperationId,
+				EventType:   meshes.EventType_INFO,
+				Summary:     fmt.Sprintf("Istio %s successfully", opName),
+				Details:     fmt.Sprintf("The latest version of Istio is now %s.", opName),
+			}
+		}()
+		return &meshes.ApplyRuleResponse{
+			OperationId: arReq.OperationId,
+		}, nil
+	case enableOperator:
+		go func() {
+			opName1 := "deploying"
+			if arReq.DeleteOp {
+				opName1 = "removing"
+			}
+			if err := iClient.executeOperatorInstall(ctx, arReq); err != nil {
+				iClient.eventChan <- &meshes.EventsResponse{
+					OperationId: arReq.OperationId,
+					EventType:   meshes.EventType_ERROR,
+					Summary:     fmt.Sprintf("Error while %s Istio", opName1),
+					Details:     err.Error(),
+				}
+				return
+			}
+			opName := "deployed"
+			if arReq.DeleteOp {
+				opName = "removed"
+			}
+			iClient.eventChan <- &meshes.EventsResponse{
+				OperationId: arReq.OperationId,
+				EventType:   meshes.EventType_INFO,
+				Summary:     fmt.Sprintf("Istio %s successfully", opName),
+				Details:     fmt.Sprintf("The latest version of Istio is now %s.", opName),
+			}
+		}()
+		return &meshes.ApplyRuleResponse{
+			OperationId: arReq.OperationId,
+		}, nil
+	case enableJaeger:
+		go func() {
+			opName1 := "deploying"
+			if arReq.DeleteOp {
+				opName1 = "removing"
+			}
+			if err := iClient.executeJaegerInstall(ctx, arReq); err != nil {
+				iClient.eventChan <- &meshes.EventsResponse{
+					OperationId: arReq.OperationId,
+					EventType:   meshes.EventType_ERROR,
+					Summary:     fmt.Sprintf("Error while %s Istio", opName1),
+					Details:     err.Error(),
+				}
+				return
+			}
+			opName := "deployed"
+			if arReq.DeleteOp {
+				opName = "removed"
+			}
+			iClient.eventChan <- &meshes.EventsResponse{
+				OperationId: arReq.OperationId,
+				EventType:   meshes.EventType_INFO,
+				Summary:     fmt.Sprintf("Istio %s successfully", opName),
+				Details:     fmt.Sprintf("The latest version of Istio is now %s.", opName),
+			}
+		}()
+		return &meshes.ApplyRuleResponse{
+			OperationId: arReq.OperationId,
+		}, nil
 	case installv173IstioCommand, installOperatorIstioCommand:
 		go func() {
 			opName1 := "deploying"
@@ -634,13 +799,13 @@ func (iClient *Client) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRu
 			OperationId: arReq.OperationId,
 		}, nil
 
-	case installHttpbinCommandV1, installHttpbinCommandV2:
+	case installHttpbinCommand:
 		go func() {
 			opName1 := "deploying"
 			if arReq.DeleteOp {
 				opName1 = "removing"
 			}
-			if err := iClient.executeHttpbinInstall(ctx, arReq, op.templateName); err != nil {
+			if err := iClient.executeHttpbinInstall(ctx, arReq); err != nil {
 				iClient.eventChan <- &meshes.EventsResponse{
 					OperationId: arReq.OperationId,
 					EventType:   meshes.EventType_ERROR,
@@ -659,6 +824,36 @@ func (iClient *Client) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRu
 				Summary:     fmt.Sprintf("Httpbin app %s successfully", opName),
 				Details:     fmt.Sprintf("The Istio canonical Httpbin app is now %s.", opName),
 			}
+		}()
+		return &meshes.ApplyRuleResponse{
+			OperationId: arReq.OperationId,
+		}, nil
+	case installEmojiVoto:
+		go func() {
+			opName1 := "deploying"
+			if arReq.DeleteOp {
+				opName1 = "removing"
+			}
+			if err := iClient.executeEmojiVotoInstall(ctx, arReq); err != nil {
+				iClient.eventChan <- &meshes.EventsResponse{
+					OperationId: arReq.OperationId,
+					EventType:   meshes.EventType_ERROR,
+					Summary:     fmt.Sprintf("Error while %s the EmojiVoto App", opName1),
+					Details:     err.Error(),
+				}
+				return
+			}
+			opName := "deployed"
+			if arReq.DeleteOp {
+				opName = "removed"
+			}
+			iClient.eventChan <- &meshes.EventsResponse{
+				OperationId: arReq.OperationId,
+				EventType:   meshes.EventType_INFO,
+				Summary:     fmt.Sprintf("EmojiVoto app %s successfully", opName),
+				Details:     fmt.Sprintf("The EmojiVoto app is now %s.", opName),
+			}
+
 		}()
 		return &meshes.ApplyRuleResponse{
 			OperationId: arReq.OperationId,
