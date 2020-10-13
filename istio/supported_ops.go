@@ -30,7 +30,7 @@ const (
 
 	// Install istio
 	installv173IstioCommand     = "istio_install_v173"
-	installv173IstioCommandTls  = "istio_install_v173_tls"
+	installv173IstioCommandTLS  = "istio_install_v173_tls"
 	installOperatorIstioCommand = "istio_install_operator"
 	installmTLSIstioCommand     = "istio_mtls_install"
 	verifyInstallation          = "verify_installation" // requires
@@ -91,7 +91,7 @@ var supportedOps = map[string]supportedOperation{
 		name:   "Istio 1.7.3",
 		opType: meshes.OpCategory_INSTALL,
 	},
-	installv173IstioCommandTls: {
+	installv173IstioCommandTLS: {
 		name:   "Istio 1.7.3 with mTLS",
 		opType: meshes.OpCategory_INSTALL,
 	},

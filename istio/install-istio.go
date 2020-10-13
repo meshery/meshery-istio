@@ -75,6 +75,7 @@ type asset struct {
 	DownloadURL string `json:"browser_download_url,omitempty"`
 }
 
+// AddLabel injects label into namespace
 func (iClient *Client) AddLabel(namespace string, remove bool) error {
 	ns, err := iClient.k8sClientset.CoreV1().Namespaces().Get(context.TODO(), namespace, metav1.GetOptions{})
 	if err != nil {
