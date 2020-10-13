@@ -18,7 +18,7 @@ require (
 	github.com/sirupsen/logrus v1.6.0
 	golang.org/x/net v0.0.0-20200927032502-5d4f70055728
 	google.golang.org/grpc v1.32.0
-	helm.sh/helm/v3 v3.3.1
+	helm.sh/helm/v3 v3.3.4
 	istio.io/client-go v0.0.0-20200708142230-d7730fd90478
 	k8s.io/api v0.18.8
 	k8s.io/apimachinery v0.18.8
