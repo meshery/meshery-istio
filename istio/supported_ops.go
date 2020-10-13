@@ -25,13 +25,21 @@ type supportedOperation struct {
 }
 
 const (
-	customOpCommand                          = "custom"
-	runVet                                   = "istio_vet"
-	installmTLSIstioCommand                  = "istio_mtls_install"
+	customOpCommand = "custom"
+	runVet          = "istio_vet"
+
+	// Install istio
+	installv173IstioCommand     = "istio_install_v173"
+	installv173IstioCommandTls  = "istio_install_v173_tls"
+	installOperatorIstioCommand = "istio_install_operator"
+	installmTLSIstioCommand     = "istio_mtls_install"
+	verifyInstallation          = "verify_installation" // requires
+	installAddons               = "install_addons"
+	injectLabels                = "inject_labels"
+
+	// Bookinfo
 	installBookInfoCommand                   = "install_book_info"
 	cbCommand                                = "cb1"
-	installSMI                               = "install_smi"
-	installHTTPBin                           = "install_http_bin"
 	googleMSSampleApplication                = "google_microservices_demo_application"
 	bookInfoDefaultDestinationRules          = "bookInfoDefaultDestinationRules"
 	bookInfoRouteToV1AllServices             = "bookInfoRouteToV1AllServices"
@@ -41,12 +49,52 @@ const (
 	bookInfoInjectDelayForRatingsForJason    = "bookInfoInjectDelayForRatingsForJason"
 	bookInfoInjectHTTPAbortToRatingsForJason = "bookInfoInjectHTTPAbortToRatingsForJason"
 	bookInfoProductPageCircuitBreaking       = "bookInfoProductPageCircuitBreaking"
-	smiConformanceCommand                    = "smiConformanceTest"
+
+	// HTTPbin
+	installHttpbinCommandV1 = "install_http_binv1"
+	installHttpbinCommandV2 = "install_http_binv2"
+
+	// Labs
+	enablePrometheus = "enable_prometheus"
+	enableGrafana    = "enable_grafana"
+	enableKiali      = "enable_kiali"
+	denyAllPolicy    = "deny_all_policy"
+	strictMtls       = "strict_mtls"
+	mutualMtls       = "mutual_mtls"
+	disableMtls      = "disable_mtls"
+
+	bookInfoRouteV1ForUser                 = "bookinfo_route_v1_for_user"
+	bookInfoMirrorTrafficToV2              = "bookinfo_mirror_traffic_to_v2"
+	bookInfoRetrySpecForReviews            = "bookinfo_retry_spec_for_reviews"
+	bookInfoCanaryDeploy20V3               = "bookinfo_canary_deploy_20_v3"
+	bookInfoCanaryDeploy80V3               = "bookinfo_canary_deploy_80_v3"
+	bookInfoCanaryDeploy100V3              = "bookinfo_canary_deploy_100_v3"
+	bookInfoInjectDelayFaultRatings        = "bookinfo_inject_delay_fault_ratings"
+	bookInfoInjectDelayFaultReviews        = "bookinfo_inject_delay_fault_reviews"
+	bookInfoConfigureConnectionPoolOutlier = "bookinfo_configure_connection_pool_outlier"
+	bookInfoAllowGet                       = "bookinfo_allow_get"
+	bookInfoAllowReviewsForUser            = "bookinfo_allow_reviews_for_user"
+
+	// SMI conformance test
+	smiConformanceCommand = "smiConformanceTest"
+	installSMI            = "install_smi"
 )
 
 var supportedOps = map[string]supportedOperation{
+	installv173IstioCommand: {
+		name:   "Istio 1.7.3",
+		opType: meshes.OpCategory_INSTALL,
+	},
+	installv173IstioCommandTls: {
+		name:   "Istio 1.7.3 with mTLS",
+		opType: meshes.OpCategory_INSTALL,
+	},
+	installOperatorIstioCommand: {
+		name:   "Istio with Operator",
+		opType: meshes.OpCategory_INSTALL,
+	},
 	installmTLSIstioCommand: {
-		name:   "Latest Istio with mTLS",
+		name:   "Istio 1.5.1 with mTLS",
 		opType: meshes.OpCategory_INSTALL,
 	},
 	installBookInfoCommand: {
@@ -71,31 +119,31 @@ var supportedOps = map[string]supportedOperation{
 		opType: meshes.OpCategory_CONFIGURE,
 	},
 	bookInfoRouteToV1AllServices: {
-		name:   "BookInfo: Route traffic to V1 of all BookInfo services",
+		name:   "BookInfo: Route traffic to v1 of all BookInfo services",
 		opType: meshes.OpCategory_CONFIGURE,
 	},
 	bookInfoRouteToReviewsV2ForJason: {
-		name:   "BookInfo: Route traffic to V2 of BookInfo reviews service for user Jason",
+		name:   "BookInfo: Route traffic to Reviews v2 for user Jason",
 		opType: meshes.OpCategory_CONFIGURE,
 	},
 	bookInfoCanary50pcReviewsV3: {
-		name:   "BookInfo: Route 50% of the traffic to BookInfo reviews V3",
+		name:   "BookInfo: Route 50% of the traffic to Reviews v3",
 		opType: meshes.OpCategory_CONFIGURE,
 	},
 	bookInfoCanary100pcReviewsV3: {
-		name:   "BookInfo: Route 100% of the traffic to BookInfo reviews V3",
+		name:   "BookInfo: Route 100% of the traffic to Reviews v3",
 		opType: meshes.OpCategory_CONFIGURE,
 	},
 	bookInfoInjectDelayForRatingsForJason: {
-		name:   "BookInfo: Inject a 7s delay in the traffic to BookInfo ratings service for user Jason",
+		name:   "BookInfo: Inject a 7s delay in the traffic to Ratings for user Jason",
 		opType: meshes.OpCategory_CONFIGURE,
 	},
 	bookInfoInjectHTTPAbortToRatingsForJason: {
-		name:   "BookInfo: Inject HTTP abort to BookInfo ratings service for user Jason",
+		name:   "BookInfo: Inject HTTP abort to Ratings for user Jason",
 		opType: meshes.OpCategory_CONFIGURE,
 	},
 	bookInfoProductPageCircuitBreaking: {
-		name:         "BookInfo: Configure circuit breaking with max 1 request per connection and max 1 pending request to BookInfo productpage service",
+		name:         "BookInfo: Configure circuit breaking with max 1 request per connection and max 1 pending request to Productpage service",
 		opType:       meshes.OpCategory_CONFIGURE,
 		templateName: "book_info_product_page_circuit_breaking.tmpl",
 	},
@@ -103,9 +151,14 @@ var supportedOps = map[string]supportedOperation{
 		name:   "Service Mesh Interface (SMI) Istio Adapter",
 		opType: meshes.OpCategory_INSTALL,
 	},
-	installHTTPBin: {
-		name:         "httpbin Application",
-		templateName: "httpbin.yaml",
+	installHttpbinCommandV1: {
+		name:         "httpbin Application V1",
+		templateName: "v1",
+		opType:       meshes.OpCategory_SAMPLE_APPLICATION,
+	},
+	installHttpbinCommandV2: {
+		name:         "httpbin Application V2 (Needs V1 installed)",
+		templateName: "v2",
 		opType:       meshes.OpCategory_SAMPLE_APPLICATION,
 	},
 	customOpCommand: {
@@ -119,5 +172,77 @@ var supportedOps = map[string]supportedOperation{
 	smiConformanceCommand: {
 		name:   "Run SMI conformance test",
 		opType: meshes.OpCategory_VALIDATE,
+	},
+	enablePrometheus: {
+		name:   "Enable Prometheus add-on",
+		opType: meshes.OpCategory_INSTALL,
+	},
+	enableGrafana: {
+		name:   "Enable Grafana add-on",
+		opType: meshes.OpCategory_INSTALL,
+	},
+	enableKiali: {
+		name:   "Enable Kiali add-on",
+		opType: meshes.OpCategory_INSTALL,
+	},
+	denyAllPolicy: {
+		name:   "Deny-all policy on the namespace",
+		opType: meshes.OpCategory_CONFIGURE,
+	},
+	strictMtls: {
+		name:   "Strict mTLS policy",
+		opType: meshes.OpCategory_CONFIGURE,
+	},
+	mutualMtls: {
+		name:   "Mutual mTLS policy",
+		opType: meshes.OpCategory_CONFIGURE,
+	},
+	disableMtls: {
+		name:   "Disable mTLS policy",
+		opType: meshes.OpCategory_CONFIGURE,
+	},
+	bookInfoRouteV1ForUser: {
+		name:   "BookInfo: Productpage to version v1",
+		opType: meshes.OpCategory_CONFIGURE,
+	},
+	bookInfoMirrorTrafficToV2: {
+		name:   "BookInfo: Productpage mirror traffic from v1 to v2",
+		opType: meshes.OpCategory_CONFIGURE,
+	},
+	bookInfoRetrySpecForReviews: {
+		name:   "BookInfo: Productpage to retry for Reviews application",
+		opType: meshes.OpCategory_CONFIGURE,
+	},
+	bookInfoCanaryDeploy20V3: {
+		name:   "BookInfo: Forward 20 percent traffic to Reviews v2",
+		opType: meshes.OpCategory_CONFIGURE,
+	},
+	bookInfoCanaryDeploy80V3: {
+		name:   "BookInfo: Forward 80 percent traffic to Reviews v2",
+		opType: meshes.OpCategory_CONFIGURE,
+	},
+	bookInfoCanaryDeploy100V3: {
+		name:   "BookInfo: Forward 100 percent traffic to Reviews v2",
+		opType: meshes.OpCategory_CONFIGURE,
+	},
+	bookInfoInjectDelayFaultRatings: {
+		name:   "BookInfo: Add delay to Ratings",
+		opType: meshes.OpCategory_CONFIGURE,
+	},
+	bookInfoInjectDelayFaultReviews: {
+		name:   "BookInfo: Add delay in Ratings",
+		opType: meshes.OpCategory_CONFIGURE,
+	},
+	bookInfoConfigureConnectionPoolOutlier: {
+		name:   "BookInfo: Connection pool limits and outlier detection",
+		opType: meshes.OpCategory_CONFIGURE,
+	},
+	bookInfoAllowGet: {
+		name:   "BookInfo: Allow only GET requests",
+		opType: meshes.OpCategory_CONFIGURE,
+	},
+	bookInfoAllowReviewsForUser: {
+		name:   "BookInfo: Allow Reviews only for user",
+		opType: meshes.OpCategory_CONFIGURE,
 	},
 }
