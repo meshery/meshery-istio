@@ -36,6 +36,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	types "k8s.io/apimachinery/pkg/types"
 )
 
 const (
@@ -442,6 +443,51 @@ func (iClient *Client) executeBookInfoInstall(ctx context.Context, arReq *meshes
 	return nil
 }
 
+func (iClient *Client) patchEnvoyFilter(ctx context.Context, arReq *meshes.ApplyRuleRequest, app string) error {
+	jsonFileContents, err := iClient.getFilterPatchJSON()
+	if err != nil {
+		return err
+	}
+	if _, err := iClient.k8sClientset.AppsV1().Deployments(arReq.Namespace).Patch(context.TODO(), app, types.MergePatchType, []byte(jsonFileContents), metav1.PatchOptions{}); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (iClient *Client) installEnvoyFilter(ctx context.Context, arReq *meshes.ApplyRuleRequest) error {
+	yamlFileContents, err := iClient.getEnvoyFilterYAML()
+	if err != nil {
+		return err
+	}
+	if err := iClient.applyConfigChange(ctx, yamlFileContents, arReq.Namespace, arReq.DeleteOp, false); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (iClient *Client) executeImagehubInstall(ctx context.Context, arReq *meshes.ApplyRuleRequest) error {
+	if !arReq.DeleteOp {
+		if err := iClient.labelNamespaceForAutoInjection(ctx, arReq.Namespace); err != nil {
+			return err
+		}
+	}
+	yamlFileContents, err := iClient.getImagehubAppYAML()
+	if err != nil {
+		return err
+	}
+	if err := iClient.applyConfigChange(ctx, yamlFileContents, arReq.Namespace, arReq.DeleteOp, false); err != nil {
+		return err
+	}
+	yamlFileContents, err = iClient.getImagehubGatewayYAML()
+	if err != nil {
+		return err
+	}
+	if err := iClient.applyConfigChange(ctx, yamlFileContents, arReq.Namespace, arReq.DeleteOp, false); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (iClient *Client) executeEmojiVotoInstall(ctx context.Context, arReq *meshes.ApplyRuleRequest) error {
 	if !arReq.DeleteOp {
 		if err := iClient.labelNamespaceForAutoInjection(ctx, arReq.Namespace); err != nil {
@@ -535,6 +581,75 @@ func (iClient *Client) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRu
 	isCustomOp := false
 
 	switch arReq.OpName {
+	case configureEnvoyFilter:
+		opName1 := "configuring"
+		if arReq.DeleteOp {
+			opName1 = "removing"
+		}
+		if err := iClient.patchEnvoyFilter(ctx, arReq, "api-v1"); err != nil {
+			iClient.eventChan <- &meshes.EventsResponse{
+				OperationId: arReq.OperationId,
+				EventType:   meshes.EventType_ERROR,
+				Summary:     fmt.Sprintf("Error while %s patching Imagehub", opName1),
+				Details:     err.Error(),
+			}
+			return nil, err
+		}
+		opName := "patching"
+		if arReq.DeleteOp {
+			opName = "reverted"
+		}
+		if err := iClient.installEnvoyFilter(ctx, arReq); err != nil {
+			iClient.eventChan <- &meshes.EventsResponse{
+				OperationId: arReq.OperationId,
+				EventType:   meshes.EventType_ERROR,
+				Summary:     fmt.Sprintf("Error while %s EnvoyFilter", opName),
+				Details:     err.Error(),
+			}
+			return nil, err
+		}
+		opName2 := "deployed"
+		if arReq.DeleteOp {
+			opName2 = "removed"
+		}
+		iClient.eventChan <- &meshes.EventsResponse{
+			OperationId: arReq.OperationId,
+			EventType:   meshes.EventType_INFO,
+			Summary:     fmt.Sprintf("Imagehub wasm filter %s successfully", opName2),
+			Details:     fmt.Sprintf("The latest version of Imagehub wasm filter is now %s.", opName2),
+		}
+		return &meshes.ApplyRuleResponse{
+			OperationId: arReq.OperationId,
+		}, nil
+	case installImagehub:
+		go func() {
+			opName1 := "deploying"
+			if arReq.DeleteOp {
+				opName1 = "removing"
+			}
+			if err := iClient.executeImagehubInstall(ctx, arReq); err != nil {
+				iClient.eventChan <- &meshes.EventsResponse{
+					OperationId: arReq.OperationId,
+					EventType:   meshes.EventType_ERROR,
+					Summary:     fmt.Sprintf("Error while %s Imagehub", opName1),
+					Details:     err.Error(),
+				}
+				return
+			}
+			opName := "deployed"
+			if arReq.DeleteOp {
+				opName = "removed"
+			}
+			iClient.eventChan <- &meshes.EventsResponse{
+				OperationId: arReq.OperationId,
+				EventType:   meshes.EventType_INFO,
+				Summary:     fmt.Sprintf("Imagehub %s successfully", opName),
+				Details:     fmt.Sprintf("The latest version of Imagehub is now %s.", opName),
+			}
+		}()
+		return &meshes.ApplyRuleResponse{
+			OperationId: arReq.OperationId,
+		}, nil
 	case bookInfoSubsets:
 		go func() {
 			yamlFileContents, err = iClient.getBookinfoDrYAML(op.templateName)
@@ -605,7 +720,7 @@ func (iClient *Client) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRu
 				iClient.eventChan <- &meshes.EventsResponse{
 					OperationId: arReq.OperationId,
 					EventType:   meshes.EventType_ERROR,
-					Summary:     fmt.Sprintf("Error while %s Istio", opName1),
+					Summary:     fmt.Sprintf("Error while %s Prometheus", opName1),
 					Details:     err.Error(),
 				}
 				return
@@ -617,8 +732,8 @@ func (iClient *Client) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRu
 			iClient.eventChan <- &meshes.EventsResponse{
 				OperationId: arReq.OperationId,
 				EventType:   meshes.EventType_INFO,
-				Summary:     fmt.Sprintf("Istio %s successfully", opName),
-				Details:     fmt.Sprintf("The latest version of Istio is now %s.", opName),
+				Summary:     fmt.Sprintf("Prometheus %s successfully", opName),
+				Details:     fmt.Sprintf("The latest version of Prometheus is now %s.", opName),
 			}
 		}()
 		return &meshes.ApplyRuleResponse{
@@ -634,7 +749,7 @@ func (iClient *Client) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRu
 				iClient.eventChan <- &meshes.EventsResponse{
 					OperationId: arReq.OperationId,
 					EventType:   meshes.EventType_ERROR,
-					Summary:     fmt.Sprintf("Error while %s Istio", opName1),
+					Summary:     fmt.Sprintf("Error while %s Grafana", opName1),
 					Details:     err.Error(),
 				}
 				return
@@ -646,8 +761,8 @@ func (iClient *Client) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRu
 			iClient.eventChan <- &meshes.EventsResponse{
 				OperationId: arReq.OperationId,
 				EventType:   meshes.EventType_INFO,
-				Summary:     fmt.Sprintf("Istio %s successfully", opName),
-				Details:     fmt.Sprintf("The latest version of Istio is now %s.", opName),
+				Summary:     fmt.Sprintf("Grafana %s successfully", opName),
+				Details:     fmt.Sprintf("The latest version of Grafana is now %s.", opName),
 			}
 		}()
 		return &meshes.ApplyRuleResponse{
@@ -663,7 +778,7 @@ func (iClient *Client) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRu
 				iClient.eventChan <- &meshes.EventsResponse{
 					OperationId: arReq.OperationId,
 					EventType:   meshes.EventType_ERROR,
-					Summary:     fmt.Sprintf("Error while %s Istio", opName1),
+					Summary:     fmt.Sprintf("Error while %s Kiali", opName1),
 					Details:     err.Error(),
 				}
 				return
@@ -675,8 +790,8 @@ func (iClient *Client) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRu
 			iClient.eventChan <- &meshes.EventsResponse{
 				OperationId: arReq.OperationId,
 				EventType:   meshes.EventType_INFO,
-				Summary:     fmt.Sprintf("Istio %s successfully", opName),
-				Details:     fmt.Sprintf("The latest version of Istio is now %s.", opName),
+				Summary:     fmt.Sprintf("Kiali %s successfully", opName),
+				Details:     fmt.Sprintf("The latest version of Kiali is now %s.", opName),
 			}
 		}()
 		return &meshes.ApplyRuleResponse{
@@ -692,7 +807,7 @@ func (iClient *Client) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRu
 				iClient.eventChan <- &meshes.EventsResponse{
 					OperationId: arReq.OperationId,
 					EventType:   meshes.EventType_ERROR,
-					Summary:     fmt.Sprintf("Error while %s Istio", opName1),
+					Summary:     fmt.Sprintf("Error while %s Zipkin", opName1),
 					Details:     err.Error(),
 				}
 				return
@@ -704,8 +819,8 @@ func (iClient *Client) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRu
 			iClient.eventChan <- &meshes.EventsResponse{
 				OperationId: arReq.OperationId,
 				EventType:   meshes.EventType_INFO,
-				Summary:     fmt.Sprintf("Istio %s successfully", opName),
-				Details:     fmt.Sprintf("The latest version of Istio is now %s.", opName),
+				Summary:     fmt.Sprintf("Zipkin %s successfully", opName),
+				Details:     fmt.Sprintf("The latest version of Zipkin is now %s.", opName),
 			}
 		}()
 		return &meshes.ApplyRuleResponse{
@@ -721,7 +836,7 @@ func (iClient *Client) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRu
 				iClient.eventChan <- &meshes.EventsResponse{
 					OperationId: arReq.OperationId,
 					EventType:   meshes.EventType_ERROR,
-					Summary:     fmt.Sprintf("Error while %s Istio", opName1),
+					Summary:     fmt.Sprintf("Error while %s Istio operator", opName1),
 					Details:     err.Error(),
 				}
 				return
@@ -733,8 +848,8 @@ func (iClient *Client) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRu
 			iClient.eventChan <- &meshes.EventsResponse{
 				OperationId: arReq.OperationId,
 				EventType:   meshes.EventType_INFO,
-				Summary:     fmt.Sprintf("Istio %s successfully", opName),
-				Details:     fmt.Sprintf("The latest version of Istio is now %s.", opName),
+				Summary:     fmt.Sprintf("Istio operator %s successfully", opName),
+				Details:     fmt.Sprintf("The latest version of Istio operator is now %s.", opName),
 			}
 		}()
 		return &meshes.ApplyRuleResponse{
@@ -750,7 +865,7 @@ func (iClient *Client) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRu
 				iClient.eventChan <- &meshes.EventsResponse{
 					OperationId: arReq.OperationId,
 					EventType:   meshes.EventType_ERROR,
-					Summary:     fmt.Sprintf("Error while %s Istio", opName1),
+					Summary:     fmt.Sprintf("Error while %s Jaeger", opName1),
 					Details:     err.Error(),
 				}
 				return
@@ -762,8 +877,8 @@ func (iClient *Client) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRu
 			iClient.eventChan <- &meshes.EventsResponse{
 				OperationId: arReq.OperationId,
 				EventType:   meshes.EventType_INFO,
-				Summary:     fmt.Sprintf("Istio %s successfully", opName),
-				Details:     fmt.Sprintf("The latest version of Istio is now %s.", opName),
+				Summary:     fmt.Sprintf("Jaeger %s successfully", opName),
+				Details:     fmt.Sprintf("The latest version of Jaeger is now %s.", opName),
 			}
 		}()
 		return &meshes.ApplyRuleResponse{

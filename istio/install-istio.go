@@ -62,6 +62,11 @@ var (
 	jaegerInstallFile     = path.Join(homepath, "config_templates/addons/jaeger.yaml")
 	zipkinInstallFile     = path.Join(homepath, "config_templates/addons/extras/zipkin.yaml")
 	operatorInstallFile   = path.Join(basePath, "samples/addons/extras/prometheus-operator.yaml")
+
+	imagehubInstallFile        = path.Join(homepath, "config_templates/imagehub.yaml")
+	imagehubGatewayInstallFile = path.Join(homepath, "config_templates/imagehub-gateway.yaml")
+	imagehubEnvoyFilterFile    = path.Join(homepath, "config_templates/imagehub-filter.yaml")
+	imagehubFilterPatchFile    = path.Join(homepath, "config_templates/imagehub-patch.json")
 )
 
 type apiInfo struct {
@@ -420,6 +425,26 @@ func (iClient *Client) getPolicyYaml(template string) (string, error) {
 	return string(fileContents), nil
 }
 
+func (iClient *Client) getEnvoyFilterYAML() (string, error) {
+	fileContents, err := ioutil.ReadFile(imagehubEnvoyFilterFile)
+	if err != nil {
+		err = errors.Wrap(err, "unable to read file")
+		logrus.Error(err)
+		return "", err
+	}
+	return string(fileContents), nil
+}
+
+func (iClient *Client) getFilterPatchJSON() (string, error) {
+	fileContents, err := ioutil.ReadFile(imagehubFilterPatchFile)
+	if err != nil {
+		err = errors.Wrap(err, "unable to read file")
+		logrus.Error(err)
+		return "", err
+	}
+	return string(fileContents), nil
+}
+
 func (iClient *Client) getBookinfoDrYAML(template string) (string, error) {
 	fileContents, err := ioutil.ReadFile(fmt.Sprintf("%s/config_templates/%s", homepath, template))
 	if err != nil {
@@ -482,6 +507,26 @@ func (iClient *Client) getZipkinYAML() (string, error) {
 
 func (iClient *Client) getOperatorYAML() (string, error) {
 	fileContents, err := ioutil.ReadFile(operatorInstallFile)
+	if err != nil {
+		err = errors.Wrap(err, "unable to read file")
+		logrus.Error(err)
+		return "", err
+	}
+	return string(fileContents), nil
+}
+
+func (iClient *Client) getImagehubAppYAML() (string, error) {
+	fileContents, err := ioutil.ReadFile(imagehubInstallFile)
+	if err != nil {
+		err = errors.Wrap(err, "unable to read file")
+		logrus.Error(err)
+		return "", err
+	}
+	return string(fileContents), nil
+}
+
+func (iClient *Client) getImagehubGatewayYAML() (string, error) {
+	fileContents, err := ioutil.ReadFile(imagehubGatewayInstallFile)
 	if err != nil {
 		err = errors.Wrap(err, "unable to read file")
 		logrus.Error(err)

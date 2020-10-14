@@ -57,6 +57,10 @@ const (
 	// HTTPbin
 	installHttpbinCommand = "install_http_bin"
 
+	// Imagehub
+	installImagehub      = "install_imagehub"
+	configureEnvoyFilter = "configure_envoy_filter"
+
 	// Addons
 	enablePrometheus = "enable_prometheus"
 	enableGrafana    = "enable_grafana"
@@ -164,9 +168,13 @@ var supportedOps = map[string]supportedOperation{
 		opType: meshes.OpCategory_INSTALL,
 	},
 	installHttpbinCommand: {
-		name:         "httpbin Application",
+		name:         "Httpbin Application",
 		templateName: "v1",
 		opType:       meshes.OpCategory_SAMPLE_APPLICATION,
+	},
+	installImagehub: {
+		name:   "Imagehub Application",
+		opType: meshes.OpCategory_SAMPLE_APPLICATION,
 	},
 	customOpCommand: {
 		name:   "Custom YAML",
@@ -228,6 +236,10 @@ var supportedOps = map[string]supportedOperation{
 		name:         "Bookinfo subsets",
 		templateName: "bookinfo-dr.yaml",
 		opType:       meshes.OpCategory_CONFIGURE,
+	},
+	configureEnvoyFilter: {
+		name:   "Envoy Filter for imagehub",
+		opType: meshes.OpCategory_CONFIGURE,
 	},
 	// bookInfoMirrorTrafficToV2: {
 	// 	name:   "Configure bookinfo page mirror traffic from v1 to v2",
