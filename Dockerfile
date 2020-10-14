@@ -10,13 +10,14 @@ FROM alpine
 RUN apk --update add ca-certificates curl
 RUN mkdir /lib64 && \
 	ln -s /lib/libc.musl-x86_64.so.1 /lib64/ld-linux-x86-64.so.2 && \
-	mkdir -p /root/.kube
+	mkdir -p /root/.kube && \
+	mkdir -p /tmp/istio
 COPY --from=bd /meshery-istio /app/
 COPY --from=bd /istio /app/istio
 COPY --from=bd /istio.tar.gz /app/
 COPY --from=bd //github.com/layer5io/meshery-istio/scripts /app/scripts/.
 COPY --from=bd /etc/passwd /etc/passwd
-ENV ISTIO_VERSION=istio-1.5.1
+ENV ISTIO_VERSION=1.7.3
 # USER appuser
 WORKDIR /app
 CMD ./meshery-istio

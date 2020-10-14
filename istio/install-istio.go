@@ -32,18 +32,19 @@ const (
 
 var (
 	localByPassFile = "/tmp/istio.tar.gz"
+	homepath        = "/app/istio"
 
 	localFile           = path.Join(os.TempDir(), "istio.tar.gz")
 	destinationFolder   = path.Join(os.TempDir(), "istio")
-	basePath            = path.Join(destinationFolder, "%s")
+	basePath            = path.Join(destinationFolder, fmt.Sprintf("istio-%s", os.Getenv("ISTIO_VERSION")))
 	installWithmTLSFile = path.Join(basePath, "install/kubernetes/istio-demo.yaml")
 	crdFolder           = path.Join(basePath, "install/kubernetes/helm/istio-init/files/")
 
 	httpbinInstallFile        = path.Join(basePath, "samples/httpbin/httpbin.yaml")
 	httpbinGatewayInstallFile = path.Join(basePath, "samples/httpbin/httpbin-gateway.yaml")
 
-	emojiVotoInstallFile        = path.Join(basePath, "istio/config_templates/emojivoto.yaml")
-	emojiVotoGatewayInstallFile = path.Join(basePath, "istio/config_templates/emojivoto-gateway.yaml")
+	emojiVotoInstallFile        = path.Join(homepath, "config_templates/emojivoto.yaml")
+	emojiVotoGatewayInstallFile = path.Join(homepath, "config_templates/emojivoto-gateway.yaml")
 
 	bookInfoGatewayInstallFile                   = path.Join(basePath, "samples/bookinfo/networking/bookinfo-gateway.yaml")
 	bookInfoInstallFile                          = path.Join(basePath, "samples/bookinfo/platform/kube/bookinfo.yaml")
@@ -55,11 +56,11 @@ var (
 	bookInfoInjectDelayForRatingsForJasonFile    = path.Join(basePath, "samples/bookinfo/networking/virtual-service-ratings-test-delay.yaml")
 	bookInfoInjectHTTPAbortToRatingsForJasonFile = path.Join(basePath, "samples/bookinfo/networking/virtual-service-ratings-test-abort.yaml")
 
-	prometheusInstallFile = path.Join(basePath, "samples/addons/prometheus.yaml")
 	kialiInstallFile      = path.Join(basePath, "samples/addons/kiali.yaml")
-	grafanaInstallFile    = path.Join(basePath, "samples/addons/grafana.yaml")
-	jaegerInstallFile     = path.Join(basePath, "samples/addons/jaeger.yaml")
-	zipkinInstallFile     = path.Join(basePath, "samples/addons/extras/zipkin.yaml")
+	prometheusInstallFile = path.Join(homepath, "config_templates/addons/prometheus.yaml")
+	grafanaInstallFile    = path.Join(homepath, "config_templates/addons/grafana.yaml")
+	jaegerInstallFile     = path.Join(homepath, "config_templates/addons/jaeger.yaml")
+	zipkinInstallFile     = path.Join(homepath, "config_templates/addons/extras/zipkin.yaml")
 	operatorInstallFile   = path.Join(basePath, "samples/addons/extras/prometheus-operator.yaml")
 )
 
@@ -136,6 +137,11 @@ func (iClient *Client) executev173Install(ctx context.Context, arReq *meshes.App
 		return err
 	}
 	err = cmd.Wait()
+	if err != nil {
+		return err
+	}
+
+	err = os.Setenv("ISTIO_VERSION", "1.7.3")
 	if err != nil {
 		return err
 	}
@@ -404,28 +410,84 @@ func (iClient *Client) getCRDsYAML() ([]string, error) {
 	return res, nil
 }
 
+func (iClient *Client) getPolicyYaml(template string) (string, error) {
+	fileContents, err := ioutil.ReadFile(fmt.Sprintf("%s/config_templates/mtls/%s", homepath, template))
+	if err != nil {
+		err = errors.Wrap(err, "unable to read file")
+		logrus.Error(err)
+		return "", err
+	}
+	return string(fileContents), nil
+}
+
+func (iClient *Client) getBookinfoDrYAML(template string) (string, error) {
+	fileContents, err := ioutil.ReadFile(fmt.Sprintf("%s/config_templates/%s", homepath, template))
+	if err != nil {
+		err = errors.Wrap(err, "unable to read file")
+		logrus.Error(err)
+		return "", err
+	}
+	return string(fileContents), nil
+}
+
 func (iClient *Client) getPrometheusYAML() (string, error) {
-	return iClient.getIstioComponentYAML(prometheusInstallFile)
+	fileContents, err := ioutil.ReadFile(prometheusInstallFile)
+	if err != nil {
+		err = errors.Wrap(err, "unable to read file")
+		logrus.Error(err)
+		return "", err
+	}
+	return string(fileContents), nil
 }
 
 func (iClient *Client) getKialiYAML() (string, error) {
-	return iClient.getIstioComponentYAML(kialiInstallFile)
+	fileContents, err := ioutil.ReadFile(kialiInstallFile)
+	if err != nil {
+		err = errors.Wrap(err, "unable to read file")
+		logrus.Error(err)
+		return "", err
+	}
+	return string(fileContents), nil
 }
 
 func (iClient *Client) getGrafanaYAML() (string, error) {
-	return iClient.getIstioComponentYAML(grafanaInstallFile)
+	fileContents, err := ioutil.ReadFile(grafanaInstallFile)
+	if err != nil {
+		err = errors.Wrap(err, "unable to read file")
+		logrus.Error(err)
+		return "", err
+	}
+	return string(fileContents), nil
 }
 
 func (iClient *Client) getJaegerYAML() (string, error) {
-	return iClient.getIstioComponentYAML(jaegerInstallFile)
+	fileContents, err := ioutil.ReadFile(jaegerInstallFile)
+	if err != nil {
+		err = errors.Wrap(err, "unable to read file")
+		logrus.Error(err)
+		return "", err
+	}
+	return string(fileContents), nil
 }
 
 func (iClient *Client) getZipkinYAML() (string, error) {
-	return iClient.getIstioComponentYAML(zipkinInstallFile)
+	fileContents, err := ioutil.ReadFile(zipkinInstallFile)
+	if err != nil {
+		err = errors.Wrap(err, "unable to read file")
+		logrus.Error(err)
+		return "", err
+	}
+	return string(fileContents), nil
 }
 
 func (iClient *Client) getOperatorYAML() (string, error) {
-	return iClient.getIstioComponentYAML(operatorInstallFile)
+	fileContents, err := ioutil.ReadFile(operatorInstallFile)
+	if err != nil {
+		err = errors.Wrap(err, "unable to read file")
+		logrus.Error(err)
+		return "", err
+	}
+	return string(fileContents), nil
 }
 
 func (iClient *Client) getLatestIstioYAML() (string, error) {
@@ -433,27 +495,63 @@ func (iClient *Client) getLatestIstioYAML() (string, error) {
 }
 
 func (iClient *Client) getBookInfoAppYAML() (string, error) {
-	return iClient.getIstioComponentYAML(bookInfoInstallFile)
+	fileContents, err := ioutil.ReadFile(bookInfoInstallFile)
+	if err != nil {
+		err = errors.Wrap(err, "unable to read file")
+		logrus.Error(err)
+		return "", err
+	}
+	return string(fileContents), nil
 }
 
 func (iClient *Client) getBookInfoGatewayYAML() (string, error) {
-	return iClient.getIstioComponentYAML(bookInfoGatewayInstallFile)
+	fileContents, err := ioutil.ReadFile(bookInfoGatewayInstallFile)
+	if err != nil {
+		err = errors.Wrap(err, "unable to read file")
+		logrus.Error(err)
+		return "", err
+	}
+	return string(fileContents), nil
 }
 
 func (iClient *Client) getHttpbinAppYAML() (string, error) {
-	return iClient.getIstioComponentYAML(httpbinInstallFile)
+	fileContents, err := ioutil.ReadFile(httpbinInstallFile)
+	if err != nil {
+		err = errors.Wrap(err, "unable to read file")
+		logrus.Error(err)
+		return "", err
+	}
+	return string(fileContents), nil
 }
 
 func (iClient *Client) getHttpbinGatewayYAML() (string, error) {
-	return iClient.getIstioComponentYAML(httpbinGatewayInstallFile)
+	fileContents, err := ioutil.ReadFile(httpbinGatewayInstallFile)
+	if err != nil {
+		err = errors.Wrap(err, "unable to read file")
+		logrus.Error(err)
+		return "", err
+	}
+	return string(fileContents), nil
 }
 
 func (iClient *Client) getEmojiVotoAppYAML() (string, error) {
-	return iClient.getIstioComponentYAML(emojiVotoInstallFile)
+	fileContents, err := ioutil.ReadFile(emojiVotoInstallFile)
+	if err != nil {
+		err = errors.Wrap(err, "unable to read file")
+		logrus.Error(err)
+		return "", err
+	}
+	return string(fileContents), nil
 }
 
 func (iClient *Client) getEmojiVotoGatewayYAML() (string, error) {
-	return iClient.getIstioComponentYAML(emojiVotoGatewayInstallFile)
+	fileContents, err := ioutil.ReadFile(emojiVotoGatewayInstallFile)
+	if err != nil {
+		err = errors.Wrap(err, "unable to read file")
+		logrus.Error(err)
+		return "", err
+	}
+	return string(fileContents), nil
 }
 
 func (iClient *Client) getBookInfoDefaultDesinationRulesYAML() (string, error) {

@@ -41,8 +41,8 @@ const (
 	installEmojiVoto = "install_emojivoto"
 
 	// Bookinfo
-	installBookInfoCommand                   = "install_book_info"
-	cbCommand                                = "cb1"
+	installBookInfoCommand = "install_book_info"
+	// cbCommand                                = "cb1"
 	googleMSSampleApplication                = "google_microservices_demo_application"
 	bookInfoDefaultDestinationRules          = "bookInfoDefaultDestinationRules"
 	bookInfoRouteToV1AllServices             = "bookInfoRouteToV1AllServices"
@@ -52,6 +52,7 @@ const (
 	bookInfoInjectDelayForRatingsForJason    = "bookInfoInjectDelayForRatingsForJason"
 	bookInfoInjectHTTPAbortToRatingsForJason = "bookInfoInjectHTTPAbortToRatingsForJason"
 	bookInfoProductPageCircuitBreaking       = "bookInfoProductPageCircuitBreaking"
+	bookInfoSubsets                          = "bookinfo_subsets"
 
 	// HTTPbin
 	installHttpbinCommand = "install_http_bin"
@@ -120,11 +121,11 @@ var supportedOps = map[string]supportedOperation{
 		// appLabel:     "istio-vet",
 		// returnLogs:   true,
 	},
-	cbCommand: {
-		name:         "httpbin: Configure circuit breaker with only one connection",
-		opType:       meshes.OpCategory_CONFIGURE,
-		templateName: "circuit_breaking.tmpl",
-	},
+	// cbCommand: {
+	// 	name:         "httpbin: Configure circuit breaker with only one connection",
+	// 	opType:       meshes.OpCategory_CONFIGURE,
+	// 	templateName: "circuit_breaking.tmpl",
+	// },
 	// bookInfoDefaultDestinationRules: {
 	// 	name:   "BookInfo: Default BookInfo destination rules (defines subsets)",
 	// 	opType: meshes.OpCategory_CONFIGURE,
@@ -204,25 +205,30 @@ var supportedOps = map[string]supportedOperation{
 		opType: meshes.OpCategory_CONFIGURE,
 	},
 	denyAllPolicy: {
-		name:   "Deny-All policy on the namespace",
-		opType: meshes.OpCategory_CONFIGURE, // Yet to implement
+		name:         "Deny-All policy on the namespace",
+		templateName: "deny-all.yaml",
+		opType:       meshes.OpCategory_CONFIGURE,
 	},
 	strictMtls: {
-		name:   "Strict Mtls policy",
-		opType: meshes.OpCategory_CONFIGURE, // Yet to implement
+		name:         "Strict Mtls policy",
+		templateName: "strict.yaml",
+		opType:       meshes.OpCategory_CONFIGURE,
 	},
 	mutualMtls: {
-		name:   "Mutual Mtls policy",
-		opType: meshes.OpCategory_CONFIGURE, // Yet to implement
+		name:         "Permissive Mtls policy",
+		templateName: "permissive.yaml",
+		opType:       meshes.OpCategory_CONFIGURE,
 	},
 	disableMtls: {
-		name:   "Disable Mtls policy",
-		opType: meshes.OpCategory_CONFIGURE, // Yet to implement
+		name:         "Disable Mtls policy",
+		templateName: "disable.yaml",
+		opType:       meshes.OpCategory_CONFIGURE,
 	},
-	// bookInfoRouteV1ForUser: {
-	// 	name:   "Configure bookinfo page to version v1",
-	// 	opType: meshes.OpCategory_CONFIGURE,
-	// },
+	bookInfoSubsets: {
+		name:         "Bookinfo subsets",
+		templateName: "bookinfo-dr.yaml",
+		opType:       meshes.OpCategory_CONFIGURE,
+	},
 	// bookInfoMirrorTrafficToV2: {
 	// 	name:   "Configure bookinfo page mirror traffic from v1 to v2",
 	// 	opType: meshes.OpCategory_CONFIGURE,

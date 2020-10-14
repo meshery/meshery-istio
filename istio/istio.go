@@ -535,6 +535,66 @@ func (iClient *Client) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRu
 	isCustomOp := false
 
 	switch arReq.OpName {
+	case bookInfoSubsets:
+		go func() {
+			yamlFileContents, err = iClient.getBookinfoDrYAML(op.templateName)
+			if err != nil {
+				return
+			}
+			opName1 := "deploying"
+			if arReq.DeleteOp {
+				opName1 = "removing"
+			}
+			if err := iClient.applyConfigChange(ctx, yamlFileContents, arReq.Namespace, arReq.DeleteOp, isCustomOp); err != nil {
+				iClient.eventChan <- &meshes.EventsResponse{
+					OperationId: arReq.OperationId,
+					EventType:   meshes.EventType_ERROR,
+					Summary:     fmt.Sprintf("Error while %s \"%s\"", opName1, op.name),
+					Details:     err.Error(),
+				}
+				return
+			}
+			opName := "deployed"
+			if arReq.DeleteOp {
+				opName = "removed"
+			}
+			iClient.eventChan <- &meshes.EventsResponse{
+				OperationId: arReq.OperationId,
+				EventType:   meshes.EventType_INFO,
+				Summary:     fmt.Sprintf("\"%s\" %s successfully", op.name, opName),
+				Details:     fmt.Sprintf("\"%s\" %s successfully", op.name, opName),
+			}
+		}()
+	case strictMtls, mutualMtls, disableMtls:
+		go func() {
+			yamlFileContents, err = iClient.getPolicyYaml(op.templateName)
+			if err != nil {
+				return
+			}
+			opName1 := "deploying"
+			if arReq.DeleteOp {
+				opName1 = "removing"
+			}
+			if err := iClient.applyConfigChange(ctx, yamlFileContents, arReq.Namespace, arReq.DeleteOp, isCustomOp); err != nil {
+				iClient.eventChan <- &meshes.EventsResponse{
+					OperationId: arReq.OperationId,
+					EventType:   meshes.EventType_ERROR,
+					Summary:     fmt.Sprintf("Error while %s \"%s\"", opName1, op.name),
+					Details:     err.Error(),
+				}
+				return
+			}
+			opName := "deployed"
+			if arReq.DeleteOp {
+				opName = "removed"
+			}
+			iClient.eventChan <- &meshes.EventsResponse{
+				OperationId: arReq.OperationId,
+				EventType:   meshes.EventType_INFO,
+				Summary:     fmt.Sprintf("\"%s\" %s successfully", op.name, opName),
+				Details:     fmt.Sprintf("\"%s\" %s successfully", op.name, opName),
+			}
+		}()
 	case enablePrometheus:
 		go func() {
 			opName1 := "deploying"
