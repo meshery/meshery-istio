@@ -1,0 +1,112 @@
+# Copyright Layer5 Authors
+#
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: api
+  labels:
+    app: api
+    service: api
+spec:
+  ports:
+  - port: 9091
+    name: http
+  selector:
+    app: api
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: imagehub-api
+  labels:
+    account: api
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-v1
+  labels:
+    app: api
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: api
+        version: v1
+    spec:
+      serviceAccountName: imagehub-api
+      containers:
+      - name: api
+        image: layer5/image-hub-api:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 9091
+      volumes:
+      - name: wasm-filter
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web
+  labels:
+    app: web
+    service: web
+spec:
+  ports:
+  - port: 8080
+    name: http
+  selector:
+    app: web
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: imagehub-web
+  labels:
+    account: web
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-v1
+  labels:
+    app: web
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: web
+        version: v1
+    spec:
+      serviceAccountName: imagehub-web
+      containers:
+      - name: web
+        image: layer5/image-hub-web:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
