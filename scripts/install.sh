@@ -53,7 +53,7 @@ else
   fi
 fi
 
-if ! mv istio-$ISTIO_VERSION /tmp/istio; then
+if ! mv istio-$ISTIO_VERSION /tmp/istio/.; then
   exit 11
 fi
 
