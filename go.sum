@@ -518,6 +518,7 @@ github.com/lann/ps v0.0.0-20150810152359-62de8c46ede0 h1:P6pPBnrTSX3DEVR4fDembhR
 github.com/lann/ps v0.0.0-20150810152359-62de8c46ede0/go.mod h1:vmVJ0l/dxyfGW6FmdpVm2joNMFikkuWg0EoCKLGUMNw=
 github.com/layer5io/gokit v0.1.12 h1:QGfoOHfiOpvPaCg1sGFM8ZuatXsgCkWGPD7GVVVQMyY=
 github.com/layer5io/gokit v0.1.12/go.mod h1:kqwXJ5JZqHv74UCH1pVyDdpLT8muaUyRVu58WWu6wcY=
+github.com/layer5io/gokit v0.1.13/go.mod h1:kqwXJ5JZqHv74UCH1pVyDdpLT8muaUyRVu58WWu6wcY=
 github.com/layer5io/kuttl v0.4.1-0.20200723152044-916f10574334/go.mod h1:UmrVd7x+bNVKrpmKgTtfRiTKHZeNPcMjQproJ0vGwhE=
 github.com/layer5io/learn-layer5/smi-conformance v0.0.0-20200916172547-79cf11334bd7 h1:jglAwWM8pbUN43HL3tpFYPkWLFNpj1/ZsJISdqKhavg=
 github.com/layer5io/learn-layer5/smi-conformance v0.0.0-20200916172547-79cf11334bd7/go.mod h1:LpewBZnN0QDRcC2fDiBVK+iByfFyf2HJM1B2h0rTMZo=
