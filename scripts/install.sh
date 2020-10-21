@@ -36,25 +36,25 @@ if ! type "gzip" > /dev/null 2>&1; then
 fi
 
 if ! curl -s --head $URL | head -n 1 | grep "HTTP/1.[01] [23].." > /dev/null; then
-  exit 7
+  exit 7;
 fi
 
 if ! curl -L "$URL" | tar xz; then
-  exit 8
+  exit 8;
 fi
 
 if [ "$ISTIO_MODE" = "operator" ]; then
   if ! ./istio-$ISTIO_VERSION/bin/istioctl operator init; then
-    exit 9
+    exit 9;
   fi
 else 
   if ! ./istio-$ISTIO_VERSION/bin/istioctl install --set profile=$ISTIO_PROFILE --set meshConfig.accessLogFile=/dev/stdout; then
-  	exit 10
+  	exit 10;
   fi
 fi
 
 if ! mv istio-$ISTIO_VERSION /tmp/istio/.; then
-  exit 11
+  echo "Already installed"
 fi
 
 

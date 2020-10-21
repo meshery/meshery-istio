@@ -393,6 +393,12 @@ func (iClient *Client) executeInstall(ctx context.Context, arReq *meshes.ApplyRu
 	if err := iClient.applyConfigChange(ctx, yamlFileContents, arReq.Namespace, arReq.DeleteOp, false); err != nil {
 		return err
 	}
+
+	err = os.Setenv("ISTIO_VERSION", "1.5.1")
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -1177,12 +1183,12 @@ func (iClient *Client) applyConfigChange(ctx context.Context, yamlFileContents, 
 	for _, yml := range yamls {
 		if strings.TrimSpace(yml) != "" {
 			err := iClient.applyRulePayload(ctx, namespace, []byte(yml), delete, isCustomOp)
-			if err != nil && !kubeerror.IsAlreadyExists(err) {
+			if err != nil {
 				err = errors.Wrap(err, "error while applying rule payload yaml")
 				logrus.Error(err)
 				return err
 			}
-			if delete && !kubeerror.IsNotFound(err) && !kubeerror.IsInvalid(err) && !kubeerror.IsGone(err) && !kubeerror.IsResourceExpired(err) {
+			if delete {
 				err = errors.Wrap(err, "error while deleting rule payload yaml")
 				logrus.Error(err)
 				return err
