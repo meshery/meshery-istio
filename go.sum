@@ -516,8 +516,8 @@ github.com/lann/builder v0.0.0-20180802200727-47ae307949d0 h1:SOEGU9fKiNWd/HOJuq
 github.com/lann/builder v0.0.0-20180802200727-47ae307949d0/go.mod h1:dXGbAdH5GtBTC4WfIxhKZfyBF/HBFgRZSWwZ9g/He9o=
 github.com/lann/ps v0.0.0-20150810152359-62de8c46ede0 h1:P6pPBnrTSX3DEVR4fDembhRWSsG5rVo6hYhAB/ADZrk=
 github.com/lann/ps v0.0.0-20150810152359-62de8c46ede0/go.mod h1:vmVJ0l/dxyfGW6FmdpVm2joNMFikkuWg0EoCKLGUMNw=
-github.com/layer5io/gokit v0.1.15 h1:LlKvIa0seafCHNnmrz089sNl3DXV0WMP5aiRLAttBJU=
-github.com/layer5io/gokit v0.1.15/go.mod h1:AGOtt6fbKqg1Q1a9xY7cicF10s1MZJCzBiHg6PCRQMM=
+github.com/layer5io/gokit v0.1.16 h1:EHwYsDi7jBKXIZI4Fes9yMPiTDo+5IyXIwAC9nw5JH4=
+github.com/layer5io/gokit v0.1.16/go.mod h1:teEDjx0chMsXpV1ZvIkGM3Q7qi+aCstzan/OWoZgmvU=
 github.com/layer5io/kuttl v0.4.1-0.20200723152044-916f10574334/go.mod h1:UmrVd7x+bNVKrpmKgTtfRiTKHZeNPcMjQproJ0vGwhE=
 github.com/layer5io/learn-layer5/smi-conformance v0.0.0-20201022191033-40468652a54f h1:ZwVdDIb9RRXCRfRNUGOgwcyn5WrjfJi7NV64SwQ0Gvo=
 github.com/layer5io/learn-layer5/smi-conformance v0.0.0-20201022191033-40468652a54f/go.mod h1:LpewBZnN0QDRcC2fDiBVK+iByfFyf2HJM1B2h0rTMZo=
@@ -1119,8 +1119,8 @@ gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c h1:dUUwHk2QECo/6vqA44rthZ8ie
 gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
 gotest.tools v2.2.0+incompatible h1:VsBPFP1AI068pPrMxtb/S8Zkgf9xEmTLJjfM+P5UIEo=
 gotest.tools v2.2.0+incompatible/go.mod h1:DsYFclhRJ6vuDpmuTbkuFWG+y2sxOXAzmJt81HFBacw=
-helm.sh/helm/v3 v3.3.4 h1:tbad6WQVMxEw1HlVBvI2rQqOblmI5lgXOrWAMwJ198M=
-helm.sh/helm/v3 v3.3.4/go.mod h1:CyCGQa53/k1JFxXvXveGwtfJ4cuB9zkaBSGa5rnAiHU=
+helm.sh/helm/v3 v3.3.1 h1:uc+ZUthJnWNSwqyIv1KCdQm0ewi0eAf6oRaWG2X1oo0=
+helm.sh/helm/v3 v3.3.1/go.mod h1:CyCGQa53/k1JFxXvXveGwtfJ4cuB9zkaBSGa5rnAiHU=
 honnef.co/go/tools v0.0.0-20180728063816-88497007e858/go.mod h1:rf3lG4BRIbNafJWhAfAdb/ePZxsR/4RtNHQocxwk9r4=
 honnef.co/go/tools v0.0.0-20190102054323-c2f93a96b099/go.mod h1:rf3lG4BRIbNafJWhAfAdb/ePZxsR/4RtNHQocxwk9r4=
 honnef.co/go/tools v0.0.0-20190106161140-3f1c8253044a/go.mod h1:rf3lG4BRIbNafJWhAfAdb/ePZxsR/4RtNHQocxwk9r4=
