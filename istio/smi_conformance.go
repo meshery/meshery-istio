@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/layer5io/meshery-istio/istio/smi"
+	"github.com/layer5io/gokit/smi"
 	"github.com/layer5io/meshery-istio/meshes"
 )
 
