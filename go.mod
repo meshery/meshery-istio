@@ -11,8 +11,8 @@ require (
 	github.com/ghodss/yaml v1.0.0
 	github.com/golang/protobuf v1.4.2
 	github.com/gophercloud/gophercloud v0.4.0 // indirect
-	github.com/layer5io/gokit v0.1.12
-	github.com/layer5io/learn-layer5/smi-conformance v0.0.0-20200916172547-79cf11334bd7
+	github.com/layer5io/gokit v0.1.16
+	github.com/layer5io/learn-layer5/smi-conformance v0.0.0-20201022191033-40468652a54f
 	github.com/onsi/ginkgo v1.13.0 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.6.0
