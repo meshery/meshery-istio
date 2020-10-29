@@ -14,7 +14,7 @@ require (
 	github.com/layer5io/gokit v0.1.16
 	github.com/onsi/ginkgo v1.13.0 // indirect
 	github.com/pkg/errors v0.9.1
-	github.com/sirupsen/logrus v1.6.0
+	github.com/sirupsen/logrus v1.7.0
 	golang.org/x/net v0.0.0-20200927032502-5d4f70055728
 	google.golang.org/grpc v1.32.0
 	istio.io/client-go v0.0.0-20200708142230-d7730fd90478
