@@ -9,7 +9,7 @@ require (
 	github.com/Azure/go-autorest/autorest/adal v0.9.0 // indirect
 	github.com/aspenmesh/istio-vet v0.0.0-20200806222806-9c8e9a962b9f
 	github.com/ghodss/yaml v1.0.0
-	github.com/golang/protobuf v1.4.2
+	github.com/golang/protobuf v1.4.3
 	github.com/gophercloud/gophercloud v0.4.0 // indirect
 	github.com/layer5io/gokit v0.1.16
 	github.com/onsi/ginkgo v1.13.0 // indirect
