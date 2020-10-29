@@ -11,17 +11,13 @@ require (
 	github.com/ghodss/yaml v1.0.0
 	github.com/golang/protobuf v1.4.2
 	github.com/gophercloud/gophercloud v0.4.0 // indirect
-	github.com/layer5io/gokit v0.1.12
-	github.com/layer5io/learn-layer5/smi-conformance v0.0.0-20200916172547-79cf11334bd7
+	github.com/layer5io/gokit v0.1.16
 	github.com/onsi/ginkgo v1.13.0 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.6.0
 	golang.org/x/net v0.0.0-20200927032502-5d4f70055728
 	google.golang.org/grpc v1.32.0
-	helm.sh/helm/v3 v3.3.1
 	istio.io/client-go v0.0.0-20200708142230-d7730fd90478
-	k8s.io/api v0.18.8
 	k8s.io/apimachinery v0.18.8
 	k8s.io/client-go v0.18.8
-	rsc.io/letsencrypt v0.0.3 // indirect
 )
