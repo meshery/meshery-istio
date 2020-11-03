@@ -627,6 +627,11 @@ func (iClient *Client) ApplyOperation(ctx context.Context, arReq *meshes.ApplyRu
 		return &meshes.ApplyRuleResponse{
 			OperationId: arReq.OperationId,
 		}, nil
+	case runVet:
+		err = iClient.runVet()
+		return &meshes.ApplyRuleResponse{
+			OperationId: arReq.OperationId,
+		}, err
 	case installImagehub:
 		go func() {
 			opName1 := "deploying"
