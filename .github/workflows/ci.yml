@@ -1,140 +1,55 @@
-name: Meshery Istio
+name: Meshery Istio Build and Release
 on:
   push:
     branches:
-      - "*"
+      - 'master'
     tags:
-      - "v*"
-  pull_request:
-    branches:
-      - master
+      - 'v*'
 jobs:
-  lint:
-    name: Check & Review code
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@master
-        with:
-          fetch-depth: 1
-      - name: Setup Go
-        uses: actions/setup-go@v1
-        with:
-          go-version: ${{ secrets.GO_VERSION }}
-      - run: GOPROXY=direct GOSUMDB=off go get -u golang.org/x/lint/golint; go list ./istio/... | grep -v /vendor/ | xargs -L1 /home/runner/go/bin/golint -set_exit_status
-  error_check:
-    name: Error check
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@master
-        with:
-          fetch-depth: 1
-      - name: Setup Go
-        uses: actions/setup-go@v1
-        with:
-          go-version: ${{ secrets.GO_VERSION }}
-      - run: GOPROXY=direct GOSUMDB=off GO111MODULE=on go get -u github.com/kisielk/errcheck; /home/runner/go/bin/errcheck -tags draft ./...
-  static_check:
-    name: Static check
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@master
-        with:
-          fetch-depth: 1
-      - name: Setup Go
-        uses: actions/setup-go@v1
-        with:
-          go-version: ${{ secrets.GO_VERSION }}
-      - run: GOPROXY=direct GOSUMDB=off GO111MODULE=on go get -u honnef.co/go/tools/cmd/staticcheck; /home/runner/go/bin/staticcheck -tags draft -checks all ./istio/... # https://staticcheck.io/docs/checks
-  vet:
-    name: Vet
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@master
-        with:
-          fetch-depth: 1
-      - name: Setup Go
-        uses: actions/setup-go@v1
-        with:
-          go-version: ${{ secrets.GO_VERSION }}
-      - run: GOPROXY=direct GOSUMDB=off GO111MODULE=on go vet -tags draft ./...
-  sec_check:
-    name: Security check
-    runs-on: ubuntu-latest
-    env:
-      GO111MODULE: on
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 1
-      - name: Run Gosec Security Scanner
-        uses: securego/gosec@master
-        with:
-          args: ./... -exclude=G301,G304,G107,G101,G110
-  tests:
-    #  needs: [lint, error_check, static_check, vet, sec_check]
-     name: Tests
-     runs-on: ubuntu-latest
-     steps:
-     - name: Check out code
-       uses: actions/checkout@master
-       with:
-        fetch-depth: 1
-     - name: Setup Go
-       uses: actions/setup-go@v1
-       with:
-        go-version: ${{ secrets.GO_VERSION }}
-     - name: Create cluster using KinD
-       uses: engineerd/setup-kind@v0.3.0
-       with:
-         version: "v0.7.0"
-     - run: |
-         export CURRENTCONTEXT="$(kubectl config current-context)"
-         echo "current-context:" ${CURRENTCONTEXT}   
-         export KUBECONFIG="${HOME}/.kube/config"
-         echo "environment-kubeconfig:" ${KUBECONFIG}
-         GOPROXY=direct GOSUMDB=off GO111MODULE=on go test ./...
   build:
     name: Build check
     runs-on: ubuntu-latest
     # needs: [lint, error_check, static_check, vet, sec_check, tests]
     steps:
-      - name: Check out code
-        uses: actions/checkout@master
-        with:
-          fetch-depth: 1
-      - name: Setup Go
-        uses: actions/setup-go@v1
-        with:
-          go-version: ${{ secrets.GO_VERSION }}
-      - run: GOPROXY=direct GOSUMDB=off GO111MODULE=on go build .
+    - name: Check out code
+      uses: actions/checkout@master
+      with:
+        fetch-depth: 1
+    - name: Setup Go
+      uses: actions/setup-go@v1
+      with:
+        go-version: ${{ secrets.GO_VERSION }}
+    - run: GOPROXY=direct GOSUMDB=off GO111MODULE=on go build .
   docker:
     name: Docker build and push
     runs-on: ubuntu-latest
-    # needs: [build, build_release]
     steps:
     - name: Check out code
-      if: github.event_name != 'pull_request' && startsWith(github.ref, 'refs/tags/') && success()
       uses: actions/checkout@master
       with:
         fetch-depth: 1
     - name: Docker login
-      if: github.event_name != 'pull_request' && startsWith(github.ref, 'refs/tags/') && success()
-      uses: azure/container-actions/docker-login@master
+      uses: azure/docker-login@v1
       with:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
-    - name: Docker build & tag
+    - name: Docker edge build & tag
+      if: startsWith(github.ref, 'refs/tags/') != true && success()
+      run: |
+        DOCKER_BUILDKIT=1 docker build --no-cache -t ${{ secrets.IMAGE_NAME }}:edge-latest .
+        docker tag ${{ secrets.IMAGE_NAME }}:edge-latest ${{ secrets.IMAGE_NAME }}:edge-${GITHUB_SHA::7}
+    - name: Docker edge push
+      if: startsWith(github.ref, 'refs/tags/') != true && success()
+      run: |
+        docker push ${{ secrets.IMAGE_NAME }}:edge-latest
+        docker push ${{ secrets.IMAGE_NAME }}:edge-${GITHUB_SHA::7}
+    - name: Docker stable build & tag
       if: github.event_name != 'pull_request' && startsWith(github.ref, 'refs/tags/') && success()
       run: |
         DOCKER_BUILDKIT=1 docker build --no-cache -t ${{ secrets.IMAGE_NAME }}:stable-latest .
         docker tag ${{ secrets.IMAGE_NAME }}:stable-latest ${{ secrets.IMAGE_NAME }}:stable-${GITHUB_REF/refs\/tags\//}
         docker tag ${{ secrets.IMAGE_NAME }}:stable-latest ${{ secrets.IMAGE_NAME }}:stable-${GITHUB_SHA::7}
-    - name: Docker push
+    - name: Docker stable push
       if: github.event_name != 'pull_request' && startsWith(github.ref, 'refs/tags/') && success()
       run: |
         docker push ${{ secrets.IMAGE_NAME }}:stable-latest
@@ -146,4 +61,4 @@ jobs:
       env:
         DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-        DOCKERHUB_REPOSITORY: ${{ secrets.IMAGE_NAME }}        
+        DOCKERHUB_REPOSITORY: ${{ secrets.IMAGE_NAME }}      
