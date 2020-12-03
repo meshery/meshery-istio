@@ -312,9 +312,6 @@ func extractAndClean(location, binName, platform string) error {
 		return err
 	}
 
-	if platform == "windows" {
-		binName += ".exe"
-	}
 	if err = os.Rename(path.Join(location, platformSpecificName), path.Join(location, binName)); err != nil {
 		return err
 	}
