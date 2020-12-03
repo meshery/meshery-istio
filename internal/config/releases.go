@@ -38,8 +38,8 @@ func getLatestReleaseNames(limit int) ([]adapter.Version, error) {
 	}
 
 	// Filter out the rc and alpha releases
-	result := make([]adapter.Version, limit, limit)
-	r, err := regexp.Compile("Istio \\d+(\\.\\d+){2,}$")
+	result := make([]adapter.Version, limit)
+	r, err := regexp.Compile(`Istio \d+(\.\d+){2,}$`)
 	if err != nil {
 		return []adapter.Version{}, ErrGetLatestReleaseNames(err)
 	}

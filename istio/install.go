@@ -168,7 +168,7 @@ func downloadBinary(platform, arch, release string) (*http.Response, error) {
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		resp.Body.Close()
+		_ = resp.Body.Close()
 		return nil, ErrDownloadBinary(fmt.Errorf("bad status: %s", resp.Status))
 	}
 
@@ -257,6 +257,9 @@ func unzip(location string, zippedContent io.Reader) error {
 	// Keep file in memory: Approx size ~ 50MB
 	// TODO: Find a better approach
 	zipped, err := ioutil.ReadAll(zippedContent)
+	if err != nil {
+		return ErrUnzipFile(err)
+	}
 
 	zReader, err := zip.NewReader(bytes.NewReader(zipped), int64(len(zipped)))
 	if err != nil {
@@ -268,13 +271,23 @@ func unzip(location string, zippedContent io.Reader) error {
 		if err != nil {
 			return ErrUnzipFile(err)
 		}
-		defer zippedFile.Close()
+		defer func() {
+			if err := zippedFile.Close(); err != nil {
+				fmt.Println(err)
+			}
+		}()
 
+		// need file traversal to place the extracted files at the right place, hence
+		// #nosec
 		extractedFilePath := path.Join(location, file.Name)
 
 		if file.FileInfo().IsDir() {
-			os.MkdirAll(extractedFilePath, file.Mode())
+			if err := os.MkdirAll(extractedFilePath, file.Mode()); err != nil {
+				return ErrUnzipFile(err)
+			}
 		} else {
+			// we need a variable path hence,
+			// #nosec
 			outputFile, err := os.OpenFile(
 				extractedFilePath,
 				os.O_WRONLY|os.O_CREATE|os.O_TRUNC,
@@ -283,8 +296,14 @@ func unzip(location string, zippedContent io.Reader) error {
 			if err != nil {
 				return ErrUnzipFile(err)
 			}
-			defer outputFile.Close()
+			defer func() {
+				if err := outputFile.Close(); err != nil {
+					fmt.Println(err)
+				}
+			}()
 
+			// Trust istio zip hence,
+			// #nosec
 			_, err = io.Copy(outputFile, zippedFile)
 			if err != nil {
 				return ErrUnzipFile(err)
