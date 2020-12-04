@@ -13,6 +13,7 @@ import (
 	"os/exec"
 	"path"
 	"runtime"
+	"strings"
 
 	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshery-adapter-library/status"
@@ -110,8 +111,9 @@ func (istio *Istio) applyManifest(contents []byte, isDel bool, namespace string)
 // to download the binary from github releases and installs it
 // in the root config path
 func (istio *Istio) getExecutable(release string) (string, error) {
-	const binaryName = "istioctl"
-	alternateBinaryName := "istioctl-" + release
+	const platform = runtime.GOOS
+	binaryName := generatePlatformSpecificBinaryName("istioctl", platform)
+	alternateBinaryName := generatePlatformSpecificBinaryName("istioctl-"+release, platform)
 
 	// Look for the executable in the path
 	istio.Log.Info("Looking for istio in the path...")
@@ -124,8 +126,9 @@ func (istio *Istio) getExecutable(release string) (string, error) {
 		return executable, nil
 	}
 
-	// Look for config in the root path
 	binPath := path.Join(config.RootPath(), "bin")
+
+	// Look for config in the root path
 	istio.Log.Info("Looking for istio in", binPath, "...")
 	executable = path.Join(binPath, alternateBinaryName)
 	if _, err := os.Stat(executable); err == nil {
@@ -134,16 +137,18 @@ func (istio *Istio) getExecutable(release string) (string, error) {
 
 	// Proceed to download the binary in the config root path
 	istio.Log.Info("istio not found in the path, downloading...")
-	res, err := downloadBinary(runtime.GOOS, runtime.GOARCH, release)
+	res, err := downloadBinary(platform, runtime.GOARCH, release)
 	if err != nil {
 		return "", err
 	}
 	// Install the binary
 	istio.Log.Info("Installing...")
-	if err = installBinary(path.Join(binPath, alternateBinaryName), runtime.GOOS, res); err != nil {
+	if err = installBinary(binPath, platform, binaryName, res); err != nil {
 		return "", err
 	}
-	if err := extractAndClean(binPath, alternateBinaryName, runtime.GOOS); err != nil {
+	// Rename the binary
+	err = os.Rename(path.Join(binPath, binaryName), path.Join(binPath, alternateBinaryName))
+	if err != nil {
 		return "", err
 	}
 
@@ -175,7 +180,7 @@ func downloadBinary(platform, arch, release string) (*http.Response, error) {
 	return resp, nil
 }
 
-func installBinary(location, platform string, res *http.Response) error {
+func installBinary(location, platform, name string, res *http.Response) error {
 	// Close the response body
 	defer func() {
 		if err := res.Body.Close(); err != nil {
@@ -195,11 +200,16 @@ func installBinary(location, platform string, res *http.Response) error {
 		if err := tarxzf(location, res.Body); err != nil {
 			return ErrInstallBinary(err)
 		}
+		// Change permissions
+		if err = os.Chmod(path.Join(location, name), 0750); err != nil {
+			return err
+		}
 	case "windows":
 		if err := unzip(location, res.Body); err != nil {
 			return ErrInstallBinary(err)
 		}
 	}
+
 	return nil
 }
 
@@ -314,38 +324,10 @@ func unzip(location string, zippedContent io.Reader) error {
 	return nil
 }
 
-func extractAndClean(location, binName, platform string) error {
-	platformSpecificName := "istioctl"
-	if platform == "windows" {
-		platformSpecificName += ".exe"
+func generatePlatformSpecificBinaryName(binName, platform string) string {
+	if platform == "windows" && !strings.HasSuffix(binName, ".exe") {
+		return binName + ".exe"
 	}
 
-	// Move binary to the right location
-	err := os.Rename(path.Join(location, binName, platformSpecificName), path.Join(location, platformSpecificName))
-	if err != nil {
-		return err
-	}
-
-	// Cleanup
-	if err = os.RemoveAll(path.Join(location, binName)); err != nil {
-		return err
-	}
-
-	if err = os.Rename(path.Join(location, platformSpecificName), path.Join(location, binName)); err != nil {
-		return err
-	}
-
-	switch platform {
-	case "darwin":
-		fallthrough
-	case "linux":
-		// Set permissions
-		// Permsission has to be +x to be able to run the binary
-		// #nosec
-		if err = os.Chmod(path.Join(location, binName), 0750); err != nil {
-			return err
-		}
-	}
-
-	return nil
+	return binName
 }
