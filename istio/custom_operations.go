@@ -1,4 +1,4 @@
-// Common operations for the adapter
+// Package istio - Common operations for the adapter
 package istio
 
 import (
