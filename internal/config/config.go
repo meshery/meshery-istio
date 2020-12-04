@@ -11,6 +11,7 @@ import (
 )
 
 const (
+	// Constants to use in log statements
 	IstioOperation = "istio"
 	LabelNamespace = "label-namespace"
 )
