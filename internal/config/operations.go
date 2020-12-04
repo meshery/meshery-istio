@@ -24,7 +24,7 @@ func getOperations(dev adapter.Operations) adapter.Operations {
 
 	dev[LabelNamespace] = &adapter.Operation{
 		Type:        int32(meshes.OpCategory_CONFIGURE),
-		Description: "Label Namespace",
+		Description: "Label Namespace for Automatic Sidecar Injection",
 	}
 
 	return dev
