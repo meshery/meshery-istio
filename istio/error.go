@@ -1,4 +1,4 @@
-// Error codes for the adapter
+// Package istio - Error codes for the adapter
 package istio
 
 import (
