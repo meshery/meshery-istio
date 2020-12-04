@@ -200,7 +200,8 @@ func installBinary(location, platform, name string, res *http.Response) error {
 		if err := tarxzf(location, res.Body); err != nil {
 			return ErrInstallBinary(err)
 		}
-		// Change permissions
+		// Change permissions, we need the binary to be executable, hence
+		// #nosec
 		if err = os.Chmod(path.Join(location, name), 0750); err != nil {
 			return err
 		}
