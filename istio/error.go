@@ -8,6 +8,7 @@ import (
 )
 
 var (
+	// Errror code for failed service mesh installation
 	ErrInstallIstioCode    = "istio_test_code"
 	ErrUnzipFileCode       = "istio_test_code"
 	ErrTarXZFCode          = "istio_test_code"
