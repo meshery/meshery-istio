@@ -113,6 +113,23 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 			ee.Details = ""
 			hh.StreamInfo(e)
 		}(istio, e)
+	case internalconfig.PrometheusAddon, internalconfig.GrafanaAddon, internalconfig.KialiAddon, internalconfig.JaegerAddon, internalconfig.ZipkinAddon:
+		go func(hh *Istio, ee *adapter.Event) {
+			_, err := hh.InstallAddon(opReq.Namespace, opReq.IsDeleteOperation, opReq.OperationName)
+			operation := "install"
+			if opReq.IsDeleteOperation {
+				operation = "uninstall"
+			}
+			if err != nil {
+				e.Summary = fmt.Sprintf("Error while %sing %s", operation, opReq.OperationName)
+				e.Details = err.Error()
+				hh.StreamErr(e, err)
+				return
+			}
+			ee.Summary = fmt.Sprintf("Succesfully %sed %s", operation, opReq.OperationName)
+			ee.Details = fmt.Sprintf("Succesfully %sed %s in the namespace %s", operation, opReq.OperationName, opReq.Namespace)
+			hh.StreamInfo(e)
+		}(istio, e)
 	default:
 		istio.StreamErr(e, ErrOpInvalid)
 	}
