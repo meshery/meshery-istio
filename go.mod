@@ -11,5 +11,5 @@ require (
 	github.com/onsi/ginkgo v1.13.0 // indirect
 	golang.org/x/net v0.0.0-20200927032502-5d4f70055728 // indirect
 	google.golang.org/grpc v1.32.0 // indirect
-	k8s.io/apimachinery v0.18.12
+	k8s.io/apimachinery v0.19.4
 )
