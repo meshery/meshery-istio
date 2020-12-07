@@ -2,6 +2,7 @@ package istio
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshery-adapter-library/status"
@@ -47,7 +48,9 @@ func (istio *Istio) installAddonFromTemplate(namespace string, del bool, templat
 	}
 
 	err = istio.applyManifest([]byte(contents), del, namespace)
-	if err != nil {
+	// Specifically choosing to ignore kiali dashboard's error.
+	// Referring to: https://github.com/kiali/kiali/issues/3112
+	if err != nil && !strings.Contains(err.Error(), "no matches for kind \"MonitoringDashboard\" in version \"monitoring.kiali.io/v1alpha1\"") {
 		return st, ErrAddonFromTemplate(err)
 	}
 

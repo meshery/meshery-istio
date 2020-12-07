@@ -129,7 +129,7 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 				return
 			}
 			ee.Summary = fmt.Sprintf("Succesfully %sed %s", operation, opReq.OperationName)
-			ee.Details = fmt.Sprintf("Succesfully %sed %s in the namespace %s", operation, opReq.OperationName, opReq.Namespace)
+			ee.Details = fmt.Sprintf("Succesfully %sed %s from the %s namespace", operation, opReq.OperationName, opReq.Namespace)
 			hh.StreamInfo(e)
 		}(istio, e)
 	case internalconfig.IstioVetOpertation:
