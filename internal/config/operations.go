@@ -54,7 +54,7 @@ func getOperations(dev adapter.Operations) adapter.Operations {
 
 	dev[IstioVetOpertation] = &adapter.Operation{
 		Type:        int32(meshes.OpCategory_VALIDATE),
-		Description: "Check Configuration",
+		Description: "Analyze Running Configuration",
 	}
 
 	return dev
