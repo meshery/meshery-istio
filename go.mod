@@ -9,7 +9,6 @@ require (
 	github.com/layer5io/meshery-adapter-library v0.1.7
 	github.com/layer5io/meshkit v0.1.28
 	github.com/onsi/ginkgo v1.13.0 // indirect
-	github.com/pkg/errors v0.9.1
 	golang.org/x/net v0.0.0-20200927032502-5d4f70055728 // indirect
 	google.golang.org/grpc v1.32.0 // indirect
 	istio.io/client-go v1.8.0
