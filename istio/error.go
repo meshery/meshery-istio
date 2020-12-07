@@ -9,20 +9,22 @@ import (
 
 var (
 	// Errror code for failed service mesh installation
-	ErrInstallIstioCode       = "istio_test_code"
-	ErrUnzipFileCode          = "istio_test_code"
-	ErrTarXZFCode             = "istio_test_code"
-	ErrMeshConfigCode         = "istio_test_code"
-	ErrFetchManifestCode      = "istio_test_code"
-	ErrDownloadBinaryCode     = "istio_test_code"
-	ErrInstallBinaryCode      = "istio_test_code"
-	ErrClientConfigCode       = "istio_test_code"
-	ErrClientSetCode          = "istio_test_code"
-	ErrStreamEventCode        = "istio_test_code"
-	ErrSampleAppCode          = "istio_test_code"
-	ErrCustomOperationCode    = "istio_test_code"
-	ErrAddonFromTemplateCode  = "istio_test_code"
-	ErrAddonInvalidConfigCode = "istio_test_code"
+	ErrInstallIstioCode        = "istio_test_code"
+	ErrUnzipFileCode           = "istio_test_code"
+	ErrTarXZFCode              = "istio_test_code"
+	ErrMeshConfigCode          = "istio_test_code"
+	ErrFetchManifestCode       = "istio_test_code"
+	ErrDownloadBinaryCode      = "istio_test_code"
+	ErrInstallBinaryCode       = "istio_test_code"
+	ErrClientConfigCode        = "istio_test_code"
+	ErrClientSetCode           = "istio_test_code"
+	ErrStreamEventCode         = "istio_test_code"
+	ErrSampleAppCode           = "istio_test_code"
+	ErrCustomOperationCode     = "istio_test_code"
+	ErrAddonFromTemplateCode   = "istio_test_code"
+	ErrAddonInvalidConfigCode  = "istio_test_code"
+	ErrCreatingIstioClientCode = "istio_test_code"
+	ErrIstioVetSyncCode        = "istio_test_code"
 
 	ErrOpInvalid = errors.NewDefault(errors.ErrOpInvalid, "Invalid operation")
 )
@@ -87,7 +89,7 @@ func ErrAddonFromTemplate(err error) error {
 	return errors.NewDefault(ErrAddonFromTemplateCode, fmt.Sprintf("Error with addon install operation: %s", err.Error()))
 }
 
-// ErrInvalidConfig is the error for streaming event
+// ErrAddonInvalidConfig is the error for streaming event
 func ErrAddonInvalidConfig(err error) error {
 	return errors.NewDefault(ErrAddonInvalidConfigCode, fmt.Sprintf("Invalid addon: %s", err.Error()))
 }
@@ -95,4 +97,14 @@ func ErrAddonInvalidConfig(err error) error {
 // ErrCustomOperation is the error for streaming event
 func ErrCustomOperation(err error) error {
 	return errors.NewDefault(ErrCustomOperationCode, fmt.Sprintf("Error with custom operation: %s", err.Error()))
+}
+
+// ErrCreatingIstioClient is the error for streaming event
+func ErrCreatingIstioClient(err error) error {
+	return errors.NewDefault(ErrCreatingIstioClientCode, fmt.Sprintf("Unable to create a new istio client %s", err.Error()))
+}
+
+// ErrIstioVetSync is the error for streaming event
+func ErrIstioVetSync(err error) error {
+	return errors.NewDefault(ErrIstioVetSyncCode, fmt.Sprintf("Failed to sync %s", err.Error()))
 }

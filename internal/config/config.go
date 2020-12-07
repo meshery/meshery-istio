@@ -15,6 +15,9 @@ const (
 	IstioOperation = "istio"
 	LabelNamespace = "label-namespace"
 
+	// Istio vet operation
+	IstioVetOpertation = "istio-vet"
+
 	// Addons that the adapter supports
 	PrometheusAddon = "prometheus-addon"
 	GrafanaAddon    = "grafana-addon"

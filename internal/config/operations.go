@@ -52,5 +52,10 @@ func getOperations(dev adapter.Operations) adapter.Operations {
 		Description: "Zipkin Dashboard",
 	}
 
+	dev[IstioVetOpertation] = &adapter.Operation{
+		Type:        int32(meshes.OpCategory_VALIDATE),
+		Description: "Check Configuration",
+	}
+
 	return dev
 }
