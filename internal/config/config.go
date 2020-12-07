@@ -14,6 +14,16 @@ const (
 	// Constants to use in log statements
 	IstioOperation = "istio"
 	LabelNamespace = "label-namespace"
+
+	// Istio vet operation
+	IstioVetOpertation = "istio-vet"
+
+	// Addons that the adapter supports
+	PrometheusAddon = "prometheus-addon"
+	GrafanaAddon    = "grafana-addon"
+	KialiAddon      = "kiali-addon"
+	JaegerAddon     = "jaeger-addon"
+	ZipkinAddon     = "zipkin-addon"
 )
 
 var (

@@ -7,11 +7,13 @@ import (
 	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshery-adapter-library/common"
 	adapterconfig "github.com/layer5io/meshery-adapter-library/config"
+	"github.com/layer5io/meshery-adapter-library/meshes"
 	"github.com/layer5io/meshery-adapter-library/status"
 	internalconfig "github.com/layer5io/meshery-istio/internal/config"
 	"github.com/layer5io/meshkit/logger"
 )
 
+// Istio represents the istio adapter and embeds adapter.Adapter
 type Istio struct {
 	adapter.Adapter // Type Embedded
 }
@@ -112,6 +114,43 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 			ee.Summary = "Labelling successful"
 			ee.Details = ""
 			hh.StreamInfo(e)
+		}(istio, e)
+	case internalconfig.PrometheusAddon, internalconfig.GrafanaAddon, internalconfig.KialiAddon, internalconfig.JaegerAddon, internalconfig.ZipkinAddon:
+		go func(hh *Istio, ee *adapter.Event) {
+			_, err := hh.InstallAddon(opReq.Namespace, opReq.IsDeleteOperation, opReq.OperationName)
+			operation := "install"
+			if opReq.IsDeleteOperation {
+				operation = "uninstall"
+			}
+
+			if err != nil {
+				e.Summary = fmt.Sprintf("Error while %sing %s", operation, opReq.OperationName)
+				e.Details = err.Error()
+				hh.StreamErr(e, err)
+				return
+			}
+			ee.Summary = fmt.Sprintf("Succesfully %sed %s", operation, opReq.OperationName)
+			ee.Details = fmt.Sprintf("Succesfully %sed %s from the %s namespace", operation, opReq.OperationName, opReq.Namespace)
+			hh.StreamInfo(e)
+		}(istio, e)
+	case internalconfig.IstioVetOpertation:
+		go func(hh *Istio, ee *adapter.Event) {
+			responseChan := make(chan *adapter.Event, 1)
+
+			go hh.RunVet(responseChan)
+
+			for msg := range responseChan {
+				switch msg.EType {
+				case int32(meshes.EventType_ERROR):
+					istio.StreamErr(msg, fmt.Errorf(msg.Details))
+				case int32(meshes.EventType_WARN):
+					istio.StreamWarn(msg, fmt.Errorf(msg.Details))
+				default:
+					istio.StreamInfo(msg)
+				}
+			}
+
+			istio.Log.Info("Done")
 		}(istio, e)
 	default:
 		istio.StreamErr(e, ErrOpInvalid)

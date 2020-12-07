@@ -27,5 +27,35 @@ func getOperations(dev adapter.Operations) adapter.Operations {
 		Description: "Label Namespace for Automatic Sidecar Injection",
 	}
 
+	dev[PrometheusAddon] = &adapter.Operation{
+		Type:        int32(meshes.OpCategory_CONFIGURE),
+		Description: "Prometheus Monitoring",
+	}
+
+	dev[GrafanaAddon] = &adapter.Operation{
+		Type:        int32(meshes.OpCategory_CONFIGURE),
+		Description: "Grafana Dashboard",
+	}
+
+	dev[KialiAddon] = &adapter.Operation{
+		Type:        int32(meshes.OpCategory_CONFIGURE),
+		Description: "Kiali Dashboard",
+	}
+
+	dev[JaegerAddon] = &adapter.Operation{
+		Type:        int32(meshes.OpCategory_CONFIGURE),
+		Description: "Jaeger Dashboard",
+	}
+
+	dev[ZipkinAddon] = &adapter.Operation{
+		Type:        int32(meshes.OpCategory_CONFIGURE),
+		Description: "Zipkin Dashboard",
+	}
+
+	dev[IstioVetOpertation] = &adapter.Operation{
+		Type:        int32(meshes.OpCategory_VALIDATE),
+		Description: "Analyze Running Configuration",
+	}
+
 	return dev
 }
