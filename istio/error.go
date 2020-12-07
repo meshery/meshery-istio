@@ -8,24 +8,62 @@ import (
 )
 
 var (
-	// Errror code for failed service mesh installation
-	ErrInstallIstioCode        = "istio_test_code"
-	ErrUnzipFileCode           = "istio_test_code"
-	ErrTarXZFCode              = "istio_test_code"
-	ErrMeshConfigCode          = "istio_test_code"
-	ErrFetchManifestCode       = "istio_test_code"
-	ErrDownloadBinaryCode      = "istio_test_code"
-	ErrInstallBinaryCode       = "istio_test_code"
-	ErrClientConfigCode        = "istio_test_code"
-	ErrClientSetCode           = "istio_test_code"
-	ErrStreamEventCode         = "istio_test_code"
-	ErrSampleAppCode           = "istio_test_code"
-	ErrCustomOperationCode     = "istio_test_code"
-	ErrAddonFromTemplateCode   = "istio_test_code"
-	ErrAddonInvalidConfigCode  = "istio_test_code"
-	ErrCreatingIstioClientCode = "istio_test_code"
-	ErrIstioVetSyncCode        = "istio_test_code"
+	// Error code for failed service mesh installation
 
+	// ErrInstallIstioCode represents the errors which are generated
+	// during istio service mesh install process
+	ErrInstallIstioCode = "istio_test_code"
+
+	// ErrUnzipFileCode represents the errors which are generated
+	// during unzip process
+	ErrUnzipFileCode = "istio_test_code"
+
+	// ErrTarXZFCode represents the errors which are generated
+	// during decompressing and extracting tar.gz file
+	ErrTarXZFCode = "istio_test_code"
+
+	// ErrMeshConfigCode represents the errors which are generated
+	// when an invalid mesh config is found
+	ErrMeshConfigCode = "istio_test_code"
+
+	// ErrFetchManifestCode represents the errors which are generated
+	// during fetch manifest process
+	ErrFetchManifestCode = "istio_test_code"
+
+	// ErrDownloadBinaryCode represents the errors which are generated
+	// during binary download process
+	ErrDownloadBinaryCode = "istio_test_code"
+
+	// ErrInstallBinaryCode represents the errors which are generated
+	// during binary installation process
+	ErrInstallBinaryCode = "istio_test_code"
+
+	// ErrSampleAppCode represents the errors which are generated
+	// duing sample app installation
+	ErrSampleAppCode = "istio_test_code"
+
+	// ErrCustomOperationCode represents the errors which are generated
+	// when an invalid addon operation is requested
+	ErrCustomOperationCode = "istio_test_code"
+
+	// ErrAddonFromTemplateCode represents the errors which are generated
+	// during addon deployment process
+	ErrAddonFromTemplateCode = "istio_test_code"
+
+	// ErrAddonInvalidConfigCode represents the errors which are generated
+	// when an invalid addon operation is requested
+	ErrAddonInvalidConfigCode = "istio_test_code"
+
+	// ErrCreatingIstioClientCode represents the errors which are generated
+	// during creating istio client process
+	ErrCreatingIstioClientCode = "istio_test_code"
+
+	// ErrIstioVetSyncCode represents the errors which are generated
+	// during istio-vet sync process
+	ErrIstioVetSyncCode = "istio_test_code"
+
+	// ErrOpInvalid represents the errors which are generated
+	// when an invalid operation is requested
 	ErrOpInvalid = errors.NewDefault(errors.ErrOpInvalid, "Invalid operation")
 )
 
@@ -62,21 +100,6 @@ func ErrDownloadBinary(err error) error {
 // ErrInstallBinary is the error while downloading istio binary
 func ErrInstallBinary(err error) error {
 	return errors.NewDefault(ErrInstallBinaryCode, fmt.Sprintf("Error installing istio binary: %s", err.Error()))
-}
-
-// ErrClientConfig is the error for setting client config
-func ErrClientConfig(err error) error {
-	return errors.NewDefault(ErrClientConfigCode, fmt.Sprintf("Error setting client config: %s", err.Error()))
-}
-
-// ErrClientSet is the error for setting clientset
-func ErrClientSet(err error) error {
-	return errors.NewDefault(ErrClientSetCode, fmt.Sprintf("Error setting clientset: %s", err.Error()))
-}
-
-// ErrStreamEvent is the error for streaming event
-func ErrStreamEvent(err error) error {
-	return errors.NewDefault(ErrStreamEventCode, fmt.Sprintf("Error streaming event: %s", err.Error()))
 }
 
 // ErrSampleApp is the error for streaming event

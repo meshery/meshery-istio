@@ -13,6 +13,7 @@ import (
 	"github.com/layer5io/meshkit/logger"
 )
 
+// Istio represents the istio adapter and embeds adapter.Adapter
 type Istio struct {
 	adapter.Adapter // Type Embedded
 }
