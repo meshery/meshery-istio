@@ -12,6 +12,6 @@ require (
 	golang.org/x/net v0.0.0-20200927032502-5d4f70055728 // indirect
 	google.golang.org/grpc v1.32.0 // indirect
 	istio.io/client-go v1.8.0
-	k8s.io/apimachinery v0.18.12
+	k8s.io/apimachinery v0.19.4
 	k8s.io/client-go v0.18.12
 )
