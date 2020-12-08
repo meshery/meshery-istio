@@ -79,6 +79,8 @@ jobs:
     #  needs: [lint, error_check, static_check, vet, sec_check]
      name: Tests
      runs-on: ubuntu-latest
+     env:
+       ACTIONS_ALLOW_UNSECURE_COMMANDS: true
      steps:
      - name: Check out code
        uses: actions/checkout@master
