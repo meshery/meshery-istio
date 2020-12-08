@@ -2,7 +2,10 @@ module github.com/layer5io/meshery-istio
 
 go 1.13
 
-replace github.com/kudobuilder/kuttl => github.com/layer5io/kuttl v0.4.1-0.20200723152044-916f10574334
+replace (
+	github.com/kudobuilder/kuttl => github.com/layer5io/kuttl v0.4.1-0.20200723152044-916f10574334
+	gopkg.in/ini.v1 => github.com/go-ini/ini v1.62.0
+)
 
 require (
 	github.com/aspenmesh/istio-vet v0.0.0-20200806222806-9c8e9a962b9f
