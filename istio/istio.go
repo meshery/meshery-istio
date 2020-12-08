@@ -118,14 +118,18 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 	case internalconfig.LabelNamespace:
 		go func(hh *Istio, ee *adapter.Event) {
 			err := hh.LoadNamespaceToMesh(opReq.Namespace, opReq.IsDeleteOperation)
+			operation := "enabled"
+			if opReq.IsDeleteOperation {
+				operation = "removed"
+			}
 			if err != nil {
 				e.Summary = fmt.Sprintf("Error while labelling %s", opReq.Namespace)
 				e.Details = err.Error()
 				hh.StreamErr(e, err)
 				return
 			}
-			ee.Summary = "Labelling successful"
-			ee.Details = ""
+			ee.Summary = fmt.Sprintf("Label updated on %s namespace", opReq.Namespace)
+			ee.Details = fmt.Sprintf("ISTIO-INJECTION label %s on %s namespace", operation, opReq.Namespace)
 			hh.StreamInfo(e)
 		}(istio, e)
 	case internalconfig.PrometheusAddon, internalconfig.GrafanaAddon, internalconfig.KialiAddon, internalconfig.JaegerAddon, internalconfig.ZipkinAddon:

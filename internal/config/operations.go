@@ -28,32 +28,32 @@ func getOperations(dev adapter.Operations) adapter.Operations {
 
 	dev[LabelNamespace] = &adapter.Operation{
 		Type:        int32(meshes.OpCategory_CONFIGURE),
-		Description: "Label Namespace for Automatic Sidecar Injection",
+		Description: "Automatic Sidecar Injection",
 	}
 
 	dev[PrometheusAddon] = &adapter.Operation{
 		Type:        int32(meshes.OpCategory_CONFIGURE),
-		Description: "Prometheus Monitoring",
+		Description: "Add-on: Prometheus",
 	}
 
 	dev[GrafanaAddon] = &adapter.Operation{
 		Type:        int32(meshes.OpCategory_CONFIGURE),
-		Description: "Grafana Dashboard",
+		Description: "Add-on: Grafana",
 	}
 
 	dev[KialiAddon] = &adapter.Operation{
 		Type:        int32(meshes.OpCategory_CONFIGURE),
-		Description: "Kiali Dashboard",
+		Description: "Add-on: Kiali",
 	}
 
 	dev[JaegerAddon] = &adapter.Operation{
 		Type:        int32(meshes.OpCategory_CONFIGURE),
-		Description: "Jaeger Dashboard",
+		Description: "Add-on: Jaeger",
 	}
 
 	dev[ZipkinAddon] = &adapter.Operation{
 		Type:        int32(meshes.OpCategory_CONFIGURE),
-		Description: "Zipkin Dashboard",
+		Description: "Add-on: Zipkin",
 	}
 
 	dev[IstioVetOperation] = &adapter.Operation{
@@ -63,7 +63,7 @@ func getOperations(dev adapter.Operations) adapter.Operations {
 
 	dev[EnvoyFilterOperation] = &adapter.Operation{
 		Type:        int32(meshes.OpCategory_CONFIGURE),
-		Description: "Envoy Filter for Imagehub",
+		Description: "Envoy Filter for Image Hub",
 		Versions:    adapter.NoneVersion,
 		Templates: []adapter.Template{
 			"file://templates/imagehub-filter.yaml",
@@ -76,7 +76,7 @@ func getOperations(dev adapter.Operations) adapter.Operations {
 
 	dev[DenyAllPolicyOperation] = &adapter.Operation{
 		Type:        int32(meshes.OpCategory_CONFIGURE),
-		Description: "Deny-All Policy",
+		Description: "Policy: Deny-All",
 		Templates: []adapter.Template{
 			"file://templates/policy-denyall.yaml",
 		},
@@ -84,7 +84,7 @@ func getOperations(dev adapter.Operations) adapter.Operations {
 
 	dev[StrictMTLSPolicyOperation] = &adapter.Operation{
 		Type:        int32(meshes.OpCategory_CONFIGURE),
-		Description: "Strict MTLS Policy",
+		Description: "Policy: Strict MTLS",
 		Templates: []adapter.Template{
 			"file://templates/policy-strict.yaml",
 		},
@@ -92,7 +92,7 @@ func getOperations(dev adapter.Operations) adapter.Operations {
 
 	dev[MutualMTLSPolicyOperation] = &adapter.Operation{
 		Type:        int32(meshes.OpCategory_CONFIGURE),
-		Description: "Mutual MTLS Policy",
+		Description: "Policy: Mutual MTLS",
 		Templates: []adapter.Template{
 			"file://templates/policy-mutual.yaml",
 		},
@@ -100,7 +100,7 @@ func getOperations(dev adapter.Operations) adapter.Operations {
 
 	dev[DisableMTLSPolicyOperation] = &adapter.Operation{
 		Type:        int32(meshes.OpCategory_CONFIGURE),
-		Description: "Disable MTLS Policy",
+		Description: "Policy: Disable MTLS",
 		Templates: []adapter.Template{
 			"file://templates/policy-disable.yaml",
 		},
