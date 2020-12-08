@@ -142,9 +142,9 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 			for msg := range responseChan {
 				switch msg.EType {
 				case int32(meshes.EventType_ERROR):
-					istio.StreamErr(msg, fmt.Errorf(msg.Details))
+					istio.StreamErr(msg, ErrIstioVet(fmt.Errorf(msg.Details)))
 				case int32(meshes.EventType_WARN):
-					istio.StreamWarn(msg, fmt.Errorf(msg.Details))
+					istio.StreamWarn(msg, ErrIstioVet(fmt.Errorf(msg.Details)))
 				default:
 					istio.StreamInfo(msg)
 				}
