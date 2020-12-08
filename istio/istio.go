@@ -89,6 +89,19 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 			ee.Details = ""
 			hh.StreamInfo(e)
 		}(istio, e)
+	case internalconfig.DenyAllPolicyOperation, internalconfig.StrictMTLSPolicyOperation, internalconfig.MutualMTLSPolicyOperation, internalconfig.DisableMTLSPolicyOperation:
+		go func(hh *Istio, ee *adapter.Event) {
+			stat, err := hh.applyPolicy(opReq.Namespace, opReq.IsDeleteOperation, operations[opReq.OperationName].Templates)
+			if err != nil {
+				e.Summary = fmt.Sprintf("Error while %s policy", stat)
+				e.Details = err.Error()
+				hh.StreamErr(e, err)
+				return
+			}
+			ee.Summary = fmt.Sprintf("Policy %s successfully", status.Deployed)
+			ee.Details = ""
+			hh.StreamInfo(e)
+		}(istio, e)
 	case common.CustomOperation:
 		go func(hh *Istio, ee *adapter.Event) {
 			stat, err := hh.applyCustomOperation(opReq.Namespace, opReq.CustomBody, opReq.IsDeleteOperation)
@@ -133,7 +146,7 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 			ee.Details = fmt.Sprintf("Succesfully %sed %s from the %s namespace", operation, opReq.OperationName, opReq.Namespace)
 			hh.StreamInfo(e)
 		}(istio, e)
-	case internalconfig.IstioVetOpertation:
+	case internalconfig.IstioVetOperation:
 		go func(hh *Istio, ee *adapter.Event) {
 			responseChan := make(chan *adapter.Event, 1)
 
@@ -151,6 +164,21 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 			}
 
 			istio.Log.Info("Done")
+		}(istio, e)
+	case internalconfig.EnvoyFilterOperation:
+		go func(hh *Istio, ee *adapter.Event) {
+			appName := operations[opReq.OperationName].AdditionalProperties[common.ServiceName]
+			patchFile := operations[opReq.OperationName].AdditionalProperties[internalconfig.EnvoyPatchFile]
+			stat, err := hh.patchWithEnvoyFilter(opReq.Namespace, opReq.IsDeleteOperation, appName, operations[opReq.OperationName].Templates, patchFile)
+			if err != nil {
+				e.Summary = fmt.Sprintf("Error while %s %s application", stat, appName)
+				e.Details = err.Error()
+				hh.StreamErr(e, err)
+				return
+			}
+			ee.Summary = fmt.Sprintf("%s application %s successfully", appName, stat)
+			ee.Details = fmt.Sprintf("The %s application is now %s.", appName, stat)
+			hh.StreamInfo(e)
 		}(istio, e)
 	default:
 		istio.StreamErr(e, ErrOpInvalid)

@@ -11,10 +11,10 @@ import (
 	"github.com/layer5io/meshkit/utils"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	types "k8s.io/apimachinery/pkg/types"
 )
 
 func (istio *Istio) installSampleApp(namespace string, del bool, templates []adapter.Template) (string, error) {
-	istio.Log.Info(fmt.Sprintf("Requested action is delete: %v", del))
 	st := status.Installing
 
 	if del {
@@ -34,6 +34,58 @@ func (istio *Istio) installSampleApp(namespace string, del bool, templates []ada
 	}
 
 	return status.Installed, nil
+}
+
+func (istio *Istio) patchWithEnvoyFilter(namespace string, del bool, app string, templates []adapter.Template, patchObject string) (string, error) {
+	st := status.Deploying
+
+	if del {
+		st = status.Removing
+	}
+
+	jsonContents, err := readFileSource(patchObject)
+	if err != nil {
+		return st, ErrEnvoyFilter(err)
+	}
+
+	_, err = istio.KubeClient.AppsV1().Deployments(namespace).Patch(context.TODO(), app, types.MergePatchType, []byte(jsonContents), metav1.PatchOptions{})
+	if err != nil {
+		return st, ErrEnvoyFilter(err)
+	}
+
+	for _, template := range templates {
+		contents, err := readFileSource(string(template))
+		if err != nil {
+			return st, ErrEnvoyFilter(err)
+		}
+
+		err = istio.applyManifest([]byte(contents), del, namespace)
+		if err != nil {
+			return st, ErrEnvoyFilter(err)
+		}
+	}
+
+	return status.Deployed, nil
+}
+func (istio *Istio) applyPolicy(namespace string, del bool, templates []adapter.Template) (string, error) {
+	st := status.Deploying
+
+	if del {
+		st = status.Removing
+	}
+
+	for _, template := range templates {
+		contents, err := readFileSource(string(template))
+		if err != nil {
+			return st, ErrApplyPolicy(err)
+		}
+
+		err = istio.applyManifest([]byte(contents), del, namespace)
+		if err != nil {
+			return st, ErrApplyPolicy(err)
+		}
+	}
+	return status.Deployed, nil
 }
 
 // LoadToMesh is used to mark deployment for automatic sidecar injection (or not)

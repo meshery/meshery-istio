@@ -22,9 +22,9 @@ import (
 )
 
 func (istio *Istio) installIstio(del bool, version, namespace string) (string, error) {
-	istio.Log.Info(fmt.Sprintf("Requested install of version: %s", version))
-	istio.Log.Info(fmt.Sprintf("Requested action is delete: %v", del))
-	istio.Log.Info(fmt.Sprintf("Requested action is in namespace: %s", namespace))
+	istio.Log.Debug(fmt.Sprintf("Requested install of version: %s", version))
+	istio.Log.Debug(fmt.Sprintf("Requested action is delete: %v", del))
+	istio.Log.Debug(fmt.Sprintf("Requested action is in namespace: %s", namespace))
 
 	// Overiding the namespace to be empty
 	// This is intentional as deploying istio on custom namespace
@@ -95,7 +95,11 @@ func (istio *Istio) applyManifest(contents []byte, isDel bool, namespace string)
 		return err
 	}
 
-	err = kclient.ApplyManifest(contents, mesherykube.ApplyOptions{Namespace: namespace, Delete: isDel})
+	err = kclient.ApplyManifest(contents, mesherykube.ApplyOptions{
+		Namespace: namespace,
+		Update:    true,
+		Delete:    isDel,
+	})
 	if err != nil {
 		return err
 	}
