@@ -16,7 +16,11 @@ const (
 	LabelNamespace = "label-namespace"
 
 	// Istio vet operation
-	IstioVetOpertation = "istio-vet"
+	IstioVetOperation = "istio-vet"
+
+	// Configure Envoy filter operation
+	EnvoyFilterOperation = "envoy-filter-operation"
+	EnvoyPatchFile       = "envoy-patch-file"
 
 	// Addons that the adapter supports
 	PrometheusAddon = "prometheus-addon"
@@ -24,6 +28,12 @@ const (
 	KialiAddon      = "kiali-addon"
 	JaegerAddon     = "jaeger-addon"
 	ZipkinAddon     = "zipkin-addon"
+
+	// Policies
+	DenyAllPolicyOperation     = "deny-all-policy-operation"
+	StrictMTLSPolicyOperation  = "strict-mtls-policy-operation"
+	MutualMTLSPolicyOperation  = "mutual-mtls-policy-operation"
+	DisableMTLSPolicyOperation = "disable-mtls-policy-operation"
 )
 
 var (

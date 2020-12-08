@@ -42,6 +42,14 @@ var (
 	// duing sample app installation
 	ErrSampleAppCode = "istio_test_code"
 
+	// ErrEnvoyFilterCode represents the errors which are generated
+	// duing envoy filter patching
+	ErrEnvoyFilterCode = "istio_test_code"
+
+	// ErrApplyPolicyCode represents the errors which are generated
+	// duing policy apply operation
+	ErrApplyPolicyCode = "istio_test_code"
+
 	// ErrCustomOperationCode represents the errors which are generated
 	// when an invalid addon operation is requested
 	ErrCustomOperationCode = "istio_test_code"
@@ -109,6 +117,16 @@ func ErrInstallBinary(err error) error {
 // ErrSampleApp is the error for streaming event
 func ErrSampleApp(err error) error {
 	return errors.NewDefault(ErrSampleAppCode, fmt.Sprintf("Error with sample app operation: %s", err.Error()))
+}
+
+// ErrEnvoyFilter is the error for streaming event
+func ErrEnvoyFilter(err error) error {
+	return errors.NewDefault(ErrEnvoyFilterCode, fmt.Sprintf("Error with envoy filter operation: %s", err.Error()))
+}
+
+// ErrApplyPolicy is the error for streaming event
+func ErrApplyPolicy(err error) error {
+	return errors.NewDefault(ErrApplyPolicyCode, fmt.Sprintf("Error with apply policy operation: %s", err.Error()))
 }
 
 // ErrAddonFromTemplate is the error for streaming event
