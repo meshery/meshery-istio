@@ -8,7 +8,7 @@ spec:
     match:
       context: SIDECAR_INBOUND # will match inbound listeners in all sidecars
       proxy:
-        proxyVersion: '^1\.7.*'
+        proxyVersion: '^1\.8.*'
       listener:
         portNumber: 9091
         filterChain:
