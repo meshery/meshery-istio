@@ -1,3 +1,6 @@
+check:
+	golangci-lint run
+
 protoc-setup:
 	cd meshes
 	wget https://raw.githubusercontent.com/layer5io/meshery/master/meshes/meshops.proto

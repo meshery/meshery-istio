@@ -134,7 +134,9 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 		}(istio, e)
 	case internalconfig.PrometheusAddon, internalconfig.GrafanaAddon, internalconfig.KialiAddon, internalconfig.JaegerAddon, internalconfig.ZipkinAddon:
 		go func(hh *Istio, ee *adapter.Event) {
-			_, err := hh.InstallAddon(opReq.Namespace, opReq.IsDeleteOperation, opReq.OperationName)
+			svcname := operations[opReq.OperationName].AdditionalProperties[common.ServiceName]
+			patch := operations[opReq.OperationName].AdditionalProperties[internalconfig.PatchFile]
+			_, err := hh.installAddon(opReq.Namespace, opReq.IsDeleteOperation, svcname, patch, operations[opReq.OperationName].Templates)
 			operation := "install"
 			if opReq.IsDeleteOperation {
 				operation = "uninstall"
@@ -172,7 +174,7 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 	case internalconfig.EnvoyFilterOperation:
 		go func(hh *Istio, ee *adapter.Event) {
 			appName := operations[opReq.OperationName].AdditionalProperties[common.ServiceName]
-			patchFile := operations[opReq.OperationName].AdditionalProperties[internalconfig.EnvoyPatchFile]
+			patchFile := operations[opReq.OperationName].AdditionalProperties[internalconfig.PatchFile]
 			stat, err := hh.patchWithEnvoyFilter(opReq.Namespace, opReq.IsDeleteOperation, appName, operations[opReq.OperationName].Templates, patchFile)
 			if err != nil {
 				e.Summary = fmt.Sprintf("Error while %s %s application", stat, appName)

@@ -14,13 +14,13 @@ const (
 	// Constants to use in log statements
 	IstioOperation = "istio"
 	LabelNamespace = "label-namespace"
+	PatchFile      = "patch-file"
 
 	// Istio vet operation
 	IstioVetOperation = "istio-vet"
 
 	// Configure Envoy filter operation
 	EnvoyFilterOperation = "envoy-filter-operation"
-	EnvoyPatchFile       = "envoy-patch-file"
 
 	// Addons that the adapter supports
 	PrometheusAddon = "prometheus-addon"
