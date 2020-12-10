@@ -12,28 +12,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 )
 
-// AddonTemplate is as a container for addon templates
-// var AddonTemplate = map[string]adapter.Template{
-// 	config.PrometheusAddon: "https://raw.githubusercontent.com/istio/istio/master/samples/addons/prometheus.yaml",
-// 	config.GrafanaAddon:    "https://raw.githubusercontent.com/istio/istio/master/samples/addons/grafana.yaml",
-// 	config.KialiAddon:      "https://raw.githubusercontent.com/istio/istio/master/samples/addons/kiali.yaml",
-// 	config.JaegerAddon:     "https://raw.githubusercontent.com/istio/istio/master/samples/addons/jaeger.yaml",
-// 	config.ZipkinAddon:     "https://raw.githubusercontent.com/istio/istio/master/samples/addons/extras/zipkin.yaml",
-// }
-
-// // InstallAddon installs the specified addon in the given namespace
-// func (istio *Istio) InstallAddon(namespace string, del bool, addon string) (string, error) {
-// 	// Some of addons will have a different install process
-// 	// than these template based addons
-// 	switch addon {
-// 	case config.PrometheusAddon, config.GrafanaAddon, config.KialiAddon, config.JaegerAddon, config.ZipkinAddon:
-// 		return istio.installAddonFromTemplate(namespace, del, AddonTemplate[addon])
-// 	}
-
-// 	return "", ErrAddonInvalidConfig(fmt.Errorf("%s is invalid addon", addon))
-// }
-
-// installAddonFromTemplate installs/uninstalls an addon in the given namespace
+// installAddon installs/uninstalls an addon in the given namespace
 //
 // the template defines the manifest's link/location which needs to be used to
 // install the addon
