@@ -26,9 +26,9 @@ var (
 	// when an invalid mesh config is found
 	ErrMeshConfigCode = "istio_test_code"
 
-	// ErrFetchManifestCode represents the errors which are generated
+	// ErrRunIstioCtlCmdCode represents the errors which are generated
 	// during fetch manifest process
-	ErrFetchManifestCode = "istio_test_code"
+	ErrRunIstioCtlCmdCode = "istio_test_code"
 
 	// ErrDownloadBinaryCode represents the errors which are generated
 	// during binary download process
@@ -99,9 +99,9 @@ func ErrMeshConfig(err error) error {
 	return errors.NewDefault(ErrMeshConfigCode, fmt.Sprintf("Error configuration mesh: %s", err.Error()))
 }
 
-// ErrFetchManifest is the error for mesh port forward
-func ErrFetchManifest(err error, des string) error {
-	return errors.NewDefault(ErrFetchManifestCode, fmt.Sprintf("Error fetching mesh manifest: %s", des))
+// ErrRunIstioCtlCmd is the error for mesh port forward
+func ErrRunIstioCtlCmd(err error, des string) error {
+	return errors.NewDefault(ErrRunIstioCtlCmdCode, fmt.Sprintf("Error running istioctl command: %s", des))
 }
 
 // ErrDownloadBinary is the error while downloading istio binary

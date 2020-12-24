@@ -26,12 +26,6 @@ func (istio *Istio) installIstio(del bool, version, namespace string) (string, e
 	istio.Log.Debug(fmt.Sprintf("Requested action is delete: %v", del))
 	istio.Log.Debug(fmt.Sprintf("Requested action is in namespace: %s", namespace))
 
-	// Overiding the namespace to be empty
-	// This is intentional as deploying istio on custom namespace
-	// is a bit tricky
-	namespace = ""
-	istio.Log.Debug(fmt.Sprintf("Overidden namespace: %s", namespace))
-
 	st := status.Installing
 
 	if del {
@@ -43,13 +37,7 @@ func (istio *Istio) installIstio(del bool, version, namespace string) (string, e
 		return st, ErrMeshConfig(err)
 	}
 
-	manifest, err := istio.fetchManifest(version, del)
-	if err != nil {
-		istio.Log.Error(ErrInstallIstio(err))
-		return st, ErrInstallIstio(err)
-	}
-
-	err = istio.applyManifest([]byte(manifest), del, namespace)
+	err = istio.runIstioCtlCmd(version, del)
 	if err != nil {
 		istio.Log.Error(ErrInstallIstio(err))
 		return st, ErrInstallIstio(err)
@@ -61,7 +49,7 @@ func (istio *Istio) installIstio(del bool, version, namespace string) (string, e
 	return status.Installed, nil
 }
 
-func (istio *Istio) fetchManifest(version string, isDel bool) (string, error) {
+func (istio *Istio) runIstioCtlCmd(version string, isDel bool) error {
 	var (
 		out bytes.Buffer
 		er  bytes.Buffer
@@ -69,7 +57,7 @@ func (istio *Istio) fetchManifest(version string, isDel bool) (string, error) {
 
 	Executable, err := istio.getExecutable(version)
 	if err != nil {
-		return "", ErrFetchManifest(err, err.Error())
+		return ErrRunIstioCtlCmd(err, err.Error())
 	}
 	execCmd := []string{"install", "--set", "profile=demo", "-y"}
 	if isDel {
@@ -83,10 +71,10 @@ func (istio *Istio) fetchManifest(version string, isDel bool) (string, error) {
 	command.Stderr = &er
 	err = command.Run()
 	if err != nil {
-		return "", ErrFetchManifest(err, er.String())
+		return ErrRunIstioCtlCmd(err, er.String())
 	}
 
-	return out.String(), nil
+	return nil
 }
 
 func (istio *Istio) applyManifest(contents []byte, isDel bool, namespace string) error {
