@@ -27,6 +27,7 @@ import (
 	"github.com/layer5io/meshery-adapter-library/api/grpc"
 	configprovider "github.com/layer5io/meshery-adapter-library/config/provider"
 	"github.com/layer5io/meshery-istio/internal/config"
+	"github.com/layer5io/meshery-istio/istio/oam"
 )
 
 var (
@@ -98,6 +99,16 @@ func main() {
 	service.Handler = handler
 	service.Channel = make(chan interface{}, 10)
 	service.StartedAt = time.Now()
+
+	// Register workloads
+	if err := oam.RegisterWorkloads("http://localhost:9081", "mesherylocal.layer5.io:"+service.Port); err != nil {
+		fmt.Println(err)
+	}
+
+	// Register traits
+	if err := oam.RegisterTraits("http://localhost:9081", "mesherylocal.layer5.io:"+service.Port); err != nil {
+		fmt.Println(err)
+	}
 
 	// Server Initialization
 	log.Info("Adaptor Listening at port: ", service.Port)

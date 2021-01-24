@@ -74,7 +74,7 @@ func getOperations(dev adapter.Operations) adapter.Operations {
 			"https://raw.githubusercontent.com/istio/istio/master/samples/addons/jaeger.yaml",
 		},
 		AdditionalProperties: map[string]string{
-			ServiceName: "jaeger",
+			ServiceName: "jaeger-collector",
 			PatchFile:   "file://templates/service-patch.json",
 		},
 	}

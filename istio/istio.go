@@ -10,6 +10,8 @@ import (
 	"github.com/layer5io/meshery-adapter-library/meshes"
 	"github.com/layer5io/meshery-adapter-library/status"
 	internalconfig "github.com/layer5io/meshery-istio/internal/config"
+	"github.com/layer5io/meshery-istio/istio/oam"
+	"github.com/layer5io/meshery-istio/istio/oam/core/v1alpha1"
 	"github.com/layer5io/meshkit/logger"
 )
 
@@ -188,6 +190,37 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 		}(istio, e)
 	default:
 		istio.StreamErr(e, ErrOpInvalid)
+	}
+
+	return nil
+}
+
+// ProcessOAM will handles the grpc invocation for handling OAM objects
+func (istio *Istio) ProcessOAM(ctx context.Context, oamReq adapter.OAMRequest) error {
+	var comps []v1alpha1.Component
+	for _, acomp := range oamReq.OamComps {
+		comp, err := oam.ParseApplicationComponent(acomp)
+		if err != nil {
+			fmt.Println("error parsing the component")
+			continue
+		}
+
+		comps = append(comps, comp)
+	}
+
+	config, err := oam.ParseApplicationConfiguration(oamReq.OamConfig)
+	if err != nil {
+		fmt.Println("error parsing the conifguration")
+	}
+
+	// Process components
+	if err := istio.HandleComponents(comps, oamReq.DeleteOp); err != nil {
+		return err
+	}
+
+	// Process configuration
+	if err := istio.HandleApplicationConfiguration(config, oamReq.DeleteOp); err != nil {
+		return err
 	}
 
 	return nil
