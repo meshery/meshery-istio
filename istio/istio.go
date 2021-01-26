@@ -13,6 +13,11 @@ import (
 	"github.com/layer5io/meshkit/logger"
 )
 
+const (
+	// SMIManifest is the manifest.yaml file for smi conformance tool
+	SMIManifest = "https://raw.githubusercontent.com/layer5io/learn-layer5/master/smi-conformance/manifest.yml"
+)
+
 // Istio represents the istio adapter and embeds adapter.Adapter
 type Istio struct {
 	adapter.Adapter // Type Embedded
@@ -78,6 +83,9 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 			err := hh.ValidateSMIConformance(&adapter.SmiTestOptions{
 				Ctx:  context.TODO(),
 				OpID: ee.Operationid,
+				Labels: map[string]string{
+					"istio-injection": "enabled",
+				},
 			})
 			if err != nil {
 				e.Summary = fmt.Sprintf("Error while %s %s test", status.Running, name)
