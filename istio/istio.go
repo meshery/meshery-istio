@@ -196,7 +196,7 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 }
 
 // ProcessOAM will handles the grpc invocation for handling OAM objects
-func (istio *Istio) ProcessOAM(ctx context.Context, oamReq adapter.OAMRequest) error {
+func (istio *Istio) ProcessOAM(ctx context.Context, oamReq adapter.OAMRequest) (string, error) {
 	var comps []v1alpha1.Component
 	for _, acomp := range oamReq.OamComps {
 		comp, err := oam.ParseApplicationComponent(acomp)
@@ -214,14 +214,16 @@ func (istio *Istio) ProcessOAM(ctx context.Context, oamReq adapter.OAMRequest) e
 	}
 
 	// Process components
-	if err := istio.HandleComponents(comps, oamReq.DeleteOp); err != nil {
-		return err
+	msg1, err := istio.HandleComponents(comps, oamReq.DeleteOp)
+	if err != nil {
+		return msg1, err
 	}
 
 	// Process configuration
-	if err := istio.HandleApplicationConfiguration(config, oamReq.DeleteOp); err != nil {
-		return err
+	msg2, err := istio.HandleApplicationConfiguration(config, oamReq.DeleteOp)
+	if err != nil {
+		return msg1 + "\n" + msg2, err
 	}
 
-	return nil
+	return msg1 + "\n" + msg2, nil
 }

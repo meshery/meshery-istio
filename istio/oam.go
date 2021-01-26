@@ -11,32 +11,36 @@ import (
 )
 
 // HandleComponents handles the processing of OAM components
-func (istio *Istio) HandleComponents(comps []v1alpha1.Component, isDel bool) error {
+func (istio *Istio) HandleComponents(comps []v1alpha1.Component, isDel bool) (string, error) {
 	var errs []error
+	var msgs []string
 	for _, comp := range comps {
 		if comp.Spec.Type == "IstioMesh" {
 			if err := handleComponentIstioMesh(istio, comp, isDel); err != nil {
 				errs = append(errs, err)
 			}
 
+			msgs = append(msgs, "created service of type \"IstioMesh\"")
 			continue
 		}
 
 		if err := handleComponentIstioAddon(istio, comp, isDel); err != nil {
 			errs = append(errs, err)
 		}
+		msgs = append(msgs, fmt.Sprintf("created service of type \"%s\"", comp.Spec.Type))
 	}
 
 	if err := mergeErrors(errs); err != nil {
-		return errors.NewDefault("", err.Error())
+		return mergeMsgs(msgs), errors.NewDefault("", err.Error())
 	}
 
-	return nil
+	return mergeMsgs(msgs), nil
 }
 
 // HandleApplicationConfiguration handles the processing of OAM application configuration
-func (istio *Istio) HandleApplicationConfiguration(config v1alpha1.Configuration, isDel bool) error {
+func (istio *Istio) HandleApplicationConfiguration(config v1alpha1.Configuration, isDel bool) (string, error) {
 	var errs []error
+	var msgs []string
 	for _, comp := range config.Spec.Components {
 		for _, trait := range comp.Traits {
 			if trait.Name == "mTLS" {
@@ -54,10 +58,16 @@ func (istio *Istio) HandleApplicationConfiguration(config v1alpha1.Configuration
 					errs = append(errs, err)
 				}
 			}
+
+			msgs = append(msgs, fmt.Sprintf("applied trait \"%s\" on service \"%s\"", trait.Name, comp.ComponentName))
 		}
 	}
 
-	return mergeErrors(errs)
+	if err := mergeErrors(errs); err != nil {
+		return mergeMsgs(msgs), errors.NewDefault("", err.Error())
+	}
+
+	return mergeMsgs(msgs), nil
 }
 
 func handleMTLS(istio *Istio, namespaces []string, policy string, isDel bool) error {
@@ -123,6 +133,19 @@ func handleComponentIstioAddon(istio *Istio, comp v1alpha1.Component, isDel bool
 	return err
 }
 
+func castSliceInterfaceToSliceString(in []interface{}) []string {
+	var out []string
+
+	for _, v := range in {
+		cast, ok := v.(string)
+		if ok {
+			out = append(out, cast)
+		}
+	}
+
+	return out
+}
+
 func mergeErrors(errs []error) error {
 	if len(errs) == 0 {
 		return nil
@@ -137,15 +160,6 @@ func mergeErrors(errs []error) error {
 	return fmt.Errorf(strings.Join(errMsgs, "\n"))
 }
 
-func castSliceInterfaceToSliceString(in []interface{}) []string {
-	var out []string
-
-	for _, v := range in {
-		cast, ok := v.(string)
-		if ok {
-			out = append(out, cast)
-		}
-	}
-
-	return out
+func mergeMsgs(strs []string) string {
+	return strings.Join(strs, "\n")
 }
