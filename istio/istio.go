@@ -80,12 +80,15 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 	case common.SmiConformanceOperation:
 		go func(hh *Istio, ee *adapter.Event) {
 			name := operations[opReq.OperationName].Description
-			err := hh.ValidateSMIConformance(&adapter.SmiTestOptions{
-				Ctx:  context.TODO(),
-				OpID: ee.Operationid,
+			_, err := hh.RunSMITest(adapter.SMITestOptions{
+				Ctx:         context.TODO(),
+				OperationID: ee.Operationid,
 				Labels: map[string]string{
 					"istio-injection": "enabled",
 				},
+				Namespace:   "meshery",
+				Manifest:    SMIManifest,
+				Annotations: make(map[string]string),
 			})
 			if err != nil {
 				e.Summary = fmt.Sprintf("Error while %s %s test", status.Running, name)
