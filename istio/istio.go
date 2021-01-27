@@ -13,6 +13,11 @@ import (
 	"github.com/layer5io/meshkit/logger"
 )
 
+const (
+	// SMIManifest is the manifest.yaml file for smi conformance tool
+	SMIManifest = "https://raw.githubusercontent.com/layer5io/learn-layer5/master/smi-conformance/manifest.yml"
+)
+
 // Istio represents the istio adapter and embeds adapter.Adapter
 type Istio struct {
 	adapter.Adapter // Type Embedded
@@ -75,9 +80,15 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 	case common.SmiConformanceOperation:
 		go func(hh *Istio, ee *adapter.Event) {
 			name := operations[opReq.OperationName].Description
-			err := hh.ValidateSMIConformance(&adapter.SmiTestOptions{
-				Ctx:  context.TODO(),
-				OpID: ee.Operationid,
+			_, err := hh.RunSMITest(adapter.SMITestOptions{
+				Ctx:         context.TODO(),
+				OperationID: ee.Operationid,
+				Labels: map[string]string{
+					"istio-injection": "enabled",
+				},
+				Namespace:   "meshery",
+				Manifest:    SMIManifest,
+				Annotations: make(map[string]string),
 			})
 			if err != nil {
 				e.Summary = fmt.Sprintf("Error while %s %s test", status.Running, name)
@@ -85,9 +96,6 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 				hh.StreamErr(e, err)
 				return
 			}
-			ee.Summary = fmt.Sprintf("%s test %s successfully", name, status.Completed)
-			ee.Details = ""
-			hh.StreamInfo(e)
 		}(istio, e)
 	case internalconfig.DenyAllPolicyOperation, internalconfig.StrictMTLSPolicyOperation, internalconfig.MutualMTLSPolicyOperation, internalconfig.DisableMTLSPolicyOperation:
 		go func(hh *Istio, ee *adapter.Event) {

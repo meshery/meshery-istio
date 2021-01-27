@@ -8,6 +8,7 @@ import (
 	configprovider "github.com/layer5io/meshery-adapter-library/config/provider"
 	"github.com/layer5io/meshery-adapter-library/status"
 	"github.com/layer5io/meshkit/utils"
+	smp "github.com/layer5io/service-mesh-performance/spec"
 )
 
 const (
@@ -57,6 +58,7 @@ var (
 		"status":   status.None,
 		"traceurl": status.None,
 		"version":  status.None,
+		"type":     smp.ServiceMesh_ISTIO.Enum().String(),
 	}
 
 	ProviderConfig = map[string]string{
