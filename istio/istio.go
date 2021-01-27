@@ -96,9 +96,6 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 				hh.StreamErr(e, err)
 				return
 			}
-			ee.Summary = fmt.Sprintf("%s test %s successfully", name, status.Completed)
-			ee.Details = ""
-			hh.StreamInfo(e)
 		}(istio, e)
 	case internalconfig.DenyAllPolicyOperation, internalconfig.StrictMTLSPolicyOperation, internalconfig.MutualMTLSPolicyOperation, internalconfig.DisableMTLSPolicyOperation:
 		go func(hh *Istio, ee *adapter.Event) {
