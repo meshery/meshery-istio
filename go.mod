@@ -4,15 +4,13 @@ go 1.13
 
 replace (
 	github.com/kudobuilder/kuttl => github.com/layer5io/kuttl v0.4.1-0.20200723152044-916f10574334
-	github.com/layer5io/meshery-adapter-library v0.1.11 => ../meshery-adapter-library
-	github.com/layer5io/meshkit v0.2.0 => ../meshkit
 	gopkg.in/ini.v1 => github.com/go-ini/ini v1.62.0
 )
 
 require (
 	github.com/aspenmesh/istio-vet v0.0.0-20200806222806-9c8e9a962b9f
-	github.com/layer5io/meshery-adapter-library v0.1.11
-	github.com/layer5io/meshkit v0.2.0
+	github.com/layer5io/meshery-adapter-library v0.1.12-0.20210127214045-50f4c3bbd783
+	github.com/layer5io/meshkit v0.2.1-0.20210127211805-88e99ca45457
 	github.com/layer5io/service-mesh-performance v0.3.2
 	golang.org/x/net v0.0.0-20200927032502-5d4f70055728 // indirect
 	google.golang.org/grpc v1.32.0 // indirect
