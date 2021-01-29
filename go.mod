@@ -4,15 +4,14 @@ go 1.13
 
 replace (
 	github.com/kudobuilder/kuttl => github.com/layer5io/kuttl v0.4.1-0.20200723152044-916f10574334
-	github.com/layer5io/meshery-adapter-library => /home/utkarsh/dev/layer5/meshery-adapter-library
 	gopkg.in/ini.v1 => github.com/go-ini/ini v1.62.0
 )
 
 require (
 	github.com/aspenmesh/istio-vet v0.0.0-20200806222806-9c8e9a962b9f
-	github.com/layer5io/meshery-adapter-library v0.1.11
-	github.com/layer5io/meshkit v0.1.32
-	github.com/onsi/ginkgo v1.13.0 // indirect
+	github.com/go-sql-driver/mysql v1.5.0 // indirect
+	github.com/layer5io/meshery-adapter-library v0.1.12-0.20210129161943-27aaf0d55998
+	github.com/layer5io/meshkit v0.2.1-0.20210127211805-88e99ca45457
 	golang.org/x/net v0.0.0-20200927032502-5d4f70055728 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	istio.io/client-go v1.8.0

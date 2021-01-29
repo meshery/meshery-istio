@@ -20,14 +20,25 @@ func (istio *Istio) HandleComponents(comps []v1alpha1.Component, isDel bool) (st
 				errs = append(errs, err)
 			}
 
-			msgs = append(msgs, "created service of type \"IstioMesh\"")
+			msg := "created service of type \"IstioMesh\""
+			if isDel {
+				msg = "deleted service of type \"IstioMesh\""
+			}
+
+			msgs = append(msgs, msg)
 			continue
 		}
 
 		if err := handleComponentIstioAddon(istio, comp, isDel); err != nil {
 			errs = append(errs, err)
 		}
-		msgs = append(msgs, fmt.Sprintf("created service of type \"%s\"", comp.Spec.Type))
+
+		msg := fmt.Sprintf("created service of type \"%s\"", comp.Spec.Type)
+		if isDel {
+			msg = fmt.Sprintf("deleted service of type \"%s\"", comp.Spec.Type)
+		}
+
+		msgs = append(msgs, msg)
 	}
 
 	if err := mergeErrors(errs); err != nil {
@@ -117,6 +128,8 @@ func handleComponentIstioAddon(istio *Istio, comp v1alpha1.Component, isDel bool
 		addonName = config.ZipkinAddon
 	case "JaegerIstioAddon":
 		addonName = config.JaegerAddon
+	default:
+		return nil
 	}
 
 	// Get the service
