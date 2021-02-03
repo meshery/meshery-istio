@@ -96,6 +96,8 @@ func readDefintionAndSchema(path, name string) (*OAMGenericStructure, error) {
 	definitionName := fmt.Sprintf("%s_definition.json", name)
 	schemaName := fmt.Sprintf("%s.meshery.layer5.io.schema.json", name)
 
+	// Paths are constructed on the fly but are trusted hence,
+	// #nosec
 	definition, err := ioutil.ReadFile(filepath.Join(path, definitionName))
 	if err != nil {
 		return nil, err
@@ -106,6 +108,8 @@ func readDefintionAndSchema(path, name string) (*OAMGenericStructure, error) {
 		return nil, err
 	}
 
+	// Paths are constructed on the fly but are trusted hence,
+	// #nosec
 	schema, err := ioutil.ReadFile(filepath.Join(path, schemaName))
 	if err != nil {
 		return nil, err
@@ -115,6 +119,8 @@ func readDefintionAndSchema(path, name string) (*OAMGenericStructure, error) {
 }
 
 func register(host string, content io.Reader) error {
+	// host here is given by the application itself and is trustworthy hence,
+	// #nosec
 	resp, err := http.Post(host, "application/json", content)
 	if err != nil {
 		return err
