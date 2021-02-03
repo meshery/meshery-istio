@@ -17,7 +17,14 @@ var (
 	traitPath    = filepath.Join(basePath, "oam", "traits")
 )
 
-type OAMGenericStructure struct {
+// GenericStructure struct defines the body of the POST request that is sent to the OAM
+// registry (Meshery)
+//
+// The body contains the
+// 1. OAM definition, which is in accordance with the OAM spec
+// 2. OAMRefSchema, which is json schema draft-4, draft-7 or draft-8 for the corresponding OAM object
+// 3. Host is this service's grpc address in the form of `hostname:port`
+type GenericStructure struct {
 	OAMDefinition interface{} `json:"oam_definition,omitempty"`
 	OAMRefSchema  string      `json:"oam_ref_schema,omitempty"`
 	Host          string      `json:"host,omitempty"`
@@ -92,7 +99,7 @@ func RegisterTraits(runtime, host string) error {
 	return nil
 }
 
-func readDefintionAndSchema(path, name string) (*OAMGenericStructure, error) {
+func readDefintionAndSchema(path, name string) (*GenericStructure, error) {
 	definitionName := fmt.Sprintf("%s_definition.json", name)
 	schemaName := fmt.Sprintf("%s.meshery.layer5.io.schema.json", name)
 
@@ -115,7 +122,7 @@ func readDefintionAndSchema(path, name string) (*OAMGenericStructure, error) {
 		return nil, err
 	}
 
-	return &OAMGenericStructure{OAMDefinition: definitionMap, OAMRefSchema: string(schema)}, nil
+	return &GenericStructure{OAMDefinition: definitionMap, OAMRefSchema: string(schema)}, nil
 }
 
 func register(host string, content io.Reader) error {

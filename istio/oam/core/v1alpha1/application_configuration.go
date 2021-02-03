@@ -18,7 +18,8 @@ type ConfigurationSpec struct {
 	Components []ConfigurationSpecComponent
 }
 
-// ConfigurationSpecComponent is the struct for OAM Appl
+// ConfigurationSpecComponent is the struct for OAM Application
+// Configuration's spec's components
 type ConfigurationSpecComponent struct {
 	ComponentName string
 	Traits        []ConfigurationSpecComponentTrait
@@ -31,10 +32,15 @@ type ConfigurationSpecComponentTrait struct {
 	Properties map[string]interface{}
 }
 
+// ConfigurationSpecComponentScope struct defines the structure
+// for scope of OAM application configuration's spec's component's scope
 type ConfigurationSpecComponentScope struct {
 	ScopeRef ConfigurationSpecComponentScopeRef
 }
 
+// ConfigurationSpecComponentScopeRef struct defines the structure for
+// scope of OAM application configuration's spec's component's scope's
+// scopeRef
 type ConfigurationSpecComponentScopeRef struct {
 	metav1.TypeMeta `json:",inline"`
 	Name            string
