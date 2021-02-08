@@ -15,7 +15,7 @@ require (
 	github.com/layer5io/service-mesh-performance v0.3.2
 	golang.org/x/net v0.0.0-20200927032502-5d4f70055728 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	istio.io/client-go v1.8.0
+	istio.io/client-go v1.8.2
 	k8s.io/apimachinery v0.18.12
 	k8s.io/client-go v0.18.12
 )
