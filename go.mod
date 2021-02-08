@@ -12,7 +12,7 @@ require (
 	github.com/go-sql-driver/mysql v1.5.0 // indirect
 	github.com/layer5io/meshery-adapter-library v0.1.12-0.20210129161943-27aaf0d55998
 	github.com/layer5io/meshkit v0.2.1-0.20210127211805-88e99ca45457
-	github.com/layer5io/service-mesh-performance v0.3.2
+	github.com/layer5io/service-mesh-performance v0.3.3
 	golang.org/x/net v0.0.0-20200927032502-5d4f70055728 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	istio.io/client-go v1.8.0
