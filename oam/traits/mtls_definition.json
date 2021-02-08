@@ -1,0 +1,14 @@
+{
+    "apiVersion": "core.oam.dev/v1alpha1",
+    "kind": "TraitDefinition",
+    "metadata": {
+        "name": "mTLS"
+    },
+    "spec": {
+        "appliesToWorkloads": ["IstioMesh"],
+        "definitionRef": {
+            "name": "mtls.meshery.layer5.io"
+        },
+        "revisionEnabled": false
+    }
+}

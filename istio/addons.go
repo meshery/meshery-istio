@@ -45,9 +45,11 @@ func (istio *Istio) installAddon(namespace string, del bool, service string, pat
 		return st, ErrAddonFromTemplate(err)
 	}
 
-	_, err = istio.KubeClient.CoreV1().Services("istio-system").Patch(context.TODO(), service, types.MergePatchType, []byte(jsonContents), metav1.PatchOptions{})
-	if err != nil {
-		return st, ErrAddonFromTemplate(err)
+	if !del {
+		_, err = istio.KubeClient.CoreV1().Services("istio-system").Patch(context.TODO(), service, types.MergePatchType, []byte(jsonContents), metav1.PatchOptions{})
+		if err != nil {
+			return st, ErrAddonFromTemplate(err)
+		}
 	}
 
 	return status.Installed, nil

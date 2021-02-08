@@ -1,0 +1,14 @@
+{
+    "apiVersion": "core.oam.dev/v1alpha1",
+    "kind": "TraitDefinition",
+    "metadata": {
+        "name": "automaticSidecarInjection"
+    },
+    "spec": {
+        "appliesToWorkloads": ["IstioMesh"],
+        "definitionRef": {
+            "name": "automaticsidecarinjection.meshery.layer5.io"
+        },
+        "revisionEnabled": false
+    }
+}
