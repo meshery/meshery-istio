@@ -21,8 +21,11 @@ RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -ldflags="-w -
 FROM gcr.io/distroless/base
 ENV DISTRO="debian"
 ENV GOARCH="amd64"
+ENV SERVICE_ADDR="meshery-istio"
+ENV MESHERY_SERVER="http://meshery:9081"
 WORKDIR /templates
-COPY templates/* .
+COPY templates/* ./
 WORKDIR /
+COPY oam/ oam/
 COPY --from=builder /build/meshery-istio .
 ENTRYPOINT ["/meshery-istio"]
