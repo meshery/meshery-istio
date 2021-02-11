@@ -104,12 +104,12 @@ func main() {
 
 	// Register workloads
 	if err := oam.RegisterWorkloads(mesheryServerAddress(), "mesherylocal.layer5.io:"+service.Port); err != nil {
-		fmt.Println(err)
+		log.Info(err.Error())
 	}
 
 	// Register traits
 	if err := oam.RegisterTraits(mesheryServerAddress(), serviceAddress()+":"+service.Port); err != nil {
-		fmt.Println(err)
+		log.Info(err.Error())
 	}
 
 	// Server Initialization

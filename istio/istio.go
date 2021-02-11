@@ -209,7 +209,7 @@ func (istio *Istio) ProcessOAM(ctx context.Context, oamReq adapter.OAMRequest) (
 	for _, acomp := range oamReq.OamComps {
 		comp, err := oam.ParseApplicationComponent(acomp)
 		if err != nil {
-			fmt.Println("error parsing the component")
+			istio.Log.Error(ErrParseOAMComponent)
 			continue
 		}
 
@@ -218,7 +218,7 @@ func (istio *Istio) ProcessOAM(ctx context.Context, oamReq adapter.OAMRequest) (
 
 	config, err := oam.ParseApplicationConfiguration(oamReq.OamConfig)
 	if err != nil {
-		fmt.Println("error parsing the conifguration")
+		istio.Log.Error(ErrParseOAMConfig)
 	}
 
 	// If operation is delete then first HandleConfiguration and then handle the deployment
