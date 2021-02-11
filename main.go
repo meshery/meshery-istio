@@ -103,7 +103,7 @@ func main() {
 	service.StartedAt = time.Now()
 
 	// Register workloads
-	if err := oam.RegisterWorkloads(mesheryServerAddress(), "mesherylocal.layer5.io:"+service.Port); err != nil {
+	if err := oam.RegisterWorkloads(mesheryServerAddress(), serviceAddress()+":"+service.Port); err != nil {
 		log.Info(err.Error())
 	}
 
