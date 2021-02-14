@@ -17,6 +17,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"strings"
 	"time"
 
 	"github.com/layer5io/meshery-istio/istio"
@@ -102,13 +103,13 @@ func main() {
 	service.StartedAt = time.Now()
 
 	// Register workloads
-	if err := oam.RegisterWorkloads("http://localhost:9081", "mesherylocal.layer5.io:"+service.Port); err != nil {
-		fmt.Println(err)
+	if err := oam.RegisterWorkloads(mesheryServerAddress(), serviceAddress()+":"+service.Port); err != nil {
+		log.Info(err.Error())
 	}
 
 	// Register traits
-	if err := oam.RegisterTraits("http://localhost:9081", "mesherylocal.layer5.io:"+service.Port); err != nil {
-		fmt.Println(err)
+	if err := oam.RegisterTraits(mesheryServerAddress(), serviceAddress()+":"+service.Port); err != nil {
+		log.Info(err.Error())
 	}
 
 	// Server Initialization
@@ -122,4 +123,28 @@ func main() {
 
 func isDebug() bool {
 	return os.Getenv("DEBUG") == "true"
+}
+
+func mesheryServerAddress() string {
+	meshReg := os.Getenv("MESHERY_SERVER")
+
+	if meshReg != "" {
+		if strings.HasPrefix(meshReg, "http") {
+			return meshReg
+		}
+
+		return "http://" + meshReg
+	}
+
+	return "http://localhost:9081"
+}
+
+func serviceAddress() string {
+	svcAddr := os.Getenv("SERVICE_ADDR")
+
+	if svcAddr != "" {
+		return svcAddr
+	}
+
+	return "mesherylocal.layer5.io"
 }

@@ -74,9 +74,25 @@ var (
 	// during istio-vet process
 	ErrIstioVetCode = "istio_test_code"
 
+	// ErrParseOAMComponentCode represents the error code which is
+	// generated during the OAM component parsing
+	ErrParseOAMComponentCode = "istio_test_code"
+
+	// ErrParseOAMConfigCode represents the error code which is
+	// generated during the OAM configuration parsing
+	ErrParseOAMConfigCode = "istio_test_code"
+
 	// ErrOpInvalid represents the errors which are generated
 	// when an invalid operation is requested
 	ErrOpInvalid = errors.NewDefault(errors.ErrOpInvalid, "Invalid operation")
+
+	// ErrParseOAMComponent represents the error which is
+	// generated during the OAM component parsing
+	ErrParseOAMComponent = errors.NewDefault(ErrParseOAMComponentCode, "error parsing the component")
+
+	// ErrParseOAMConfig represents the error which is
+	// generated during the OAM configuration parsing
+	ErrParseOAMConfig = errors.NewDefault(ErrParseOAMConfigCode, "error parsing the configuration")
 )
 
 // ErrInstallIstio is the error for install mesh
