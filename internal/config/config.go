@@ -15,7 +15,11 @@ const (
 	// Constants to use in log statements
 	IstioOperation = "istio"
 	LabelNamespace = "label-namespace"
-	PatchFile      = "patch-file"
+
+	ServicePatchFile = "service-patch-file"
+	CPPatchFile      = "cp-patch-file"
+	ControlPatchFile = "control-patch-file"
+	FilterPatchFile  = "filter-patch-file"
 
 	// Istio vet operation
 	IstioVetOperation = "istio-vet"

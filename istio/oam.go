@@ -135,13 +135,16 @@ func handleComponentIstioAddon(istio *Istio, comp v1alpha1.Component, isDel bool
 	// Get the service
 	svc := config.Operations[addonName].AdditionalProperties[common.ServiceName]
 
-	// Get the patch
-	patch := config.Operations[addonName].AdditionalProperties[config.PatchFile]
+	// Get the patches
+	patches := make([]string, 0)
+	patches = append(patches, config.Operations[addonName].AdditionalProperties[config.ServicePatchFile])
+	patches = append(patches, config.Operations[addonName].AdditionalProperties[config.CPPatchFile])
+	patches = append(patches, config.Operations[addonName].AdditionalProperties[config.ControlPatchFile])
 
 	// Get the templates
 	templates := config.Operations[addonName].Templates
 
-	_, err := istio.installAddon(comp.Namespace, isDel, svc, patch, templates)
+	_, err := istio.installAddon(comp.Namespace, isDel, svc, patches, templates)
 
 	return err
 }
