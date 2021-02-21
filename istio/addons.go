@@ -16,7 +16,7 @@ import (
 //
 // the template defines the manifest's link/location which needs to be used to
 // install the addon
-func (istio *Istio) installAddon(namespace string, del bool, service string, patch string, templates []adapter.Template) (string, error) {
+func (istio *Istio) installAddon(namespace string, del bool, service string, patches []string, templates []adapter.Template) (string, error) {
 	st := status.Installing
 
 	if del {
@@ -24,7 +24,7 @@ func (istio *Istio) installAddon(namespace string, del bool, service string, pat
 	}
 
 	istio.Log.Debug(fmt.Sprintf("Overidden namespace: %s", namespace))
-	namespace = ""
+	namespace = "istio-system"
 
 	for _, template := range templates {
 		contents, err := readFileSource(string(template))
@@ -40,13 +40,27 @@ func (istio *Istio) installAddon(namespace string, del bool, service string, pat
 		}
 	}
 
-	jsonContents, err := readFileSource(patch)
-	if err != nil {
-		return st, ErrAddonFromTemplate(err)
+	jsonContents := make([]string, 0)
+	for _, patch := range patches {
+		content, err := readFileSource(patch)
+		if err != nil {
+			return st, ErrAddonFromTemplate(err)
+		}
+		jsonContents = append(jsonContents, content)
 	}
 
 	if !del {
-		_, err = istio.KubeClient.CoreV1().Services("istio-system").Patch(context.TODO(), service, types.MergePatchType, []byte(jsonContents), metav1.PatchOptions{})
+		_, err := istio.KubeClient.CoreV1().Services(namespace).Patch(context.TODO(), service, types.MergePatchType, []byte(jsonContents[0]), metav1.PatchOptions{})
+		if err != nil {
+			return st, ErrAddonFromTemplate(err)
+		}
+
+		_, err = istio.KubeClient.AppsV1().Deployments(namespace).Patch(context.TODO(), service, types.MergePatchType, []byte(jsonContents[1]), metav1.PatchOptions{})
+		if err != nil {
+			return st, ErrAddonFromTemplate(err)
+		}
+
+		_, err = istio.KubeClient.AppsV1().Deployments(namespace).Patch(context.TODO(), service, types.MergePatchType, []byte(jsonContents[2]), metav1.PatchOptions{})
 		if err != nil {
 			return st, ErrAddonFromTemplate(err)
 		}

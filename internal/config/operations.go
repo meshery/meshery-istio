@@ -38,8 +38,10 @@ func getOperations(dev adapter.Operations) adapter.Operations {
 			"https://raw.githubusercontent.com/istio/istio/master/samples/addons/prometheus.yaml",
 		},
 		AdditionalProperties: map[string]string{
-			ServiceName: "prometheus",
-			PatchFile:   "file://templates/service-patch.json",
+			ServiceName:      "prometheus",
+			ServicePatchFile: "file://templates/service-patch.json",
+			CPPatchFile:      "file://templates/annotations-cp.json",
+			ControlPatchFile: "file://templates/annotations-istio.json",
 		},
 	}
 
@@ -50,8 +52,10 @@ func getOperations(dev adapter.Operations) adapter.Operations {
 			"https://raw.githubusercontent.com/istio/istio/master/samples/addons/grafana.yaml",
 		},
 		AdditionalProperties: map[string]string{
-			ServiceName: "grafana",
-			PatchFile:   "file://templates/service-patch.json",
+			ServiceName:      "grafana",
+			ServicePatchFile: "file://templates/service-patch.json",
+			CPPatchFile:      "file://templates/annotations-cp.json",
+			ControlPatchFile: "file://templates/annotations-istio.json",
 		},
 	}
 
@@ -62,8 +66,10 @@ func getOperations(dev adapter.Operations) adapter.Operations {
 			"https://raw.githubusercontent.com/istio/istio/master/samples/addons/kiali.yaml",
 		},
 		AdditionalProperties: map[string]string{
-			ServiceName: "kiali",
-			PatchFile:   "file://templates/service-patch.json",
+			ServiceName:      "kiali",
+			ServicePatchFile: "file://templates/service-patch.json",
+			CPPatchFile:      "file://templates/annotations-cp.json",
+			ControlPatchFile: "file://templates/annotations-istio.json",
 		},
 	}
 
@@ -74,8 +80,10 @@ func getOperations(dev adapter.Operations) adapter.Operations {
 			"https://raw.githubusercontent.com/istio/istio/master/samples/addons/jaeger.yaml",
 		},
 		AdditionalProperties: map[string]string{
-			ServiceName: "jaeger-collector",
-			PatchFile:   "file://templates/service-patch.json",
+			ServiceName:      "jaeger-collector",
+			ServicePatchFile: "file://templates/service-patch.json",
+			CPPatchFile:      "file://templates/annotations-cp.json",
+			ControlPatchFile: "file://templates/annotations-istio.json",
 		},
 	}
 
@@ -86,8 +94,10 @@ func getOperations(dev adapter.Operations) adapter.Operations {
 			"https://raw.githubusercontent.com/istio/istio/master/samples/addons/extras/zipkin.yaml",
 		},
 		AdditionalProperties: map[string]string{
-			ServiceName: "zipkin",
-			PatchFile:   "file://templates/service-patch.json",
+			ServiceName:      "zipkin",
+			ServicePatchFile: "file://templates/service-patch.json",
+			CPPatchFile:      "file://templates/annotations-cp.json",
+			ControlPatchFile: "file://templates/annotations-istio.json",
 		},
 	}
 
@@ -104,8 +114,8 @@ func getOperations(dev adapter.Operations) adapter.Operations {
 			"file://templates/imagehub-filter.yaml",
 		},
 		AdditionalProperties: map[string]string{
-			ServiceName: "api-v1",
-			PatchFile:   "file://templates/imagehub-patch.json",
+			ServiceName:     "api-v1",
+			FilterPatchFile: "file://templates/imagehub-patch.json",
 		},
 	}
 
