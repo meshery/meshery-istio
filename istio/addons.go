@@ -50,17 +50,17 @@ func (istio *Istio) installAddon(namespace string, del bool, service string, pat
 	}
 
 	if !del {
-		_, err := istio.KubeClient.CoreV1().Services("istio-system").Patch(context.TODO(), service, types.MergePatchType, []byte(jsonContents[0]), metav1.PatchOptions{})
+		_, err := istio.KubeClient.CoreV1().Services(namespace).Patch(context.TODO(), service, types.MergePatchType, []byte(jsonContents[0]), metav1.PatchOptions{})
 		if err != nil {
 			return st, ErrAddonFromTemplate(err)
 		}
 
-		_, err = istio.KubeClient.AppsV1().Deployments("istio-system").Patch(context.TODO(), service, types.MergePatchType, []byte(jsonContents[1]), metav1.PatchOptions{})
+		_, err = istio.KubeClient.AppsV1().Deployments(namespace).Patch(context.TODO(), service, types.MergePatchType, []byte(jsonContents[1]), metav1.PatchOptions{})
 		if err != nil {
 			return st, ErrAddonFromTemplate(err)
 		}
 
-		_, err = istio.KubeClient.AppsV1().Deployments("istio-system").Patch(context.TODO(), service, types.MergePatchType, []byte(jsonContents[2]), metav1.PatchOptions{})
+		_, err = istio.KubeClient.AppsV1().Deployments(namespace).Patch(context.TODO(), service, types.MergePatchType, []byte(jsonContents[2]), metav1.PatchOptions{})
 		if err != nil {
 			return st, ErrAddonFromTemplate(err)
 		}
