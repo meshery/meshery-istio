@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshery-adapter-library/status"
@@ -36,7 +37,9 @@ func (istio *Istio) installAddon(namespace string, del bool, service string, pat
 		// Specifically choosing to ignore kiali dashboard's error.
 		// Referring to: https://github.com/kiali/kiali/issues/3112
 		if err != nil && !strings.Contains(err.Error(), "no matches for kind \"MonitoringDashboard\" in version \"monitoring.kiali.io/v1alpha1\"") {
-			return st, ErrAddonFromTemplate(err)
+			if !strings.Contains(err.Error(), "clusterIP") {
+				return st, ErrAddonFromTemplate(err)
+			}
 		}
 	}
 
@@ -50,15 +53,21 @@ func (istio *Istio) installAddon(namespace string, del bool, service string, pat
 	}
 
 	if !del {
+		time.Sleep(1 * time.Second)
+
 		_, err := istio.KubeClient.CoreV1().Services(namespace).Patch(context.TODO(), service, types.MergePatchType, []byte(jsonContents[0]), metav1.PatchOptions{})
 		if err != nil {
 			return st, ErrAddonFromTemplate(err)
 		}
 
+		time.Sleep(1 * time.Second)
+
 		_, err = istio.KubeClient.CoreV1().Services(namespace).Patch(context.TODO(), service, types.MergePatchType, []byte(jsonContents[1]), metav1.PatchOptions{})
 		if err != nil {
 			return st, ErrAddonFromTemplate(err)
 		}
+
+		time.Sleep(1 * time.Second)
 
 		_, err = istio.KubeClient.CoreV1().Services(namespace).Patch(context.TODO(), service, types.MergePatchType, []byte(jsonContents[2]), metav1.PatchOptions{})
 		if err != nil {
