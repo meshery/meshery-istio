@@ -19,7 +19,7 @@ metadata:
   name: imagehub-api
 spec:
   hosts:
-  - "*"
+  - "imagehub.meshery.io"
   gateways:
   - sample-app-gateway
   http:
@@ -44,19 +44,13 @@ metadata:
   name: imagehub-web
 spec:
   hosts:
-  - "*"
+  - "imagehub.meshery.io"
   gateways:
   - sample-app-gateway
   http:
   - match:
     - uri:
-      exact: /
-    - uri:
-      exact: /login
-    - uri:
-      exact: /signup
-    - uri:
-      exact: /upgrade
+      prefix: /
     route:
     - destination:
         host: web
