@@ -48,10 +48,7 @@ spec:
   gateways:
   - sample-app-gateway
   http:
-  - match:
-    - uri:
-      prefix: /
-    route:
+  - route:
     - destination:
         host: web
         port:

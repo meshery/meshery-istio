@@ -14,7 +14,7 @@
               "-L",
               "-o",
               "/var/lib/imagehub/filter.wasm",
-              "https://github.com/layer5io/advanced-istio-service-mesh-workshop/raw/master/lab-7/ratelimiter/ratelimit-filter.wasm"
+              "https://github.com/layer5io/image-hub/raw/master/rate-limit-filter/pkg/rate_limit_filter_bg.wasm"
             ],
             "image": "curlimages/curl",
             "imagePullPolicy": "Always",
