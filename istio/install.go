@@ -78,7 +78,7 @@ func (istio *Istio) runIstioCtlCmd(version string, isDel bool) error {
 }
 
 func (istio *Istio) applyManifest(contents []byte, isDel bool, namespace string) error {
-	kclient, err := mesherykube.New(istio.KubeClient, istio.RestConfig)
+	kclient, err := mesherykube.New(contents)
 	if err != nil {
 		return err
 	}
