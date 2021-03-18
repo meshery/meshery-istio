@@ -12,7 +12,7 @@ replace (
 
 require (
 	github.com/aspenmesh/istio-vet v0.0.0-20200806222806-9c8e9a962b9f
-	github.com/layer5io/meshery-adapter-library v0.1.12-0.20210129161943-27aaf0d55998
+	github.com/layer5io/meshery-adapter-library v0.1.13-0.20210318083724-41864a8ad719
 	github.com/layer5io/meshkit v0.2.6
 	github.com/layer5io/service-mesh-performance v0.3.3
 	golang.org/x/net v0.0.0-20200927032502-5d4f70055728 // indirect
