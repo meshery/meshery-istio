@@ -78,12 +78,8 @@ func (istio *Istio) runIstioCtlCmd(version string, isDel bool) error {
 }
 
 func (istio *Istio) applyManifest(contents []byte, isDel bool, namespace string) error {
-	kclient, err := mesherykube.New(contents)
-	if err != nil {
-		return err
-	}
 
-	err = kclient.ApplyManifest(contents, mesherykube.ApplyOptions{
+	err := istio.MesheryKubeclient.ApplyManifest(contents, mesherykube.ApplyOptions{
 		Namespace: namespace,
 		Update:    true,
 		Delete:    isDel,
