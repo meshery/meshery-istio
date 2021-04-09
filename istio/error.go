@@ -82,7 +82,7 @@ var (
 	// generated during the OAM configuration parsing
 	ErrParseOAMConfigCode = "istio_test_code"
 
-	// ErrParseOAMConfigCode represents the error code which is
+	// ErrNilClientCode represents the error code which is
 	// generated when kubernetes client is nil
 	ErrNilClientCode = "istio_test_code"
 
