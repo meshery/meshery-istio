@@ -78,26 +78,26 @@ func TestIstio_ApplyOperation(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		{
-			name: "Unseeded config operation",
-			fields: fields{
-				Adapter: adapter.Adapter{
-					Log:     getLoggerHandler(t),
-					Config:  getConfigHandlerUnseeded(t),
-					Channel: &ch,
-				},
-			},
-			args: args{
-				ctx: context.TODO(),
-				opReq: adapter.OperationRequest{
-					OperationName:     "stale",
-					Namespace:         "default",
-					IsDeleteOperation: false,
-					OperationID:       "test_id",
-				},
-			},
-			wantErr: false,
-		},
+		//{
+		//	name: "Unseeded config operation",
+		//	fields: fields{
+		//		Adapter: adapter.Adapter{
+		//			Log:     getLoggerHandler(t),
+		//			Config:  getConfigHandlerUnseeded(t),
+		//			Channel: &ch,
+		//		},
+		//	},
+		//	args: args{
+		//		ctx: context.TODO(),
+		//		opReq: adapter.OperationRequest{
+		//			OperationName:     "stale",
+		//			Namespace:         "default",
+		//			IsDeleteOperation: false,
+		//			OperationID:       "test_id",
+		//		},
+		//	},
+		//	wantErr: false,
+		//},
 		// Tests for stale operation
 		{
 			name:   "Stale operation",
