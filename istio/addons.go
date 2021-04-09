@@ -3,11 +3,12 @@ package istio
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"strings"
-	"time"
 
 	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshery-adapter-library/status"
+	"github.com/layer5io/meshkit/utils"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -28,12 +29,10 @@ func (istio *Istio) installAddon(namespace string, del bool, service string, pat
 	namespace = "istio-system"
 
 	for _, template := range templates {
-		contents, err := readFileSource(string(template))
-		if err != nil {
-			return st, ErrAddonFromTemplate(err)
+		if istio.KubeClient == nil {
+			return st, ErrNilClient
 		}
-
-		err = istio.applyManifest([]byte(contents), del, namespace)
+		err := istio.applyManifest([]byte(template.String()), del, namespace)
 		// Specifically choosing to ignore kiali dashboard's error.
 		// Referring to: https://github.com/kiali/kiali/issues/3112
 		if err != nil && !strings.Contains(err.Error(), "no matches for kind \"MonitoringDashboard\" in version \"monitoring.kiali.io/v1alpha1\"") {
@@ -43,35 +42,22 @@ func (istio *Istio) installAddon(namespace string, del bool, service string, pat
 		}
 	}
 
-	jsonContents := make([]string, 0)
 	for _, patch := range patches {
-		content, err := readFileSource(patch)
-		if err != nil {
-			return st, ErrAddonFromTemplate(err)
-		}
-		jsonContents = append(jsonContents, content)
-	}
+		if !del {
+			_, err := url.ParseRequestURI(patch)
+			if err != nil {
+				return st, ErrAddonFromTemplate(err)
+			}
 
-	if !del {
-		time.Sleep(1 * time.Second)
+			content, err := utils.ReadFileSource(patch)
+			if err != nil {
+				return st, ErrAddonFromTemplate(err)
+			}
 
-		_, err := istio.KubeClient.CoreV1().Services(namespace).Patch(context.TODO(), service, types.MergePatchType, []byte(jsonContents[0]), metav1.PatchOptions{})
-		if err != nil {
-			return st, ErrAddonFromTemplate(err)
-		}
-
-		time.Sleep(1 * time.Second)
-
-		_, err = istio.KubeClient.CoreV1().Services(namespace).Patch(context.TODO(), service, types.MergePatchType, []byte(jsonContents[1]), metav1.PatchOptions{})
-		if err != nil {
-			return st, ErrAddonFromTemplate(err)
-		}
-
-		time.Sleep(1 * time.Second)
-
-		_, err = istio.KubeClient.CoreV1().Services(namespace).Patch(context.TODO(), service, types.MergePatchType, []byte(jsonContents[2]), metav1.PatchOptions{})
-		if err != nil {
-			return st, ErrAddonFromTemplate(err)
+			_, err = istio.KubeClient.CoreV1().Services(namespace).Patch(context.TODO(), service, types.MergePatchType, []byte(content), metav1.PatchOptions{})
+			if err != nil {
+				return st, ErrAddonFromTemplate(err)
+			}
 		}
 	}
 

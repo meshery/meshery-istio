@@ -2,9 +2,6 @@ package istio
 
 import (
 	"context"
-	"fmt"
-	"io/ioutil"
-	"strings"
 
 	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshery-adapter-library/status"
@@ -22,12 +19,7 @@ func (istio *Istio) installSampleApp(namespace string, del bool, templates []ada
 	}
 
 	for _, template := range templates {
-		contents, err := readFileSource(string(template))
-		if err != nil {
-			return st, ErrSampleApp(err)
-		}
-
-		err = istio.applyManifest([]byte(contents), del, namespace)
+		err := istio.applyManifest([]byte(template.String()), del, namespace)
 		if err != nil {
 			return st, ErrSampleApp(err)
 		}
@@ -43,7 +35,7 @@ func (istio *Istio) patchWithEnvoyFilter(namespace string, del bool, app string,
 		st = status.Removing
 	}
 
-	jsonContents, err := readFileSource(patchObject)
+	jsonContents, err := utils.ReadFileSource(patchObject)
 	if err != nil {
 		return st, ErrEnvoyFilter(err)
 	}
@@ -54,7 +46,7 @@ func (istio *Istio) patchWithEnvoyFilter(namespace string, del bool, app string,
 	}
 
 	for _, template := range templates {
-		contents, err := readFileSource(string(template))
+		contents, err := utils.ReadFileSource(string(template))
 		if err != nil {
 			return st, ErrEnvoyFilter(err)
 		}
@@ -75,7 +67,7 @@ func (istio *Istio) applyPolicy(namespace string, del bool, templates []adapter.
 	}
 
 	for _, template := range templates {
-		contents, err := readFileSource(string(template))
+		contents, err := utils.ReadFileSource(string(template))
 		if err != nil {
 			return st, ErrApplyPolicy(err)
 		}
@@ -114,6 +106,10 @@ func (istio *Istio) LoadToMesh(namespace string, service string, remove bool) er
 
 // LoadNamespaceToMesh is used to mark namespaces for automatic sidecar injection (or not)
 func (istio *Istio) LoadNamespaceToMesh(namespace string, remove bool) error {
+	if istio.KubeClient == nil {
+		return ErrNilClient
+	}
+
 	ns, err := istio.KubeClient.CoreV1().Namespaces().Get(context.TODO(), namespace, metav1.GetOptions{})
 	if err != nil {
 		return err
@@ -133,38 +129,4 @@ func (istio *Istio) LoadNamespaceToMesh(namespace string, remove bool) error {
 		return err
 	}
 	return nil
-}
-
-// readFileSource supports "http", "https" and "file" protocols.
-// it takes in the location as a uri and returns the contents of
-// file as a string.
-//
-// TODO: May move this function to meshkit
-func readFileSource(uri string) (string, error) {
-	if strings.HasPrefix(uri, "http") {
-		return utils.ReadRemoteFile(uri)
-	}
-	if strings.HasPrefix(uri, "file") {
-		return readLocalFile(uri)
-	}
-
-	return "", fmt.Errorf("invalid protocol: only http, https and file are valid protocols")
-}
-
-// readLocalFile takes in the location of a local file
-// in the format `file://location/of/file` and returns
-// the content of the file if the path is valid and no
-// error occurs
-func readLocalFile(location string) (string, error) {
-	// remove the protocol prefix
-	location = strings.TrimPrefix(location, "file://")
-
-	// Need to support variable file locations hence
-	// #nosec
-	data, err := ioutil.ReadFile(location)
-	if err != nil {
-		return "", err
-	}
-
-	return string(data), nil
 }

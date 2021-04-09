@@ -82,6 +82,10 @@ var (
 	// generated during the OAM configuration parsing
 	ErrParseOAMConfigCode = "istio_test_code"
 
+	// ErrNilClientCode represents the error code which is
+	// generated when kubernetes client is nil
+	ErrNilClientCode = "istio_test_code"
+
 	// ErrOpInvalid represents the errors which are generated
 	// when an invalid operation is requested
 	ErrOpInvalid = errors.NewDefault(errors.ErrOpInvalid, "Invalid operation")
@@ -93,6 +97,10 @@ var (
 	// ErrParseOAMConfig represents the error which is
 	// generated during the OAM configuration parsing
 	ErrParseOAMConfig = errors.NewDefault(ErrParseOAMConfigCode, "error parsing the configuration")
+
+	// ErrNilClient represents the error which is
+	// generated when kubernetes client is nil
+	ErrNilClient = errors.NewDefault(ErrNilClientCode, "kubernetes client not initialized")
 )
 
 // ErrInstallIstio is the error for install mesh

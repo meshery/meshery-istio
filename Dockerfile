@@ -1,7 +1,7 @@
 FROM golang:1.13 as builder
 
-ARG ENVIRONMENT="development"
-ARG CONFIG_PROVIDER="viper"
+ARG VERSION
+ARG GIT_SHA
 WORKDIR /build
 # Copy the Go Modules manifests
 COPY go.mod go.mod
@@ -14,7 +14,7 @@ COPY main.go main.go
 COPY internal/ internal/
 COPY istio/ istio/
 # Build
-RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -ldflags="-w -s -X main.environment=$ENVIRONMENT -X main.provider=$CONFIG_PROVIDER" -a -o meshery-istio main.go
+RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -ldflags="-w -s -X main.version=$VERSION -X main.gitsha=$GIT_SHA" -a -o meshery-istio main.go
 
 # Use distroless as minimal base image to package the manager binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
