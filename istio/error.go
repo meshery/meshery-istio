@@ -98,6 +98,8 @@ var (
 	// generated during the OAM configuration parsing
 	ErrParseOAMConfig = errors.NewDefault(ErrParseOAMConfigCode, "error parsing the configuration")
 
+	// ErrNilClient represents the error which is
+	// generated when kubernetes client is nil
 	ErrNilClient = errors.NewDefault(ErrNilClientCode, "kubernetes client not initialized")
 )
 
