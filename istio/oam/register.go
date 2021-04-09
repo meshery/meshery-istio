@@ -13,8 +13,8 @@ import (
 
 var (
 	basePath, _  = os.Getwd()
-	workloadPath = filepath.Join(basePath, "oam", "workloads")
-	traitPath    = filepath.Join(basePath, "oam", "traits")
+	workloadPath = filepath.Join(basePath, "templates", "oam", "workloads")
+	traitPath    = filepath.Join(basePath, "templates", "oam", "traits")
 )
 
 // GenericStructure struct defines the body of the POST request that is sent to the OAM

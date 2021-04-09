@@ -14,10 +14,10 @@ func getOperations(dev adapter.Operations) adapter.Operations {
 	versions, _ := getLatestReleaseNames(3)
 
 	// Add Istio networking resources to sample applications
-	dev[common.BookInfoOperation].Templates = append(dev[common.BookInfoOperation].Templates, "file://templates/bookinfo-gateway.yaml")
-	dev[common.HTTPBinOperation].Templates = append(dev[common.HTTPBinOperation].Templates, "file://templates/httpbin-gateway.yaml")
-	dev[common.ImageHubOperation].Templates = append(dev[common.ImageHubOperation].Templates, "file://templates/imagehub-gateway.yaml")
-	dev[common.EmojiVotoOperation].Templates = append(dev[common.EmojiVotoOperation].Templates, "file://templates/emojivoto-gateway.yaml")
+	dev[common.BookInfoOperation].Templates = append(dev[common.BookInfoOperation].Templates, "file://templates/bookinfo/gateway.yaml")
+	dev[common.HTTPBinOperation].Templates = append(dev[common.HTTPBinOperation].Templates, "file://templates/httpbin/gateway.yaml")
+	dev[common.ImageHubOperation].Templates = append(dev[common.ImageHubOperation].Templates, "file://templates/imagehub/gateway.yaml")
+	dev[common.EmojiVotoOperation].Templates = append(dev[common.EmojiVotoOperation].Templates, "file://templates/emojivoto/gateway.yaml")
 
 	dev[IstioOperation] = &adapter.Operation{
 		Type:                 int32(meshes.OpCategory_INSTALL),
@@ -39,9 +39,7 @@ func getOperations(dev adapter.Operations) adapter.Operations {
 		},
 		AdditionalProperties: map[string]string{
 			ServiceName:      "prometheus",
-			ServicePatchFile: "file://templates/service-patch.json",
-			CPPatchFile:      "file://templates/annotations-cp.json",
-			ControlPatchFile: "file://templates/annotations-istio.json",
+			ServicePatchFile: "file://templates/patches/service-loadbalancer.json",
 		},
 	}
 
@@ -53,9 +51,7 @@ func getOperations(dev adapter.Operations) adapter.Operations {
 		},
 		AdditionalProperties: map[string]string{
 			ServiceName:      "grafana",
-			ServicePatchFile: "file://templates/service-patch.json",
-			CPPatchFile:      "file://templates/annotations-cp.json",
-			ControlPatchFile: "file://templates/annotations-istio.json",
+			ServicePatchFile: "file://templates/patches/service-loadbalancer.json",
 		},
 	}
 
@@ -67,9 +63,7 @@ func getOperations(dev adapter.Operations) adapter.Operations {
 		},
 		AdditionalProperties: map[string]string{
 			ServiceName:      "kiali",
-			ServicePatchFile: "file://templates/service-patch.json",
-			CPPatchFile:      "file://templates/annotations-cp.json",
-			ControlPatchFile: "file://templates/annotations-istio.json",
+			ServicePatchFile: "file://templates/patches/service-loadbalancer.json",
 		},
 	}
 
@@ -81,9 +75,7 @@ func getOperations(dev adapter.Operations) adapter.Operations {
 		},
 		AdditionalProperties: map[string]string{
 			ServiceName:      "jaeger-collector",
-			ServicePatchFile: "file://templates/service-patch.json",
-			CPPatchFile:      "file://templates/annotations-cp.json",
-			ControlPatchFile: "file://templates/annotations-istio.json",
+			ServicePatchFile: "file://templates/patches/service-loadbalancer.json",
 		},
 	}
 
@@ -95,9 +87,7 @@ func getOperations(dev adapter.Operations) adapter.Operations {
 		},
 		AdditionalProperties: map[string]string{
 			ServiceName:      "zipkin",
-			ServicePatchFile: "file://templates/service-patch.json",
-			CPPatchFile:      "file://templates/annotations-cp.json",
-			ControlPatchFile: "file://templates/annotations-istio.json",
+			ServicePatchFile: "file://templates/patches/service-loadbalancer.json",
 		},
 	}
 
@@ -111,11 +101,11 @@ func getOperations(dev adapter.Operations) adapter.Operations {
 		Description: "Envoy Filter for Image Hub",
 		Versions:    adapter.NoneVersion,
 		Templates: []adapter.Template{
-			"file://templates/imagehub-filter.yaml",
+			"file://templates/imagehub/rate_limit_filter.yaml",
 		},
 		AdditionalProperties: map[string]string{
 			ServiceName:     "api-v1",
-			FilterPatchFile: "file://templates/imagehub-patch.json",
+			FilterPatchFile: "file://templates/imagehub/filter_patch.json",
 		},
 	}
 
@@ -123,7 +113,7 @@ func getOperations(dev adapter.Operations) adapter.Operations {
 		Type:        int32(meshes.OpCategory_CONFIGURE),
 		Description: "Policy: Deny-All",
 		Templates: []adapter.Template{
-			"file://templates/policy-denyall.yaml",
+			"file://templates/policies/denyall.yaml",
 		},
 	}
 
@@ -131,7 +121,7 @@ func getOperations(dev adapter.Operations) adapter.Operations {
 		Type:        int32(meshes.OpCategory_CONFIGURE),
 		Description: "Policy: Strict MTLS",
 		Templates: []adapter.Template{
-			"file://templates/policy-strict.yaml",
+			"file://templates/policies/strict.yaml",
 		},
 	}
 
@@ -139,7 +129,7 @@ func getOperations(dev adapter.Operations) adapter.Operations {
 		Type:        int32(meshes.OpCategory_CONFIGURE),
 		Description: "Policy: Mutual MTLS",
 		Templates: []adapter.Template{
-			"file://templates/policy-mutual.yaml",
+			"file://templates/policies/mutual.yaml",
 		},
 	}
 
@@ -147,7 +137,7 @@ func getOperations(dev adapter.Operations) adapter.Operations {
 		Type:        int32(meshes.OpCategory_CONFIGURE),
 		Description: "Policy: Disable MTLS",
 		Templates: []adapter.Template{
-			"file://templates/policy-disable.yaml",
+			"file://templates/policies/disable.yaml",
 		},
 	}
 

@@ -7,6 +7,9 @@ import (
 
 func (istio *Istio) applyCustomOperation(namespace string, manifest string, isDel bool) (string, error) {
 	st := status.Starting
+	if istio.KubeClient == nil {
+		return st, ErrNilClient
+	}
 
 	err := istio.applyManifest([]byte(manifest), isDel, namespace)
 	if err != nil {

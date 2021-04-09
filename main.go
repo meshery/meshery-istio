@@ -33,6 +33,8 @@ import (
 
 var (
 	serviceName = "istio-adaptor"
+	version     = "none"
+	gitsha      = "none"
 )
 
 func init() {
@@ -101,6 +103,8 @@ func main() {
 	service.Handler = handler
 	service.Channel = make(chan interface{}, 10)
 	service.StartedAt = time.Now()
+	service.Version = version
+	service.GitSHA = gitsha
 
 	// Register workloads
 	if err := oam.RegisterWorkloads(mesheryServerAddress(), serviceAddress()+":"+service.Port); err != nil {

@@ -42,6 +42,8 @@ const (
 )
 
 var (
+	ServerVersion  = status.None
+	ServerGitSHA   = status.None
 	configRootPath = path.Join(utils.GetHome(), ".meshery")
 
 	Config = configprovider.Options{
@@ -52,17 +54,16 @@ var (
 	}
 
 	ServerConfig = map[string]string{
-		"name":    "istio-adapter",
-		"port":    "10000",
-		"version": "v1.0.0",
+		"name":     smp.ServiceMesh_ISTIO.Enum().String(),
+		"type":     "adapter",
+		"port":     "10000",
+		"traceurl": status.None,
 	}
 
 	MeshSpec = map[string]string{
-		"name":     "istio",
-		"status":   status.None,
-		"traceurl": status.None,
-		"version":  status.None,
-		"type":     smp.ServiceMesh_ISTIO.Enum().String(),
+		"name":    smp.ServiceMesh_ISTIO.Enum().String(),
+		"status":  status.NotInstalled,
+		"version": status.None,
 	}
 
 	ProviderConfig = map[string]string{

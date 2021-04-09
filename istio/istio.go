@@ -15,11 +15,6 @@ import (
 	"github.com/layer5io/meshkit/logger"
 )
 
-const (
-	// SMIManifest is the manifest.yaml file for smi conformance tool
-	SMIManifest = "https://raw.githubusercontent.com/layer5io/learn-layer5/master/smi-conformance/manifest.yml"
-)
-
 // Istio represents the istio adapter and embeds adapter.Adapter
 type Istio struct {
 	adapter.Adapter // Type Embedded
@@ -89,7 +84,7 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 					"istio-injection": "enabled",
 				},
 				Namespace:   "meshery",
-				Manifest:    SMIManifest,
+				Manifest:    string(operations[opReq.OperationName].Templates[0]),
 				Annotations: make(map[string]string),
 			})
 			if err != nil {
@@ -98,6 +93,9 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 				hh.StreamErr(e, err)
 				return
 			}
+			ee.Summary = fmt.Sprintf("%s test %s successfully", name, status.Completed)
+			ee.Details = ""
+			hh.StreamInfo(e)
 		}(istio, e)
 	case internalconfig.DenyAllPolicyOperation, internalconfig.StrictMTLSPolicyOperation, internalconfig.MutualMTLSPolicyOperation, internalconfig.DisableMTLSPolicyOperation:
 		go func(hh *Istio, ee *adapter.Event) {
@@ -147,8 +145,6 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 			svcname := operations[opReq.OperationName].AdditionalProperties[common.ServiceName]
 			patches := make([]string, 0)
 			patches = append(patches, operations[opReq.OperationName].AdditionalProperties[internalconfig.ServicePatchFile])
-			patches = append(patches, operations[opReq.OperationName].AdditionalProperties[internalconfig.CPPatchFile])
-			patches = append(patches, operations[opReq.OperationName].AdditionalProperties[internalconfig.ControlPatchFile])
 
 			_, err := hh.installAddon(opReq.Namespace, opReq.IsDeleteOperation, svcname, patches, operations[opReq.OperationName].Templates)
 			operation := "install"
