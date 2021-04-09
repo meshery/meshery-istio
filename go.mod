@@ -5,8 +5,8 @@ go 1.13
 replace (
 	github.com/kudobuilder/kuttl => github.com/layer5io/kuttl v0.4.1-0.20200723152044-916f10574334
 	gopkg.in/ini.v1 => github.com/go-ini/ini v1.62.0
-//github.com/docker/docker => github.com/moby/moby v17.12.0-ce-rc1.0.20200618181300-9dc6525e6118+incompatible
-//golang.org/x/sys => golang.org/x/sys v0.0.0-20200826173525-f9321e4c35a6
+github.com/docker/docker => github.com/moby/moby v17.12.0-ce-rc1.0.20200618181300-9dc6525e6118+incompatible
+golang.org/x/sys => golang.org/x/sys v0.0.0-20200826173525-f9321e4c35a6
 )
 
 require (
