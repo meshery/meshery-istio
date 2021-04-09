@@ -2,7 +2,6 @@ package istio
 
 import (
 	"context"
-	"path"
 	"reflect"
 	"testing"
 
@@ -11,9 +10,7 @@ import (
 	adapterconfig "github.com/layer5io/meshery-adapter-library/config"
 	configprovider "github.com/layer5io/meshery-adapter-library/config/provider"
 	internalconfig "github.com/layer5io/meshery-istio/internal/config"
-	meshkitprovider "github.com/layer5io/meshkit/config/provider"
 	"github.com/layer5io/meshkit/logger"
-	"github.com/layer5io/meshkit/utils"
 )
 
 func TestNew(t *testing.T) {
@@ -438,14 +435,14 @@ func getConfigHandler(t *testing.T) adapterconfig.Handler {
 	return h
 }
 
-func getConfigHandlerUnseeded(t *testing.T) adapterconfig.Handler {
-	h, _ := meshkitprovider.NewViper(meshkitprovider.Options{
-		FileName: "istio",
-		FileType: "yaml",
-		FilePath: path.Join(utils.GetHome(), ".meshery"),
-	})
-	return h
-}
+//func getConfigHandlerUnseeded(t *testing.T) adapterconfig.Handler {
+//	h, _ := meshkitprovider.NewViper(meshkitprovider.Options{
+//		FileName: "istio",
+//		FileType: "yaml",
+//		FilePath: path.Join(utils.GetHome(), ".meshery"),
+//	})
+//	return h
+//}
 
 func getLoggerHandler(t *testing.T) logger.Handler {
 	log, _ := logger.New("istio test", logger.Options{
