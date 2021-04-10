@@ -26,6 +26,5 @@ ENV MESHERY_SERVER="http://meshery:9081"
 WORKDIR /templates
 COPY templates/* ./
 WORKDIR /
-COPY oam/ oam/
 COPY --from=builder /build/meshery-istio .
 ENTRYPOINT ["/meshery-istio"]
