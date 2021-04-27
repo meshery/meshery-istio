@@ -24,7 +24,7 @@ ENV GOARCH="amd64"
 ENV SERVICE_ADDR="meshery-istio"
 ENV MESHERY_SERVER="http://meshery:9081"
 WORKDIR /templates
-COPY templates/* ./
+COPY templates/** ./
 WORKDIR /
 COPY --from=builder /build/meshery-istio .
 ENTRYPOINT ["/meshery-istio"]
