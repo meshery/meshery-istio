@@ -5,6 +5,7 @@ import (
 
 	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshery-adapter-library/status"
+	"github.com/layer5io/meshery-istio/internal/config"
 	"github.com/layer5io/meshkit/utils"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -28,7 +29,7 @@ func (istio *Istio) installSampleApp(namespace string, del bool, templates []ada
 	return status.Installed, nil
 }
 
-func (istio *Istio) patchWithEnvoyFilter(namespace string, del bool, app string, templates []adapter.Template, patchObject string) (string, error) {
+func (istio *Istio) patchWithEnvoyFilter(namespace string, del bool, app string, patchObject string) (string, error) {
 	st := status.Deploying
 
 	if del {
@@ -41,6 +42,16 @@ func (istio *Istio) patchWithEnvoyFilter(namespace string, del bool, app string,
 	}
 
 	_, err = istio.KubeClient.AppsV1().Deployments(namespace).Patch(context.TODO(), app, types.MergePatchType, []byte(jsonContents), metav1.PatchOptions{})
+	if err != nil {
+		return st, ErrEnvoyFilter(err)
+	}
+
+	// THIS IS TEMPORARY. NEED TO FIGURE OUT A WAY BY WHICH THE USER CAN PROVIDE
+	// THEIR JSON AND WE CAN ENCODE IT TO BASE64 TO GENERATE TEMPLATES
+	encodedJSONConfig := "WwogIHsKICAgICJuYW1lIjogIi9wdWxsIiwKICAgICJydWxlIjp7CiAgICAgICJydWxlVHlwZSI6ICJyYXRlLWxpbWl0ZXIiLAogICAgICAicGFyYW1ldGVycyI6WwogICAgICAgIHsiaWRlbnRpZmllciI6ICJFbnRlcnByaXNlIiwgImxpbWl0IjogMTAwMH0sCiAgICAgICAgeyJpZGVudGlmaWVyIjogIlRlYW0iLCAibGltaXQiOiAxMDB9LAogICAgICAgIHsiaWRlbnRpZmllciI6ICJQZXJzb25hbCIsICJsaW1pdCI6IDEwfQogICAgICBdCiAgICB9CiAgfSwKICB7CiAgICAibmFtZSI6ICIvYXV0aCIsCiAgICAicnVsZSI6ewogICAgICAicnVsZVR5cGUiOiAibm9uZSIKICAgIH0KICB9LAogIHsKICAgICJuYW1lIjogIi9zaWdudXAiLAogICAgInJ1bGUiOnsKICAgICAgInJ1bGVUeXBlIjogIm5vbmUiCiAgICB9CiAgfSwKICB7CiAgICAibmFtZSI6ICIvdXBncmFkZSIsCiAgICAicnVsZSI6ewogICAgICAicnVsZVR5cGUiOiAibm9uZSIKICAgIH0KICB9Cl0="
+
+	// generate the EnvoyFilter config(s) with the encoded json object
+	templates, err := config.GenerateImagehubTemplates(encodedJSONConfig)
 	if err != nil {
 		return st, ErrEnvoyFilter(err)
 	}

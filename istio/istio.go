@@ -185,7 +185,7 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 		go func(hh *Istio, ee *adapter.Event) {
 			appName := operations[opReq.OperationName].AdditionalProperties[common.ServiceName]
 			patchFile := operations[opReq.OperationName].AdditionalProperties[internalconfig.FilterPatchFile]
-			stat, err := hh.patchWithEnvoyFilter(opReq.Namespace, opReq.IsDeleteOperation, appName, operations[opReq.OperationName].Templates, patchFile)
+			stat, err := hh.patchWithEnvoyFilter(opReq.Namespace, opReq.IsDeleteOperation, appName, patchFile)
 			if err != nil {
 				e.Summary = fmt.Sprintf("Error while %s %s application", stat, appName)
 				e.Details = err.Error()

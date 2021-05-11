@@ -4,11 +4,17 @@ import (
 	"os"
 	"path"
 
+	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshkit/utils"
 	"gopkg.in/yaml.v2"
 )
 
-var generatedTemplatePath = path.Join(RootPath(), "generated-imagehub-filter.yaml")
+var generatedTemplatePath = path.Join(RootPath(), "imagehub-filter.yaml")
+
+// fallback to the default template if something goes wrong
+var fallbackTemplates = []adapter.Template{
+	"file://templates/imagehub/rate_limit_filter.yaml",
+}
 
 // Structs generated from template/imagehub-filter.yaml
 // EnvoyFilter
@@ -21,11 +27,11 @@ type EnvoyFilter struct {
 
 // VmConfig
 type VmConfig struct {
-	Code             Code   `yaml:"code"`
+	Code             Code                  `yaml:"code"`
 	Configuration    VmConfigConfiguration `yaml:"configuration"`
-	Runtime          string `yaml:"runtime"`
-	VmId             string `yaml:"vmId"`
-	AllowPrecompiled bool   `yaml:"allow_precompiled"`
+	Runtime          string                `yaml:"runtime"`
+	VmId             string                `yaml:"vmId"`
+	AllowPrecompiled bool                  `yaml:"allow_precompiled"`
 }
 
 // VmConfigConfiguration
@@ -79,7 +85,7 @@ type FilterConfig struct {
 
 // Configuration
 type Configuration struct {
-	Type string `yaml:"@type"`
+	Type  string `yaml:"@type"`
 	Value string `yaml:"value"`
 }
 
@@ -139,48 +145,54 @@ type Patch struct {
 
 // TypedConfig
 type TypedConfig struct {
-	Type   string           `yaml:"@type"`
+	Type    string           `yaml:"@type"`
 	TypeUrl string           `yaml:"type_url"`
 	Value   TypedConfigValue `yaml:"value"`
 }
 
-// function GenerateImageHubTemplate() generates a template with some changes
-// and returns its path alongwith an error(if any)
-func GenerateImagehubTemplate(encodedValue string) (string, error) {
+// GenerateImageHubTemplate() generates an EnvoyFilter config at
+// ~/.meshery/imagehub-filter.yaml containing the json object for imagehub's
+// rate limit filter
+func GenerateImagehubTemplates(encodedValue string) ([]adapter.Template, error) {
 
-	// bootstrap
+	var templates []adapter.Template
+
+	// generate the defaults
 	ef := generateDefaults()
 
-	// change the value for the vmConfig of the wasm filter
+	// this field will contain the base64 encoded json object for rate limit filter
 	ef.Spec.ConfigPatches[0].Patch.Value.TypedConfig.Value.Config.VmConfig.Configuration.Value = encodedValue
 
 	// Marshalling to yaml after making changes
 	newYaml, err := yaml.Marshal(ef)
 	if err != nil {
-		return "", err
+		return fallbackTemplates, err
 	}
 
 	// checking if previously generated template exists. If yes then delete it.
 	if _, err := os.Stat(generatedTemplatePath); !os.IsNotExist(err) {
 		err = os.Remove(generatedTemplatePath)
 		if err != nil {
-			return "", err
+			return fallbackTemplates, err
 		}
 	}
 
-	err = utils.CreateFile(newYaml, "generated-imagehub-filter.yaml", RootPath())
+	err = utils.CreateFile(newYaml, generatedTemplatePath, RootPath())
 	if err != nil {
-		return "", err
+		return fallbackTemplates, err
 	}
 
-	return generatedTemplatePath, nil
+	generatedTemplates := append(templates, adapter.Template(generatedTemplatePath))
+
+	return generatedTemplates, nil
 }
 
+// generates the default EnvoyFilter config for the rate limit filter
 func generateDefaults() EnvoyFilter {
 
 	var configPatches []ConfigPatches
 
-	defaultPatch := Patch {
+	defaultPatch := Patch{
 		Operation: "INSERT_BEFORE",
 		Value: Value{
 			Name: "envoy.filter.http.wasm",
@@ -188,7 +200,7 @@ func generateDefaults() EnvoyFilter {
 				Type:    "type.googleapis.com/udpa.type.v1.TypedStruct",
 				TypeUrl: "type.googleapis.com/envoy.extensions.filters.http.wasm.v3.Wasm",
 				Value: TypedConfigValue{
-					Config: FilterConfig {
+					Config: FilterConfig{
 						Configuration: Configuration{
 							Type:  "type.googleapis.com/google.protobuf.StringValue",
 							Value: "rate_limit_filter",
@@ -201,7 +213,8 @@ func generateDefaults() EnvoyFilter {
 								},
 							},
 							Configuration: VmConfigConfiguration{
-								Type:  "type.googleapis.com/google.protobuf.StringValue",
+								Type: "type.googleapis.com/google.protobuf.StringValue",
+								// a default value to use in case no configuration is supplied
 								Value: "WwogIHsKICAgICJuYW1lIjogIi9wdWxsIiwKICAgICJydWxlIjp7CiAgICAgICJydWxlVHlwZSI6ICJyYXRlLWxpbWl0ZXIiLAogICAgICAicGFyYW1ldGVycyI6WwogICAgICAgIHsiaWRlbnRpZmllciI6ICJFbnRlcnByaXNlIiwgImxpbWl0IjogMTAwMH0sCiAgICAgICAgeyJpZGVudGlmaWVyIjogIlRlYW0iLCAibGltaXQiOiAxMDB9LAogICAgICAgIHsiaWRlbnRpZmllciI6ICJQZXJzb25hbCIsICJsaW1pdCI6IDEwfQogICAgICBdCiAgICB9CiAgfSwKICB7CiAgICAibmFtZSI6ICIvYXV0aCIsCiAgICAicnVsZSI6ewogICAgICAicnVsZVR5cGUiOiAibm9uZSIKICAgIH0KICB9LAogIHsKICAgICJuYW1lIjogIi9zaWdudXAiLAogICAgInJ1bGUiOnsKICAgICAgInJ1bGVUeXBlIjogIm5vbmUiCiAgICB9CiAgfSwKICB7CiAgICAibmFtZSI6ICIvdXBncmFkZSIsCiAgICAicnVsZSI6ewogICAgICAicnVsZVR5cGUiOiAibm9uZSIKICAgIH0KICB9Cl0=",
 							},
 							Runtime:          "envoy.wasm.runtime.v8",
