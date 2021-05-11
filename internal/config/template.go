@@ -2,14 +2,13 @@ package config
 
 import (
 	"os"
-	"path"
 
 	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshkit/utils"
 	"gopkg.in/yaml.v2"
 )
 
-var generatedTemplatePath = path.Join(RootPath(), "imagehub-filter.yaml")
+var generatedTemplateName = "imagehub-filter.yaml"
 
 // fallback to the default template if something goes wrong
 var fallbackTemplates = []adapter.Template{
@@ -170,19 +169,19 @@ func GenerateImagehubTemplates(encodedValue string) ([]adapter.Template, error) 
 	}
 
 	// checking if previously generated template exists. If yes then delete it.
-	if _, err := os.Stat(generatedTemplatePath); !os.IsNotExist(err) {
-		err = os.Remove(generatedTemplatePath)
+	if _, err := os.Stat(generatedTemplateName); !os.IsNotExist(err) {
+		err = os.Remove(generatedTemplateName)
 		if err != nil {
 			return fallbackTemplates, err
 		}
 	}
 
-	err = utils.CreateFile(newYaml, generatedTemplatePath, RootPath())
+	err = utils.CreateFile(newYaml, generatedTemplateName, RootPath())
 	if err != nil {
 		return fallbackTemplates, err
 	}
 
-	generatedTemplates := append(templates, adapter.Template(generatedTemplatePath))
+	generatedTemplates := append(templates, adapter.Template("file://" + RootPath() + "/" + generatedTemplateName))
 
 	return generatedTemplates, nil
 }
