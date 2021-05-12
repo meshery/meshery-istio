@@ -9,6 +9,7 @@ import (
 )
 
 var generatedTemplateName = "imagehub-filter.yaml"
+var generatedTemplatePath = RootPath() + "/" + generatedTemplateName
 
 // fallback to the default template if something goes wrong
 var fallbackTemplates = []adapter.Template{
@@ -169,8 +170,8 @@ func GenerateImagehubTemplates(encodedValue string) ([]adapter.Template, error) 
 	}
 
 	// checking if previously generated template exists. If yes then delete it.
-	if _, err := os.Stat(generatedTemplateName); !os.IsNotExist(err) {
-		err = os.Remove(generatedTemplateName)
+	if _, err := os.Stat(generatedTemplatePath); !os.IsNotExist(err) {
+		err = os.Remove(generatedTemplatePath)
 		if err != nil {
 			return fallbackTemplates, err
 		}
@@ -181,7 +182,7 @@ func GenerateImagehubTemplates(encodedValue string) ([]adapter.Template, error) 
 		return fallbackTemplates, err
 	}
 
-	generatedTemplates := append(templates, adapter.Template("file://" + RootPath() + "/" + generatedTemplateName))
+	generatedTemplates := append(templates, adapter.Template("file://" + generatedTemplatePath))
 
 	return generatedTemplates, nil
 }
