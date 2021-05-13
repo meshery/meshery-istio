@@ -6,8 +6,8 @@ import (
 
 	"github.com/layer5io/meshery-adapter-library/common"
 	"github.com/layer5io/meshery-istio/internal/config"
-	"github.com/layer5io/meshery-istio/istio/oam/core/v1alpha1"
 	"github.com/layer5io/meshkit/errors"
+	"github.com/layer5io/meshkit/models/oam/core/v1alpha1"
 )
 
 // HandleComponents handles the processing of OAM components
