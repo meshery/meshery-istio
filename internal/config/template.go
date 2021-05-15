@@ -1,20 +1,8 @@
 package config
 
 import (
-	"os"
-
-	"github.com/layer5io/meshery-adapter-library/adapter"
-	"github.com/layer5io/meshkit/utils"
 	"gopkg.in/yaml.v2"
 )
-
-var generatedTemplateName = "imagehub-filter.yaml"
-var generatedTemplatePath = RootPath() + "/" + generatedTemplateName
-
-// fallback to the default template if something goes wrong
-var fallbackTemplates = []adapter.Template{
-	"file://templates/imagehub/rate_limit_filter.yaml",
-}
 
 // Structs generated from template/imagehub-filter.yaml
 // EnvoyFilter
@@ -150,41 +138,40 @@ type TypedConfig struct {
 	Value   TypedConfigValue `yaml:"value"`
 }
 
-// GenerateImageHubTemplate() generates an EnvoyFilter config at
-// ~/.meshery/imagehub-filter.yaml containing the json object for imagehub's
+// GenerateImageHubTemplate() generates an EnvoyFilter config
+// containing the json object to be given to imagehub's
 // rate limit filter
-func GenerateImagehubTemplates(encodedValue string) ([]adapter.Template, error) {
-
-	var templates []adapter.Template
+func GenerateImagehubEnvoyFilter(encodedValue string) (string, error) {
 
 	// generate the defaults
 	ef := generateDefaults()
+
+	if len(encodedValue) == 0 {
+		return defaultConfigYAML(), nil
+	}
 
 	// this field will contain the base64 encoded json object for rate limit filter
 	ef.Spec.ConfigPatches[0].Patch.Value.TypedConfig.Value.Config.VmConfig.Configuration.Value = encodedValue
 
 	// Marshalling to yaml after making changes
-	newYaml, err := yaml.Marshal(ef)
+	newYAML, err := yaml.Marshal(ef)
 	if err != nil {
-		return fallbackTemplates, err
+		return defaultConfigYAML(), err
 	}
 
-	// checking if previously generated template exists. If yes then delete it.
-	if _, err := os.Stat(generatedTemplatePath); !os.IsNotExist(err) {
-		err = os.Remove(generatedTemplatePath)
-		if err != nil {
-			return fallbackTemplates, err
-		}
-	}
+	return string(newYAML), nil
+}
 
-	err = utils.CreateFile(newYaml, generatedTemplateName, RootPath())
+// returns the YAML as a string from an EnvoyFilter struct
+func defaultConfigYAML() string {
+	ef := generateDefaults()
+
+	configYAML, err := yaml.Marshal(ef)
 	if err != nil {
-		return fallbackTemplates, err
+		return ""
 	}
 
-	generatedTemplates := append(templates, adapter.Template("file://" + generatedTemplatePath))
-
-	return generatedTemplates, nil
+	return string(configYAML)
 }
 
 // generates the default EnvoyFilter config for the rate limit filter

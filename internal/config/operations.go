@@ -100,9 +100,6 @@ func getOperations(dev adapter.Operations) adapter.Operations {
 		Type:        int32(meshes.OpCategory_CONFIGURE),
 		Description: "Envoy Filter for Image Hub",
 		Versions:    adapter.NoneVersion,
-		Templates: []adapter.Template{
-			"file://templates/imagehub/rate_limit_filter.yaml",
-		},
 		AdditionalProperties: map[string]string{
 			ServiceName:     "api-v1",
 			FilterPatchFile: "file://templates/imagehub/filter_patch.json",

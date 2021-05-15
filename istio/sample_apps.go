@@ -46,26 +46,14 @@ func (istio *Istio) patchWithEnvoyFilter(namespace string, del bool, app string,
 		return st, ErrEnvoyFilter(err)
 	}
 
-	// THIS IS TEMPORARY. NEED TO FIGURE OUT A WAY BY WHICH THE USER CAN PROVIDE
-	// THEIR JSON AND WE CAN ENCODE IT TO BASE64 TO GENERATE TEMPLATES
-	encodedJSONConfig := "WwogIHsKICAgICJuYW1lIjogIi9wdWxsIiwKICAgICJydWxlIjp7CiAgICAgICJydWxlVHlwZSI6ICJyYXRlLWxpbWl0ZXIiLAogICAgICAicGFyYW1ldGVycyI6WwogICAgICAgIHsiaWRlbnRpZmllciI6ICJFbnRlcnByaXNlIiwgImxpbWl0IjogMTAwMH0sCiAgICAgICAgeyJpZGVudGlmaWVyIjogIlRlYW0iLCAibGltaXQiOiAxMDB9LAogICAgICAgIHsiaWRlbnRpZmllciI6ICJQZXJzb25hbCIsICJsaW1pdCI6IDEwfQogICAgICBdCiAgICB9CiAgfSwKICB7CiAgICAibmFtZSI6ICIvYXV0aCIsCiAgICAicnVsZSI6ewogICAgICAicnVsZVR5cGUiOiAibm9uZSIKICAgIH0KICB9LAogIHsKICAgICJuYW1lIjogIi9zaWdudXAiLAogICAgInJ1bGUiOnsKICAgICAgInJ1bGVUeXBlIjogIm5vbmUiCiAgICB9CiAgfSwKICB7CiAgICAibmFtZSI6ICIvdXBncmFkZSIsCiAgICAicnVsZSI6ewogICAgICAicnVsZVR5cGUiOiAibm9uZSIKICAgIH0KICB9Cl0="
-
-	// generate the EnvoyFilter config(s) with the encoded json object
-	templates, err := config.GenerateImagehubTemplates(encodedJSONConfig)
+	contents, err := config.GenerateImagehubEnvoyFilter("")
 	if err != nil {
 		return st, ErrEnvoyFilter(err)
 	}
 
-	for _, template := range templates {
-		contents, err := utils.ReadFileSource(string(template))
-		if err != nil {
-			return st, ErrEnvoyFilter(err)
-		}
-
-		err = istio.applyManifest([]byte(contents), del, namespace)
-		if err != nil {
-			return st, ErrEnvoyFilter(err)
-		}
+	err = istio.applyManifest([]byte(contents), del, namespace)
+	if err != nil {
+		return st, ErrEnvoyFilter(err)
 	}
 
 	return status.Deployed, nil
