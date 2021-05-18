@@ -106,15 +106,7 @@ func main() {
 	service.Version = version
 	service.GitSHA = gitsha
 
-	// Register workloads
-	if err := oam.RegisterWorkloads(mesheryServerAddress(), serviceAddress()+":"+service.Port); err != nil {
-		log.Info(err.Error())
-	}
-
-	// Register traits
-	if err := oam.RegisterTraits(mesheryServerAddress(), serviceAddress()+":"+service.Port); err != nil {
-		log.Info(err.Error())
-	}
+	go registerCapabilities(service.Port, log)
 
 	// Server Initialization
 	log.Info("Adaptor Listening at port: ", service.Port)
@@ -151,4 +143,16 @@ func serviceAddress() string {
 	}
 
 	return "mesherylocal.layer5.io"
+}
+
+func registerCapabilities(port string, log logger.Handler) {
+	// Register workloads
+	if err := oam.RegisterWorkloads(mesheryServerAddress(), serviceAddress()+":"+port); err != nil {
+		log.Info(err.Error())
+	}
+
+	// Register traits
+	if err := oam.RegisterTraits(mesheryServerAddress(), serviceAddress()+":"+port); err != nil {
+		log.Info(err.Error())
+	}
 }

@@ -11,8 +11,8 @@ import (
 	"github.com/layer5io/meshery-adapter-library/status"
 	internalconfig "github.com/layer5io/meshery-istio/internal/config"
 	"github.com/layer5io/meshery-istio/istio/oam"
-	"github.com/layer5io/meshery-istio/istio/oam/core/v1alpha1"
 	"github.com/layer5io/meshkit/logger"
+	"github.com/layer5io/meshkit/models/oam/core/v1alpha1"
 )
 
 // Istio represents the istio adapter and embeds adapter.Adapter

@@ -1,14 +1,11 @@
 package oam
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
-	"io"
-	"io/ioutil"
-	"net/http"
 	"os"
 	"path/filepath"
+
+	"github.com/layer5io/meshery-adapter-library/adapter"
 )
 
 var (
@@ -43,27 +40,21 @@ func RegisterWorkloads(runtime, host string) error {
 		"jaegeristioaddon",
 	}
 
+	oamRDP := []adapter.OAMRegistrantDefinitionPath{}
+
 	for _, workload := range workloads {
-		oamcontent, err := readDefintionAndSchema(workloadPath, workload)
-		if err != nil {
-			return err
-		}
-		oamcontent.Host = host
+		defintionPath, schemaPath := generatePaths(workloadPath, workload)
 
-		// Convert struct to json
-		byt, err := json.Marshal(oamcontent)
-		if err != nil {
-			return err
-		}
-
-		reader := bytes.NewReader(byt)
-
-		if err := register(fmt.Sprintf("%s/api/experimental/oam/%s", runtime, "workload"), reader); err != nil {
-			return err
-		}
+		oamRDP = append(oamRDP, adapter.OAMRegistrantDefinitionPath{
+			OAMDefintionPath: defintionPath,
+			OAMRefSchemaPath: schemaPath,
+			Host:             host,
+		})
 	}
 
-	return nil
+	return adapter.
+		NewOAMRegistrant(oamRDP, fmt.Sprintf("%s/api/experimental/oam/workload", runtime)).
+		Register()
 }
 
 // RegisterTraits will register all of the trait definitions
@@ -76,72 +67,26 @@ func RegisterTraits(runtime, host string) error {
 		"mtls",
 	}
 
+	oamRDP := []adapter.OAMRegistrantDefinitionPath{}
+
 	for _, trait := range traits {
-		oamcontent, err := readDefintionAndSchema(traitPath, trait)
-		if err != nil {
-			return err
-		}
-		oamcontent.Host = host
+		defintionPath, schemaPath := generatePaths(traitPath, trait)
 
-		// Convert struct to json
-		byt, err := json.Marshal(oamcontent)
-		if err != nil {
-			return err
-		}
-
-		reader := bytes.NewReader(byt)
-
-		if err := register(fmt.Sprintf("%s/api/experimental/oam/%s", runtime, "trait"), reader); err != nil {
-			return err
-		}
+		oamRDP = append(oamRDP, adapter.OAMRegistrantDefinitionPath{
+			OAMDefintionPath: defintionPath,
+			OAMRefSchemaPath: schemaPath,
+			Host:             host,
+		})
 	}
 
-	return nil
+	return adapter.
+		NewOAMRegistrant(oamRDP, fmt.Sprintf("%s/api/experimental/oam/trait", runtime)).
+		Register()
 }
 
-func readDefintionAndSchema(path, name string) (*GenericStructure, error) {
+func generatePaths(path, name string) (defintionPath, schemaPath string) {
 	definitionName := fmt.Sprintf("%s_definition.json", name)
 	schemaName := fmt.Sprintf("%s.meshery.layer5.io.schema.json", name)
 
-	// Paths are constructed on the fly but are trusted hence,
-	// #nosec
-	definition, err := ioutil.ReadFile(filepath.Join(path, definitionName))
-	if err != nil {
-		return nil, err
-	}
-
-	var definitionMap map[string]interface{}
-	if err := json.Unmarshal(definition, &definitionMap); err != nil {
-		return nil, err
-	}
-
-	// Paths are constructed on the fly but are trusted hence,
-	// #nosec
-	schema, err := ioutil.ReadFile(filepath.Join(path, schemaName))
-	if err != nil {
-		return nil, err
-	}
-
-	return &GenericStructure{OAMDefinition: definitionMap, OAMRefSchema: string(schema)}, nil
-}
-
-func register(host string, content io.Reader) error {
-	// host here is given by the application itself and is trustworthy hence,
-	// #nosec
-	resp, err := http.Post(host, "application/json", content)
-	if err != nil {
-		return err
-	}
-
-	if resp.StatusCode != http.StatusCreated &&
-		resp.StatusCode != http.StatusOK &&
-		resp.StatusCode != http.StatusAccepted {
-		return fmt.Errorf(
-			"register process failed, host returned status: %s with status code %d",
-			resp.Status,
-			resp.StatusCode,
-		)
-	}
-
-	return nil
+	return filepath.Join(path, definitionName), filepath.Join(path, schemaName)
 }
