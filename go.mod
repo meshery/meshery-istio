@@ -12,11 +12,11 @@ replace (
 
 require (
 	github.com/aspenmesh/istio-vet v0.0.0-20200806222806-9c8e9a962b9f
-	github.com/layer5io/meshery-adapter-library v0.1.17
+	github.com/layer5io/meshery-adapter-library v0.1.18
 	github.com/layer5io/meshkit v0.2.10
 	github.com/layer5io/service-mesh-performance v0.3.3
 	golang.org/x/net v0.0.0-20200927032502-5d4f70055728 // indirect
-	gopkg.in/yaml.v2 v2.4.0 // indirect
+	gopkg.in/yaml.v2 v2.4.0
 	istio.io/client-go v1.8.0
 	k8s.io/apimachinery v0.18.12
 	k8s.io/client-go v0.18.12
