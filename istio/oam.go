@@ -8,6 +8,7 @@ import (
 	"github.com/layer5io/meshery-istio/internal/config"
 	"github.com/layer5io/meshkit/errors"
 	"github.com/layer5io/meshkit/models/oam/core/v1alpha1"
+	"gopkg.in/yaml.v2"
 )
 
 // HandleComponents handles the processing of OAM components
@@ -23,6 +24,20 @@ func (istio *Istio) HandleComponents(comps []v1alpha1.Component, isDel bool) (st
 			msg := "created service of type \"IstioMesh\""
 			if isDel {
 				msg = "deleted service of type \"IstioMesh\""
+			}
+
+			msgs = append(msgs, msg)
+			continue
+		}
+
+		if comp.Spec.Type == "VirtualService" {
+			if err := handleComponentVirtualService(istio, comp, isDel); err != nil {
+				errs = append(errs, err)
+			}
+
+			msg := fmt.Sprintf("created virtual service \"%s\" in namespace \"%s\"", comp.Name, comp.Namespace)
+			if isDel {
+				msg = fmt.Sprintf("deleted virtual service \"%s\" in namespace \"%s\"", comp.Name, comp.Namespace)
 			}
 
 			msgs = append(msgs, msg)
@@ -114,6 +129,29 @@ func handleComponentIstioMesh(istio *Istio, comp v1alpha1.Component, isDel bool)
 	_, err := istio.installIstio(isDel, version, comp.Namespace)
 
 	return err
+}
+
+func handleComponentVirtualService(istio *Istio, comp v1alpha1.Component, isDel bool) error {
+	virtualSvc := map[string]interface{}{
+		"apiVersion": "networking.istio.io/v1beta1",
+		"kind":       "VirtualService",
+		"metadata": map[string]interface{}{
+			"name":        comp.Name,
+			"annotations": comp.Annotations,
+			"labels":      comp.Labels,
+		},
+		"spec": comp.Spec.Settings,
+	}
+
+	// Convert to yaml
+	yamlByt, err := yaml.Marshal(virtualSvc)
+	if err != nil {
+		err = ErrParseVirtualService(err)
+		istio.Log.Error(err)
+		return err
+	}
+
+	return istio.applyManifest(yamlByt, isDel, comp.Namespace)
 }
 
 func handleComponentIstioAddon(istio *Istio, comp v1alpha1.Component, isDel bool) error {

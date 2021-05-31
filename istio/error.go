@@ -86,6 +86,10 @@ var (
 	// generated when kubernetes client is nil
 	ErrNilClientCode = "istio_test_code"
 
+	// ErrParseVirtualServiceCode represents the error code which is
+	// generated when virtual service parsing fails
+	ErrParseVirtualServiceCode = "istio_test_code"
+
 	// ErrOpInvalid represents the errors which are generated
 	// when an invalid operation is requested
 	ErrOpInvalid = errors.NewDefault(errors.ErrOpInvalid, "Invalid operation")
@@ -181,4 +185,9 @@ func ErrIstioVetSync(err error) error {
 // ErrIstioVet is the error for streaming event
 func ErrIstioVet(err error) error {
 	return errors.NewDefault(ErrIstioVetCode, err.Error())
+}
+
+// ErrorParseVirtualService is the error when vsc parsing fails
+func ErrParseVirtualService(err error) error {
+	return errors.NewDefault(ErrParseVirtualServiceCode, err.Error())
 }
