@@ -38,6 +38,7 @@ func RegisterWorkloads(runtime, host string) error {
 		"prometheusistioaddon",
 		"zipkinistioaddon",
 		"jaegeristioaddon",
+		"virtualservice",
 	}
 
 	oamRDP := []adapter.OAMRegistrantDefinitionPath{}
