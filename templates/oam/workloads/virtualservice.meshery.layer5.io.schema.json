@@ -820,5 +820,6 @@
     "status": { "type": "object", "x-kubernetes-preserve-unknown-fields": true }
   },
   "type": "object",
+  "title": "VirtualService",
   "$schema": "http://json-schema.org/draft-04/schema#"
 }
