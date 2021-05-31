@@ -187,7 +187,7 @@ func ErrIstioVet(err error) error {
 	return errors.NewDefault(ErrIstioVetCode, err.Error())
 }
 
-// ErrorParseVirtualService is the error when vsc parsing fails
+// ErrParseVirtualService is the error when vsc parsing fails
 func ErrParseVirtualService(err error) error {
 	return errors.NewDefault(ErrParseVirtualServiceCode, err.Error())
 }
