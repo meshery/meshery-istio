@@ -19,12 +19,7 @@ func (istio *Istio) installSampleApp(namespace string, del bool, templates []ada
 	}
 
 	for _, template := range templates {
-		contents, err := utils.ReadFileSource(string(template))
-		if err != nil {
-			return st, ErrSampleApp(err)
-		}
-
-		err = istio.applyManifest([]byte(contents), del, namespace)
+		err := istio.applyManifest([]byte(template.String()), del, namespace)
 		if err != nil {
 			return st, ErrSampleApp(err)
 		}
