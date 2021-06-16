@@ -2,7 +2,7 @@
     "apiVersion": "core.oam.dev/v1alpha1",
     "kind": "WorkloadDefinition",
     "metadata": {
-        "name": "EnvoyFilter"
+        "name": "EnvoyFilterIstio"
     },
     "spec": {
         "definitionRef": {

@@ -171,7 +171,6 @@ func handleComponentEnvoyFilter(istio *Istio, comp v1alpha1.Component, isDel boo
 	}
 
 	return msg, istio.applyManifest(yamlByt, isDel, comp.Namespace)
-
 }
 
 func handleComponentIstioAddon(istio *Istio, comp v1alpha1.Component, isDel bool) (string, error) {
