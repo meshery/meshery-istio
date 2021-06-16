@@ -11,6 +11,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+// CompHandler is the type for functions which can handle OAM components
 type CompHandler func(*Istio, v1alpha1.Component, bool) (string, error)
 
 // HandleComponents handles the processing of OAM components
