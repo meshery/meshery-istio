@@ -90,6 +90,8 @@ var (
 	// generated when virtual service parsing fails
 	ErrParseVirtualServiceCode = "istio_test_code"
 
+	// ErrInvalidOAMComponentTypeCode represents the error code which is
+	// generated when an invalid oam component is requested
 	ErrInvalidOAMComponentTypeCode = "istio_test_code"
 
 	// ErrOpInvalid represents the errors which are generated
