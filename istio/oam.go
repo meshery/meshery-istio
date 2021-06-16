@@ -30,7 +30,7 @@ func (istio *Istio) HandleComponents(comps []v1alpha1.Component, isDel bool) (st
 	for _, comp := range comps {
 		fnc, ok := compFuncMap[comp.Spec.Type]
 		if !ok {
-
+			return "", ErrInvalidOAMComponentType(comp.Spec.Type)
 		}
 
 		msg, err := fnc(istio, comp, isDel)

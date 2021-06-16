@@ -90,6 +90,8 @@ var (
 	// generated when virtual service parsing fails
 	ErrParseVirtualServiceCode = "istio_test_code"
 
+	ErrInvalidOAMComponentTypeCode = "istio_test_code"
+
 	// ErrOpInvalid represents the errors which are generated
 	// when an invalid operation is requested
 	ErrOpInvalid = errors.NewDefault(errors.ErrOpInvalid, "Invalid operation")
@@ -190,4 +192,9 @@ func ErrIstioVet(err error) error {
 // ErrParseVirtualService is the error when vsc parsing fails
 func ErrParseVirtualService(err error) error {
 	return errors.NewDefault(ErrParseVirtualServiceCode, err.Error())
+}
+
+// ErrInvalidOAMComponentType is the error when the OAM component name is not valid
+func ErrInvalidOAMComponentType(compName string) error {
+	return errors.NewDefault(ErrInvalidOAMComponentTypeCode, "invalid OAM component name: ", compName)
 }
