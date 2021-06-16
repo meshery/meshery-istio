@@ -22,6 +22,7 @@ func (istio *Istio) HandleComponents(comps []v1alpha1.Component, isDel bool) (st
 	compFuncMap := map[string]CompHandler{
 		"IstioMesh":            handleComponentIstioMesh,
 		"VirtualService":       handleComponentVirtualService,
+		"EnvoyFilterIstio":     handleComponentEnvoyFilter,
 		"GrafanaIstioAddon":    handleComponentIstioAddon,
 		"PrometheusIstioAddon": handleComponentIstioAddon,
 		"ZipkinIstioAddon":     handleComponentIstioAddon,
@@ -142,6 +143,35 @@ func handleComponentVirtualService(istio *Istio, comp v1alpha1.Component, isDel 
 	}
 
 	return msg, istio.applyManifest(yamlByt, isDel, comp.Namespace)
+}
+
+func handleComponentEnvoyFilter(istio *Istio, comp v1alpha1.Component, isDel bool) (string, error) {
+	envoyFilter := map[string]interface{}{
+		"apiVersion": "networking.istio.io/v1alpha3",
+		"kind":       "EnvoyFilter",
+		"metadata": map[string]interface{}{
+			"name":        comp.Name,
+			"annotations": comp.Annotations,
+			"labels":      comp.Labels,
+		},
+		"spec": comp.Spec.Settings,
+	}
+
+	// Convert to yaml
+	yamlByt, err := yaml.Marshal(envoyFilter)
+	if err != nil {
+		err = ErrParseVirtualService(err)
+		istio.Log.Error(err)
+		return "", err
+	}
+
+	msg := fmt.Sprintf("configured envoy filter \"%s\" in namespace \"%s\"", comp.Name, comp.Namespace)
+	if isDel {
+		msg = fmt.Sprintf("deleted envoy filter config \"%s\" in namespace \"%s\"", comp.Name, comp.Namespace)
+	}
+
+	return msg, istio.applyManifest(yamlByt, isDel, comp.Namespace)
+
 }
 
 func handleComponentIstioAddon(istio *Istio, comp v1alpha1.Component, isDel bool) (string, error) {
