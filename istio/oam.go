@@ -118,37 +118,22 @@ func handleComponentIstioMesh(istio *Istio, comp v1alpha1.Component, isDel bool)
 }
 
 func handleComponentVirtualService(istio *Istio, comp v1alpha1.Component, isDel bool) (string, error) {
-	virtualSvc := map[string]interface{}{
-		"apiVersion": "networking.istio.io/v1beta1",
-		"kind":       "VirtualService",
-		"metadata": map[string]interface{}{
-			"name":        comp.Name,
-			"annotations": comp.Annotations,
-			"labels":      comp.Labels,
-		},
-		"spec": comp.Spec.Settings,
-	}
-
-	// Convert to yaml
-	yamlByt, err := yaml.Marshal(virtualSvc)
-	if err != nil {
-		err = ErrParseVirtualService(err)
-		istio.Log.Error(err)
-		return "", err
-	}
-
-	msg := fmt.Sprintf("created virtual service \"%s\" in namespace \"%s\"", comp.Name, comp.Namespace)
-	if isDel {
-		msg = fmt.Sprintf("deleted virtual service \"%s\" in namespace \"%s\"", comp.Name, comp.Namespace)
-	}
-
-	return msg, istio.applyManifest(yamlByt, isDel, comp.Namespace)
+	return handleIstioCoreComponent(istio, comp, isDel, "networking.istio.io/v1beta1", "VirtualService")
 }
 
 func handleComponentEnvoyFilter(istio *Istio, comp v1alpha1.Component, isDel bool) (string, error) {
-	envoyFilter := map[string]interface{}{
-		"apiVersion": "networking.istio.io/v1alpha3",
-		"kind":       "EnvoyFilter",
+	return handleIstioCoreComponent(istio, comp, isDel, "networking.istio.io/v1alpha3", "EnvoyFilter")
+}
+
+func handleIstioCoreComponent(
+	istio *Istio,
+	comp v1alpha1.Component,
+	isDel bool,
+	apiVersion,
+	kind string) (string, error) {
+	component := map[string]interface{}{
+		"apiVersion": apiVersion,
+		"kind":       kind,
 		"metadata": map[string]interface{}{
 			"name":        comp.Name,
 			"annotations": comp.Annotations,
@@ -158,16 +143,16 @@ func handleComponentEnvoyFilter(istio *Istio, comp v1alpha1.Component, isDel boo
 	}
 
 	// Convert to yaml
-	yamlByt, err := yaml.Marshal(envoyFilter)
+	yamlByt, err := yaml.Marshal(component)
 	if err != nil {
-		err = ErrParseVirtualService(err)
+		err = ErrParseIstioCoreComponent(err)
 		istio.Log.Error(err)
 		return "", err
 	}
 
-	msg := fmt.Sprintf("configured envoy filter \"%s\" in namespace \"%s\"", comp.Name, comp.Namespace)
+	msg := fmt.Sprintf("created %s \"%s\" in namespace \"%s\"", kind, comp.Name, comp.Namespace)
 	if isDel {
-		msg = fmt.Sprintf("deleted envoy filter config \"%s\" in namespace \"%s\"", comp.Name, comp.Namespace)
+		msg = fmt.Sprintf("deleted %s config \"%s\" in namespace \"%s\"", kind, comp.Name, comp.Namespace)
 	}
 
 	return msg, istio.applyManifest(yamlByt, isDel, comp.Namespace)
