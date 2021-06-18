@@ -11,46 +11,33 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+// CompHandler is the type for functions which can handle OAM components
+type CompHandler func(*Istio, v1alpha1.Component, bool) (string, error)
+
 // HandleComponents handles the processing of OAM components
 func (istio *Istio) HandleComponents(comps []v1alpha1.Component, isDel bool) (string, error) {
 	var errs []error
 	var msgs []string
+
+	compFuncMap := map[string]CompHandler{
+		"IstioMesh":            handleComponentIstioMesh,
+		"VirtualService":       handleComponentVirtualService,
+		"GrafanaIstioAddon":    handleComponentIstioAddon,
+		"PrometheusIstioAddon": handleComponentIstioAddon,
+		"ZipkinIstioAddon":     handleComponentIstioAddon,
+		"JaegerIstioAddon":     handleComponentIstioAddon,
+	}
+
 	for _, comp := range comps {
-		if comp.Spec.Type == "IstioMesh" {
-			if err := handleComponentIstioMesh(istio, comp, isDel); err != nil {
-				errs = append(errs, err)
-			}
-
-			msg := "created service of type \"IstioMesh\""
-			if isDel {
-				msg = "deleted service of type \"IstioMesh\""
-			}
-
-			msgs = append(msgs, msg)
-			continue
+		fnc, ok := compFuncMap[comp.Spec.Type]
+		if !ok {
+			return "", ErrInvalidOAMComponentType(comp.Spec.Type)
 		}
 
-		if comp.Spec.Type == "VirtualService" {
-			if err := handleComponentVirtualService(istio, comp, isDel); err != nil {
-				errs = append(errs, err)
-			}
-
-			msg := fmt.Sprintf("created virtual service \"%s\" in namespace \"%s\"", comp.Name, comp.Namespace)
-			if isDel {
-				msg = fmt.Sprintf("deleted virtual service \"%s\" in namespace \"%s\"", comp.Name, comp.Namespace)
-			}
-
-			msgs = append(msgs, msg)
-			continue
-		}
-
-		if err := handleComponentIstioAddon(istio, comp, isDel); err != nil {
+		msg, err := fnc(istio, comp, isDel)
+		if err != nil {
 			errs = append(errs, err)
-		}
-
-		msg := fmt.Sprintf("created service of type \"%s\"", comp.Spec.Type)
-		if isDel {
-			msg = fmt.Sprintf("deleted service of type \"%s\"", comp.Spec.Type)
+			continue
 		}
 
 		msgs = append(msgs, msg)
@@ -120,18 +107,16 @@ func handleNamespaceLabel(istio *Istio, namespaces []string, isDel bool) error {
 	return mergeErrors(errs)
 }
 
-func handleComponentIstioMesh(istio *Istio, comp v1alpha1.Component, isDel bool) error {
+func handleComponentIstioMesh(istio *Istio, comp v1alpha1.Component, isDel bool) (string, error) {
 	// Get the istio version from the settings
 	// we are sure that the version of istio would be present
 	// because the configuration is already validated against the schema
 	version := comp.Spec.Settings["version"].(string)
 
-	_, err := istio.installIstio(isDel, version, comp.Namespace)
-
-	return err
+	return istio.installIstio(isDel, version, comp.Namespace)
 }
 
-func handleComponentVirtualService(istio *Istio, comp v1alpha1.Component, isDel bool) error {
+func handleComponentVirtualService(istio *Istio, comp v1alpha1.Component, isDel bool) (string, error) {
 	virtualSvc := map[string]interface{}{
 		"apiVersion": "networking.istio.io/v1beta1",
 		"kind":       "VirtualService",
@@ -148,13 +133,18 @@ func handleComponentVirtualService(istio *Istio, comp v1alpha1.Component, isDel 
 	if err != nil {
 		err = ErrParseVirtualService(err)
 		istio.Log.Error(err)
-		return err
+		return "", err
 	}
 
-	return istio.applyManifest(yamlByt, isDel, comp.Namespace)
+	msg := fmt.Sprintf("created virtual service \"%s\" in namespace \"%s\"", comp.Name, comp.Namespace)
+	if isDel {
+		msg = fmt.Sprintf("deleted virtual service \"%s\" in namespace \"%s\"", comp.Name, comp.Namespace)
+	}
+
+	return msg, istio.applyManifest(yamlByt, isDel, comp.Namespace)
 }
 
-func handleComponentIstioAddon(istio *Istio, comp v1alpha1.Component, isDel bool) error {
+func handleComponentIstioAddon(istio *Istio, comp v1alpha1.Component, isDel bool) (string, error) {
 	var addonName string
 
 	switch comp.Spec.Type {
@@ -167,7 +157,7 @@ func handleComponentIstioAddon(istio *Istio, comp v1alpha1.Component, isDel bool
 	case "JaegerIstioAddon":
 		addonName = config.JaegerAddon
 	default:
-		return nil
+		return "", nil
 	}
 
 	// Get the service
@@ -184,7 +174,12 @@ func handleComponentIstioAddon(istio *Istio, comp v1alpha1.Component, isDel bool
 
 	_, err := istio.installAddon(comp.Namespace, isDel, svc, patches, templates)
 
-	return err
+	msg := fmt.Sprintf("created service of type \"%s\"", comp.Spec.Type)
+	if isDel {
+		msg = fmt.Sprintf("deleted service of type \"%s\"", comp.Spec.Type)
+	}
+
+	return msg, err
 }
 
 func castSliceInterfaceToSliceString(in []interface{}) []string {

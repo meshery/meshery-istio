@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/layer5io/meshery-adapter-library/adapter"
+	"github.com/layer5io/meshery-istio/internal/config"
 )
 
 var (
@@ -46,10 +48,19 @@ func RegisterWorkloads(runtime, host string) error {
 	for _, workload := range workloads {
 		defintionPath, schemaPath := generatePaths(workloadPath, workload)
 
+		metadata := map[string]string{
+			config.OAMAdapterNameMetadataKey: config.IstioOperation,
+		}
+
+		if strings.HasSuffix(workload, "addon") {
+			metadata[config.OAMComponentCategoryMetadataKey] = "addon"
+		}
+
 		oamRDP = append(oamRDP, adapter.OAMRegistrantDefinitionPath{
 			OAMDefintionPath: defintionPath,
 			OAMRefSchemaPath: schemaPath,
 			Host:             host,
+			Metadata:         metadata,
 		})
 	}
 
@@ -77,6 +88,9 @@ func RegisterTraits(runtime, host string) error {
 			OAMDefintionPath: defintionPath,
 			OAMRefSchemaPath: schemaPath,
 			Host:             host,
+			Metadata: map[string]string{
+				config.OAMAdapterNameMetadataKey: config.IstioOperation,
+			},
 		})
 	}
 

@@ -39,6 +39,10 @@ const (
 	StrictMTLSPolicyOperation  = "strict-mtls-policy-operation"
 	MutualMTLSPolicyOperation  = "mutual-mtls-policy-operation"
 	DisableMTLSPolicyOperation = "disable-mtls-policy-operation"
+
+	// OAM Metadata constants
+	OAMAdapterNameMetadataKey       = "adapter.meshery.io/name"
+	OAMComponentCategoryMetadataKey = "ui.meshery.io/category"
 )
 
 var (
