@@ -86,9 +86,9 @@ var (
 	// generated when kubernetes client is nil
 	ErrNilClientCode = "istio_test_code"
 
-	// ErrParseVirtualServiceCode represents the error code which is
-	// generated when virtual service parsing fails
-	ErrParseVirtualServiceCode = "istio_test_code"
+	// ErrParseIstioCoreComponentCode represents the error code which is
+	// generated when istio core component manifest parsing fails
+	ErrParseIstioCoreComponentCode = "istio_test_code"
 
 	// ErrInvalidOAMComponentTypeCode represents the error code which is
 	// generated when an invalid oam component is requested
@@ -191,9 +191,9 @@ func ErrIstioVet(err error) error {
 	return errors.NewDefault(ErrIstioVetCode, err.Error())
 }
 
-// ErrParseVirtualService is the error when vsc parsing fails
-func ErrParseVirtualService(err error) error {
-	return errors.NewDefault(ErrParseVirtualServiceCode, err.Error())
+// ErrParseIstioCoreComponent is the error when istio core component manifest parsing fails
+func ErrParseIstioCoreComponent(err error) error {
+	return errors.NewDefault(ErrParseIstioCoreComponentCode, err.Error())
 }
 
 // ErrInvalidOAMComponentType is the error when the OAM component name is not valid

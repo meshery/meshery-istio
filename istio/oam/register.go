@@ -41,6 +41,7 @@ func RegisterWorkloads(runtime, host string) error {
 		"zipkinistioaddon",
 		"jaegeristioaddon",
 		"virtualservice",
+		"envoyfilter",
 	}
 
 	oamRDP := []adapter.OAMRegistrantDefinitionPath{}

@@ -22,6 +22,7 @@ func (istio *Istio) HandleComponents(comps []v1alpha1.Component, isDel bool) (st
 	compFuncMap := map[string]CompHandler{
 		"IstioMesh":            handleComponentIstioMesh,
 		"VirtualService":       handleComponentVirtualService,
+		"EnvoyFilterIstio":     handleComponentEnvoyFilter,
 		"GrafanaIstioAddon":    handleComponentIstioAddon,
 		"PrometheusIstioAddon": handleComponentIstioAddon,
 		"ZipkinIstioAddon":     handleComponentIstioAddon,
@@ -117,9 +118,22 @@ func handleComponentIstioMesh(istio *Istio, comp v1alpha1.Component, isDel bool)
 }
 
 func handleComponentVirtualService(istio *Istio, comp v1alpha1.Component, isDel bool) (string, error) {
-	virtualSvc := map[string]interface{}{
-		"apiVersion": "networking.istio.io/v1beta1",
-		"kind":       "VirtualService",
+	return handleIstioCoreComponent(istio, comp, isDel, "networking.istio.io/v1beta1", "VirtualService")
+}
+
+func handleComponentEnvoyFilter(istio *Istio, comp v1alpha1.Component, isDel bool) (string, error) {
+	return handleIstioCoreComponent(istio, comp, isDel, "networking.istio.io/v1alpha3", "EnvoyFilter")
+}
+
+func handleIstioCoreComponent(
+	istio *Istio,
+	comp v1alpha1.Component,
+	isDel bool,
+	apiVersion,
+	kind string) (string, error) {
+	component := map[string]interface{}{
+		"apiVersion": apiVersion,
+		"kind":       kind,
 		"metadata": map[string]interface{}{
 			"name":        comp.Name,
 			"annotations": comp.Annotations,
@@ -129,16 +143,16 @@ func handleComponentVirtualService(istio *Istio, comp v1alpha1.Component, isDel 
 	}
 
 	// Convert to yaml
-	yamlByt, err := yaml.Marshal(virtualSvc)
+	yamlByt, err := yaml.Marshal(component)
 	if err != nil {
-		err = ErrParseVirtualService(err)
+		err = ErrParseIstioCoreComponent(err)
 		istio.Log.Error(err)
 		return "", err
 	}
 
-	msg := fmt.Sprintf("created virtual service \"%s\" in namespace \"%s\"", comp.Name, comp.Namespace)
+	msg := fmt.Sprintf("created %s \"%s\" in namespace \"%s\"", kind, comp.Name, comp.Namespace)
 	if isDel {
-		msg = fmt.Sprintf("deleted virtual service \"%s\" in namespace \"%s\"", comp.Name, comp.Namespace)
+		msg = fmt.Sprintf("deleted %s config \"%s\" in namespace \"%s\"", kind, comp.Name, comp.Namespace)
 	}
 
 	return msg, istio.applyManifest(yamlByt, isDel, comp.Namespace)
