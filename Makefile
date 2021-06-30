@@ -20,3 +20,6 @@ docker-run:
 
 run:
 	DEBUG=true GOPROXY=direct GOSUMDB=off go run main.go
+
+error:
+	go run -mod=mod github.com/layer5io/meshkit/cmd/errorutil -d . update

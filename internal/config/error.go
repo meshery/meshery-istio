@@ -15,27 +15,25 @@
 package config
 
 import (
-	"fmt"
-
 	"github.com/layer5io/meshkit/errors"
 )
 
 const (
 	ErrEmptyConfigCode           = "11300"
-	ErrGetLatestReleasesCode     = "istio_test_code"
-	ErrGetLatestReleaseNamesCode = "istio_test_code"
+	ErrGetLatestReleasesCode     = "1000"
+	ErrGetLatestReleaseNamesCode = "1001"
 )
 
 var (
-	ErrEmptyConfig = errors.NewDefault(ErrEmptyConfigCode, "Config is empty")
+	ErrEmptyConfig = errors.New(ErrEmptyConfigCode, errors.Alert, []string{"Config is empty"}, []string{}, []string{}, []string{})
 )
 
 // ErrGetLatestReleases is the error for fetching istio releases
 func ErrGetLatestReleases(err error) error {
-	return errors.NewDefault(ErrGetLatestReleasesCode, fmt.Sprintf("unable to fetch release info: %s", err.Error()))
+	return errors.New(ErrGetLatestReleasesCode, errors.Alert, []string{"unable to fetch release info"}, []string{err.Error()}, []string{}, []string{})
 }
 
 // ErrGetLatestReleaseNames is the error for fetching istio releases
 func ErrGetLatestReleaseNames(err error) error {
-	return errors.NewDefault(ErrGetLatestReleaseNamesCode, fmt.Sprintf("failed to extract release names: %s", err.Error()))
+	return errors.New(ErrGetLatestReleaseNamesCode, errors.Alert, []string{"failed to extract release names"}, []string{err.Error()}, []string{}, []string{})
 }
