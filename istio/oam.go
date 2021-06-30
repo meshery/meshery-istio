@@ -6,7 +6,6 @@ import (
 
 	"github.com/layer5io/meshery-adapter-library/common"
 	"github.com/layer5io/meshery-istio/internal/config"
-	"github.com/layer5io/meshkit/errors"
 	"github.com/layer5io/meshkit/models/oam/core/v1alpha1"
 	"gopkg.in/yaml.v2"
 )
@@ -45,7 +44,7 @@ func (istio *Istio) HandleComponents(comps []v1alpha1.Component, isDel bool) (st
 	}
 
 	if err := mergeErrors(errs); err != nil {
-		return mergeMsgs(msgs), errors.NewDefault("", err.Error())
+		return mergeMsgs(msgs), err
 	}
 
 	return mergeMsgs(msgs), nil
@@ -78,7 +77,7 @@ func (istio *Istio) HandleApplicationConfiguration(config v1alpha1.Configuration
 	}
 
 	if err := mergeErrors(errs); err != nil {
-		return mergeMsgs(msgs), errors.NewDefault("", err.Error())
+		return mergeMsgs(msgs), err
 	}
 
 	return mergeMsgs(msgs), nil
