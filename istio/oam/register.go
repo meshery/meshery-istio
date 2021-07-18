@@ -32,7 +32,7 @@ type GenericStructure struct {
 // RegisterWorkloads will register all of the workload definitions
 // present in the path oam/workloads
 //
-// Registeration process will send POST request to $runtime/api/experimental/oam/workload
+// Registration process will send POST request to $runtime/api/oam/workload
 func RegisterWorkloads(runtime, host string) error {
 	workloads := []string{
 		"istiomesh",
@@ -66,14 +66,14 @@ func RegisterWorkloads(runtime, host string) error {
 	}
 
 	return adapter.
-		NewOAMRegistrant(oamRDP, fmt.Sprintf("%s/api/experimental/oam/workload", runtime)).
+		NewOAMRegistrant(oamRDP, fmt.Sprintf("%s/api/oam/workload", runtime)).
 		Register()
 }
 
 // RegisterTraits will register all of the trait definitions
 // present in the path oam/traits
 //
-// Registeration process will send POST request to $runtime/api/experimental/oam/trait
+// Registeration process will send POST request to $runtime/api/oam/trait
 func RegisterTraits(runtime, host string) error {
 	traits := []string{
 		"automaticsidecarinjection",
@@ -96,7 +96,7 @@ func RegisterTraits(runtime, host string) error {
 	}
 
 	return adapter.
-		NewOAMRegistrant(oamRDP, fmt.Sprintf("%s/api/experimental/oam/trait", runtime)).
+		NewOAMRegistrant(oamRDP, fmt.Sprintf("%s/api/oam/trait", runtime)).
 		Register()
 }
 
