@@ -1,0 +1,100 @@
+name: Meshery Istio Pattern Components Generator
+on:
+  push:
+    branches:
+      - 'master'
+
+jobs:
+  check_istio_version:
+    name: Check Istio Version
+    runs-on: ubuntu-latest
+    outputs:
+      NEW_ISTIO_VERSION: ${{ steps.glrt.outputs.release }}
+      CURRENT_ISTIO_VERSION: ${{ env.CURRENT_ISTIO_VERSION }}
+    steps:
+      - name: Get latest release tag
+        id: glrt
+        uses: pozetroninc/github-action-get-latest-release@master
+        with:
+          repository: istio/istio
+          excludes: prerelease, draft
+
+      - name: Check out code
+        uses: actions/checkout@master
+        with:
+          fetch-depth: 1
+
+      - name: Get CURRENT_ISTIO_VERSION from .env
+        run: |
+          cat .github/.env > $GITHUB_ENV
+
+  generator:
+    name: Generate and push OAM definitions
+    needs: [ check_istio_version ]
+    if: ${{ needs.check_istio_version.outputs.NEW_ISTIO_VERSION  >  needs.check_istio_version.outputs.CURRENT_ISTIO_VERSION }}
+    env:
+      NEW_ISTIO_VERSION: ${{ needs.check_istio_version.outputs.NEW_ISTIO_VERSION }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@master
+        with:
+          fetch-depth: 1
+          token: ${{ secrets.GH_ACCESS_TOKEN }}
+          ref: 'master'
+
+      - name: Get Istio manifests
+        run: |
+          eval $(curl -L https://istio.io/downloadIstio | sh - | grep "PATH")
+          istioctl manifest generate > ~/istio.yml
+
+      - name: Bulild jsonschema util
+        run: |
+          curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+          nvm install v14.15.3
+          nvm install-latest-npm
+          git clone https://github.com/layer5io/kubeopenapi-jsonschema util
+          cd util
+          npm i; npm i nexe -g
+          make linux
+
+      - name: Generate Workload definitions
+        run: |
+          mkdir ./templates/oam/workloads-$NEW_ISTIO_VERSION
+          cd util
+          template='{"apiVersion":"core.oam.dev/v1alpha1","kind":"WorkloadDefinition","metadata":{"name":""},"spec":{"definitionRef":{"name":""}}}'
+
+          crds=$(./kubeopenapi-jsonschema --location ~/istio.yml -t yaml --filter '$[?(@.kind=="CustomResourceDefinition")]' -o json --o-filter '$..["spec"]["names"]["kind"]' | jq '.[]')
+
+          for t in ${crds[@]}; do
+
+            name=`echo $t  | tr -d '"' | tr '[:upper:]' '[:lower:]'`
+            definitionRef=$name.meshery.layer5.io
+
+            ./kubeopenapi-jsonschema --location ~/istio.yml -t yaml --filter '$[?(@.kind=="CustomResourceDefinition" && @.spec.names.kind=='$t')]..openAPIV3Schema.properties.spec' --o-filter "$[]" -o json | jq '.[] | .version = "'$NEW_ISTIO_VERSION'" | .title = '$t'' > ../templates/oam/workloads-$NEW_ISTIO_VERSION/$(printf %s.meshery.layer5io.schema.json $name)
+
+            echo $template | \
+            jq ' ."metadata"."name" = '$t' | ."spec"."definitionRef"."name"="'$definitionRef'"' > ../templates/oam/workloads-$NEW_ISTIO_VERSION/$(printf %s_definition.json $name)
+
+          done
+
+      - name: Cleanup
+        run: |
+          rm -rf util istio-*
+
+      - name: Update Istio version in .env
+        run: |
+          echo "CURRENT_ISTIO_VERSION=$NEW_ISTIO_VERSION" > .github/.env
+
+      - name: Commit changes
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          file_pattern: ./templates ./.github
+          commit_user_name: l5io
+          commit_user_email: ci@layer5.io
+          commit_author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
+          commit_options: '--signoff'
+          commit_message: "[Patterns] Pattern components generated from latest Istio manifests"
+          branch: master
