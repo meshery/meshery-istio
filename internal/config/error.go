@@ -30,10 +30,10 @@ var (
 
 // ErrGetLatestReleases is the error for fetching istio releases
 func ErrGetLatestReleases(err error) error {
-	return errors.New(ErrGetLatestReleasesCode, errors.Alert, []string{"unable to fetch release info"}, []string{err.Error()}, []string{}, []string{})
+	return errors.New(ErrGetLatestReleasesCode, errors.Alert, []string{"unable to fetch release info"}, []string{err.Error(), "Unable to get the latest release info from the GithubAPI"}, []string{"Checkout https://docs.github.com/en/rest/reference/repos#releases for more info"}, []string{})
 }
 
 // ErrGetLatestReleaseNames is the error for fetching istio releases
 func ErrGetLatestReleaseNames(err error) error {
-	return errors.New(ErrGetLatestReleaseNamesCode, errors.Alert, []string{"failed to extract release names"}, []string{err.Error()}, []string{}, []string{})
+	return errors.New(ErrGetLatestReleaseNamesCode, errors.Alert, []string{"failed to extract release names"}, []string{err.Error()}, []string{"Invalid release format"}, []string{})
 }

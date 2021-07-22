@@ -98,59 +98,59 @@ var (
 
 	// ErrOpInvalid represents the errors which are generated
 	// when an invalid operation is requested
-	ErrOpInvalid = errors.New(ErrOpInvalidCode, errors.Alert, []string{"Invalid operation"}, []string{}, []string{}, []string{})
+	ErrOpInvalid = errors.New(ErrOpInvalidCode, errors.Alert, []string{"Invalid operation"}, []string{"Istio adapter recived an invalid operation from the meshey server"}, []string{"The operation is not supported by the adapter", "Invalid operation name"}, []string{"Check if the operation name is valid and supported by the adapter"})
 
 	// ErrParseOAMComponent represents the error which is
 	// generated during the OAM component parsing
-	ErrParseOAMComponent = errors.New(ErrParseOAMComponentCode, errors.Alert, []string{"error parsing the component"}, []string{}, []string{}, []string{})
+	ErrParseOAMComponent = errors.New(ErrParseOAMComponentCode, errors.Alert, []string{"error parsing the component"}, []string{"Error occured while prasing application component in the OAM request made"}, []string{"Invalid OAM component passed in OAM request"}, []string{"Check if your request has vaild OAM components"})
 
 	// ErrParseOAMConfig represents the error which is
 	// generated during the OAM configuration parsing
-	ErrParseOAMConfig = errors.New(ErrParseOAMConfigCode, errors.Alert, []string{"error parsing the configuration"}, []string{}, []string{}, []string{})
+	ErrParseOAMConfig = errors.New(ErrParseOAMConfigCode, errors.Alert, []string{"error parsing the configuration"}, []string{"Error occured while prasing component config in the OAM request made"}, []string{"Invalid OAM config passed in OAM request"}, []string{"Check if your request has vaild OAM config"})
 
 	// ErrNilClient represents the error which is
 	// generated when kubernetes client is nil
-	ErrNilClient = errors.New(ErrNilClientCode, errors.Alert, []string{"kubernetes client not initialized"}, []string{}, []string{}, []string{})
+	ErrNilClient = errors.New(ErrNilClientCode, errors.Alert, []string{"kubernetes client not initialized"}, []string{"Kubernetes client is nil"}, []string{"kubernetes client not initialized"}, []string{"Reconnect the adaptor to Meshery server"})
 )
 
 // ErrInstallIstio is the error for install mesh
 func ErrInstallIstio(err error) error {
-	return errors.New(ErrInstallIstioCode, errors.Alert, []string{"Error with istio operation"}, []string{err.Error()}, []string{}, []string{})
+	return errors.New(ErrInstallIstioCode, errors.Alert, []string{"Error with istio operation"}, []string{"Error occured while installing istio mesh through istioctl", err.Error()}, []string{}, []string{})
 }
 
 // ErrUnzipFile is the error for unzipping the file
 func ErrUnzipFile(err error) error {
-	return errors.New(ErrUnzipFileCode, errors.Alert, []string{"Error while unzipping"}, []string{err.Error()}, []string{}, []string{})
+	return errors.New(ErrUnzipFileCode, errors.Alert, []string{"Error while unzipping"}, []string{err.Error()}, []string{"File might be corrupt"}, []string{})
 }
 
 // ErrTarXZF is the error for unzipping the file
 func ErrTarXZF(err error) error {
-	return errors.New(ErrTarXZFCode, errors.Alert, []string{"Error while extracting file"}, []string{err.Error()}, []string{}, []string{})
+	return errors.New(ErrTarXZFCode, errors.Alert, []string{"Error while extracting file"}, []string{err.Error()}, []string{"/The gzip might be corrupt"}, []string{})
 }
 
 // ErrMeshConfig is the error for mesh config
 func ErrMeshConfig(err error) error {
-	return errors.New(ErrMeshConfigCode, errors.Alert, []string{"Error configuration mesh"}, []string{err.Error()}, []string{}, []string{})
+	return errors.New(ErrMeshConfigCode, errors.Alert, []string{"Error configuration mesh"}, []string{err.Error(), "Error getting MeshSpecKey config from in-memory configuration"}, []string{}, []string{})
 }
 
 // ErrRunIstioCtlCmd is the error for mesh port forward
 func ErrRunIstioCtlCmd(err error, des string) error {
-	return errors.New(ErrRunIstioCtlCmdCode, errors.Alert, []string{"Error running istioctl command"}, []string{err.Error()}, []string{}, []string{})
+	return errors.New(ErrRunIstioCtlCmdCode, errors.Alert, []string{"Error running istioctl command"}, []string{err.Error()}, []string{"Corrupted istioctl binary", "Command might be invalid"}, []string{})
 }
 
 // ErrDownloadBinary is the error while downloading istio binary
 func ErrDownloadBinary(err error) error {
-	return errors.New(ErrDownloadBinaryCode, errors.Alert, []string{"Error downloading istio binary"}, []string{err.Error()}, []string{}, []string{})
+	return errors.New(ErrDownloadBinaryCode, errors.Alert, []string{"Error downloading istio binary"}, []string{err.Error(), "Error occured while download istio binary from its github release"}, []string{"Checkout https://docs.github.com/en/rest/reference/repos#releases for more details"}, []string{})
 }
 
 // ErrInstallBinary is the error while downloading istio binary
 func ErrInstallBinary(err error) error {
-	return errors.New(ErrInstallBinaryCode, errors.Alert, []string{"Error installing istio binary"}, []string{err.Error()}, []string{}, []string{})
+	return errors.New(ErrInstallBinaryCode, errors.Alert, []string{"Error installing istio binary"}, []string{err.Error()}, []string{"Corrupted istio release binary", "Invalid installation location"}, []string{})
 }
 
 // ErrSampleApp is the error for streaming event
 func ErrSampleApp(err error) error {
-	return errors.New(ErrSampleAppCode, errors.Alert, []string{"Error with sample app operation"}, []string{err.Error()}, []string{}, []string{})
+	return errors.New(ErrSampleAppCode, errors.Alert, []string{"Error with sample app operation"}, []string{err.Error(), "Error occured while trying to install a sample application using manifests"}, []string{"Invalid kubeclient config", "Invalid manifest"}, []string{"Reconnect your adapter to meshery server to refresh the kubeclient"})
 }
 
 // ErrEnvoyFilter is the error for streaming event
@@ -160,7 +160,7 @@ func ErrEnvoyFilter(err error) error {
 
 // ErrApplyPolicy is the error for streaming event
 func ErrApplyPolicy(err error) error {
-	return errors.New(ErrApplyPolicyCode, errors.Alert, []string{"Error with apply policy operation"}, []string{err.Error()}, []string{}, []string{})
+	return errors.New(ErrApplyPolicyCode, errors.Alert, []string{"Error with apply policy operation"}, []string{err.Error(), "Error occured while trying to install a sample application using manifests"}, []string{"Invalid kubeclient config", "Invalid manifest"}, []string{"Reconnect your adapter to meshery server to refresh the kubeclient"})
 }
 
 // ErrAddonFromTemplate is the error for streaming event
@@ -168,14 +168,9 @@ func ErrAddonFromTemplate(err error) error {
 	return errors.New(ErrAddonFromTemplateCode, errors.Alert, []string{"Error with addon install operation"}, []string{err.Error()}, []string{}, []string{})
 }
 
-// ErrAddonInvalidConfig is the error for streaming event
-func ErrAddonInvalidConfig(err error) error {
-	return errors.New(ErrAddonInvalidConfigCode, errors.Alert, []string{"Invalid addon"}, []string{err.Error()}, []string{}, []string{})
-}
-
 // ErrCustomOperation is the error for streaming event
 func ErrCustomOperation(err error) error {
-	return errors.New(ErrCustomOperationCode, errors.Alert, []string{"Error with custom operation"}, []string{err.Error()}, []string{}, []string{})
+	return errors.New(ErrCustomOperationCode, errors.Alert, []string{"Error with custom operation"}, []string{"Error occured while applying custom manifest to the cluster", err.Error()}, []string{"Invalid kubeclient config", "Invalid manifest"}, []string{})
 }
 
 // ErrCreatingIstioClient is the error for streaming event
