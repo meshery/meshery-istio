@@ -1,4 +1,4 @@
-name: Meshkit Error Codes Utility Runner
+name: Meshery-Istio Error Codes Utility Runner
 on:
   push:
     branches:
@@ -9,11 +9,11 @@ on:
 jobs:
   Update-error-codes:
     name: Error codes utility
-    if: github.repository == 'layer5io/meshkit'
+    if: github.repository == 'meshery/meshery-istio'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-        # token here with write access to meshkit repo
+        # token here with write access to meshery-istio repo
         with:
           token: ${{ secrets.GH_ACCESS_TOKEN }}
           ref: 'master'
@@ -49,7 +49,7 @@ jobs:
 
       - name: Update and push docs
         run: |
-          echo '{ "errors_export": "" }' | jq --slurpfile export ./helpers/errorutil_errors_export.json '.errors_export = $export[0]' > ./meshery/docs/_data/errorref/meshkit_errors_export.json
+          echo '{ "errors_export": "" }' | jq --slurpfile export ./helpers/errorutil_errors_export.json '.errors_export = $export[0]' > ./meshery/docs/_data/errorref/istio_errors_export.json
           cd ./meshery
           git config user.name l5io
           git config user.email ci@layer5.io
@@ -58,6 +58,6 @@ jobs:
             echo "No changes to commit"
             exit
           fi
-          git add ./docs/_data/errorref/meshkit_errors_export.json
-          git commit -m "[Docs] Error Code Reference: Updated codes for MeshKit library" --signoff
+          git add ./docs/_data/errorref/istio_errors_export.json
+          git commit -m "[Docs] Error Code Reference: Updated codes for Istio adapter" --signoff
           git push origin master
