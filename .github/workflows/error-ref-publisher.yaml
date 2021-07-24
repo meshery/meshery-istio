@@ -1,4 +1,4 @@
-name: Meshery-Istio Error Codes Utility Runner
+name: Meshkit Error Codes Utility Runner
 on:
   push:
     branches:
