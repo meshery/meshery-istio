@@ -22,4 +22,4 @@ run:
 	DEBUG=true GOPROXY=direct GOSUMDB=off go run main.go
 
 error:
-	go run -mod=mod github.com/layer5io/meshkit/cmd/errorutil -d . update
+	go run github.com/layer5io/meshkit/cmd/errorutil -d . analyze -i ./helpers -o ./helpers
