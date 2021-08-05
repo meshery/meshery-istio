@@ -14,7 +14,6 @@ import (
 
 const (
 	// Constants to use in log statements
-	IstioOperation = "istio"
 	LabelNamespace = "label-namespace"
 
 	ServicePatchFile = "service-patch-file"
@@ -49,7 +48,7 @@ const (
 var (
 	// IstioMeshOperation is the default name for the install
 	// and uninstall commands on the istio mesh
-	IstioMeshOperation = strings.ToLower(smp.ServiceMesh_ISTIO.Enum().String())
+	IstioOperation = strings.ToLower(smp.ServiceMesh_ISTIO.Enum().String())
 
 	ServerVersion  = status.None
 	ServerGitSHA   = status.None
