@@ -2,6 +2,7 @@ package oam
 
 import (
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -16,17 +17,10 @@ var (
 	traitPath    = filepath.Join(basePath, "templates", "oam", "traits")
 )
 
-// GenericStructure struct defines the body of the POST request that is sent to the OAM
-// registry (Meshery)
-//
-// The body contains the
-// 1. OAM definition, which is in accordance with the OAM spec
-// 2. OAMRefSchema, which is json schema draft-4, draft-7 or draft-8 for the corresponding OAM object
-// 3. Host is this service's grpc address in the form of `hostname:port`
-type GenericStructure struct {
-	OAMDefinition interface{} `json:"oam_definition,omitempty"`
-	OAMRefSchema  string      `json:"oam_ref_schema,omitempty"`
-	Host          string      `json:"host,omitempty"`
+type schemaDefinitionPathSet struct {
+	oamDefinitionPath string
+	jsonSchemaPath    string
+	name              string
 }
 
 // RegisterWorkloads will register all of the workload definitions
@@ -34,32 +28,25 @@ type GenericStructure struct {
 //
 // Registration process will send POST request to $runtime/api/oam/workload
 func RegisterWorkloads(runtime, host string) error {
-	workloads := []string{
-		"istiomesh",
-		"grafanaistioaddon",
-		"prometheusistioaddon",
-		"zipkinistioaddon",
-		"jaegeristioaddon",
-		"virtualservice",
-		"envoyfilter",
-	}
-
 	oamRDP := []adapter.OAMRegistrantDefinitionPath{}
 
-	for _, workload := range workloads {
-		defintionPath, schemaPath := generatePaths(workloadPath, workload)
+	pathSets, err := load(workloadPath)
+	if err != nil {
+		return err
+	}
 
+	for _, pathSet := range pathSets {
 		metadata := map[string]string{
 			config.OAMAdapterNameMetadataKey: config.IstioOperation,
 		}
 
-		if strings.HasSuffix(workload, "addon") {
+		if strings.HasSuffix(pathSet.name, "addon") {
 			metadata[config.OAMComponentCategoryMetadataKey] = "addon"
 		}
 
 		oamRDP = append(oamRDP, adapter.OAMRegistrantDefinitionPath{
-			OAMDefintionPath: defintionPath,
-			OAMRefSchemaPath: schemaPath,
+			OAMDefintionPath: pathSet.oamDefinitionPath,
+			OAMRefSchemaPath: pathSet.jsonSchemaPath,
 			Host:             host,
 			Metadata:         metadata,
 		})
@@ -75,23 +62,23 @@ func RegisterWorkloads(runtime, host string) error {
 //
 // Registeration process will send POST request to $runtime/api/oam/trait
 func RegisterTraits(runtime, host string) error {
-	traits := []string{
-		"automaticsidecarinjection",
-		"mtls",
-	}
-
 	oamRDP := []adapter.OAMRegistrantDefinitionPath{}
 
-	for _, trait := range traits {
-		defintionPath, schemaPath := generatePaths(traitPath, trait)
+	pathSets, err := load(traitPath)
+	if err != nil {
+		return err
+	}
+
+	for _, pathSet := range pathSets {
+		metadata := map[string]string{
+			config.OAMAdapterNameMetadataKey: config.IstioOperation,
+		}
 
 		oamRDP = append(oamRDP, adapter.OAMRegistrantDefinitionPath{
-			OAMDefintionPath: defintionPath,
-			OAMRefSchemaPath: schemaPath,
+			OAMDefintionPath: pathSet.oamDefinitionPath,
+			OAMRefSchemaPath: pathSet.jsonSchemaPath,
 			Host:             host,
-			Metadata: map[string]string{
-				config.OAMAdapterNameMetadataKey: config.IstioOperation,
-			},
+			Metadata:         metadata,
 		})
 	}
 
@@ -100,9 +87,34 @@ func RegisterTraits(runtime, host string) error {
 		Register()
 }
 
-func generatePaths(path, name string) (defintionPath, schemaPath string) {
-	definitionName := fmt.Sprintf("%s_definition.json", name)
-	schemaName := fmt.Sprintf("%s.meshery.layer5.io.schema.json", name)
+func load(basePath string) ([]schemaDefinitionPathSet, error) {
+	res := []schemaDefinitionPathSet{}
 
-	return filepath.Join(path, definitionName), filepath.Join(path, schemaName)
+	if err := filepath.Walk(basePath, func(path string, info fs.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if info.IsDir() {
+			return nil
+		}
+
+		if matched, err := filepath.Match("*_definition.json", filepath.Base(path)); err != nil {
+			return err
+		} else if matched {
+			nameWithPath := strings.TrimSuffix(path, "_definition.json")
+
+			res = append(res, schemaDefinitionPathSet{
+				oamDefinitionPath: path,
+				jsonSchemaPath:    fmt.Sprintf("%s.meshery.layer5io.schema.json", nameWithPath),
+				name:              filepath.Base(nameWithPath),
+			})
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }
