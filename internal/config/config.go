@@ -47,8 +47,8 @@ const (
 )
 
 var (
-	// TraefikMeshOperation is the default name for the install
-	// and uninstall commands on the traefik mesh
+	// IstioMeshOperation is the default name for the install
+	// and uninstall commands on the istio mesh
 	IstioMeshOperation = strings.ToLower(smp.ServiceMesh_ISTIO.Enum().String())
 
 	ServerVersion  = status.None
