@@ -96,6 +96,14 @@ var (
 	// generated when an invalid operation is requested
 	ErrOpInvalidCode = "1023"
 
+	// ErrIstioCoreComponentFailCode represents the error code which is
+	// generated when an istio core operations fails
+	ErrIstioCoreComponentFailCode = "1024"
+
+	// ErrProcessOAMCode represents the error code which is
+	// generated when an OAM operations fails
+	ErrProcessOAMCode = "1025"
+
 	// ErrOpInvalid represents the errors which are generated
 	// when an invalid operation is requested
 	ErrOpInvalid = errors.New(ErrOpInvalidCode, errors.Alert, []string{"Invalid operation"}, []string{"Istio adapter recived an invalid operation from the meshey server"}, []string{"The operation is not supported by the adapter", "Invalid operation name"}, []string{"Check if the operation name is valid and supported by the adapter"})
@@ -196,4 +204,12 @@ func ErrParseIstioCoreComponent(err error) error {
 // ErrInvalidOAMComponentType is the error when the OAM component name is not valid
 func ErrInvalidOAMComponentType(compName string) error {
 	return errors.New(ErrInvalidOAMComponentTypeCode, errors.Alert, []string{"invalid OAM component name: ", compName}, []string{}, []string{}, []string{})
+}
+
+func ErrIstioCoreComponentFail(err error) error {
+	return errors.New(ErrIstioCoreComponentFailCode, errors.Alert, []string{"error in istio core component"}, []string{err.Error()}, []string{}, []string{})
+}
+
+func ErrProcessOAM(err error) error {
+	return errors.New(ErrProcessOAMCode, errors.Alert, []string{"error performing OAM operations"}, []string{err.Error()}, []string{}, []string{})
 }
