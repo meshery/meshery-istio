@@ -1,0 +1,19 @@
+{
+  "apiVersion": "core.oam.dev/v1alpha1",
+  "kind": "WorkloadDefinition",
+  "metadata": {
+    "name": "Sidecar.Istio"
+  },
+  "spec": {
+    "definitionRef": {
+      "name": "sidecar.istio.meshery.layer5.io"
+    },
+    "metadata": {
+      "@type": "pattern.meshery.io/mesh/workload",
+      "meshVersion": "1.9.7",
+      "meshName": "ISTIO",
+      "k8sAPIVersion": "networking.istio.io/v1alpha3",
+      "k8sKind": "Sidecar"
+    }
+  }
+}

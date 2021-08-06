@@ -1,0 +1,19 @@
+{
+  "apiVersion": "core.oam.dev/v1alpha1",
+  "kind": "WorkloadDefinition",
+  "metadata": {
+    "name": "PeerAuthentication.Istio"
+  },
+  "spec": {
+    "definitionRef": {
+      "name": "peerauthentication.istio.meshery.layer5.io"
+    },
+    "metadata": {
+      "@type": "pattern.meshery.io/mesh/workload",
+      "meshVersion": "1.9.7",
+      "meshName": "ISTIO",
+      "k8sAPIVersion": "security.istio.io/v1beta1",
+      "k8sKind": "PeerAuthentication"
+    }
+  }
+}
