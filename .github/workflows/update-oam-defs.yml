@@ -69,11 +69,10 @@ jobs:
           cd util
           mkdir -p $dirPath
 
-          resourceType=CustomResourceDefinition
           meshName=Istio
           smpMeshName=ISTIO
 
-          template='{"apiVersion":"core.oam.dev/v1alpha1","kind":"WorkloadDefinition","metadata":{},"spec":{"definitionRef":{},"metadata":{"@type":"pattern.meshery.io/mesh/workload","meshVersion":"'$NEW_ISTIO_VERSION'","meshName":"'$smpMeshName'","k8sAPIVersion":null,"k8sKind":"'$resourceType'"}}}'
+          template='{"apiVersion":"core.oam.dev/v1alpha1","kind":"WorkloadDefinition","metadata":{},"spec":{"definitionRef":{},"metadata":{"@type":"pattern.meshery.io/mesh/workload","meshVersion":"'$NEW_ISTIO_VERSION'","meshName":"'$smpMeshName'","k8sAPIVersion":null,"k8sKind":""}}}'
 
           crds=$(./kubeopenapi-jsonschema --location ~/istio.yml -t yaml --filter '$[?(@.kind=="CustomResourceDefinition")]' -o json --o-filter '$..["spec"]["names"]["kind"]' | jq '.[]')
 
@@ -83,7 +82,9 @@ jobs:
             nameLower=`echo $t  | tr -d '"' | tr '[:upper:]' '[:lower:]'`
             definitionRef=$(printf %s.istio.meshery.layer5.io $nameLower)
 
-            apiVersion=$(./kubeopenapi-jsonschema --location ~/istio.yml -t yaml --filter '$[?(@.kind=="CustomResourceDefinition" && @.spec.names.kind=='$t')]..spec.versions[0]' --o-filter "$[]" -o json | jq '.[] | ."name"' | tr -d '"')
+            apiVersion=$(./kubeopenapi-jsonschema --location ~/istio.yml -t yaml --filter '$[?(@.kind=="CustomResourceDefinition" && @.spec.names.kind=='$t')]..spec.versions[0]' --o-filter "$[].name" -o json | jq '.[]' | tr -d '"')
+
+            apiGroup=$(./kubeopenapi-jsonschema --location ~/istio.yml -t yaml --filter '$[?(@.kind=="CustomResourceDefinition" && @.spec.names.kind=='$t')]..spec' --o-filter "$[].group" -o json | jq '.[]' | tr -d '"')
 
             ./kubeopenapi-jsonschema --location ~/istio.yml -t yaml --filter '$[?(@.kind=="CustomResourceDefinition" && @.spec.names.kind=='$t')]..openAPIV3Schema.properties.spec' --o-filter "$[]" -o json |\
             jq '
@@ -95,7 +96,7 @@ jobs:
             echo $template |\
             jq '
             ."metadata"."name" = "'$(printf %s.Istio $nameUpper)'"
-            | ."spec"."metadata"."k8sAPIVersion" = "'$apiVersion'"
+            | ."spec"."metadata"."k8sAPIVersion" = "'$(printf $apiGroup/$apiVersion $apiGroup $apiVersion)'"
             | ."spec"."metadata"."k8sKind" = "'$nameUpper'"
             | ."spec"."definitionRef"."name"="'$definitionRef'"' > $dirPath/$nameLower.istio_definition.json
 
