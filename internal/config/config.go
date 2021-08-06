@@ -2,6 +2,7 @@ package config
 
 import (
 	"path"
+	"strings"
 
 	"github.com/layer5io/meshery-adapter-library/common"
 	"github.com/layer5io/meshery-adapter-library/config"
@@ -13,7 +14,6 @@ import (
 
 const (
 	// Constants to use in log statements
-	IstioOperation = "istio"
 	LabelNamespace = "label-namespace"
 
 	ServicePatchFile = "service-patch-file"
@@ -46,6 +46,10 @@ const (
 )
 
 var (
+	// IstioMeshOperation is the default name for the install
+	// and uninstall commands on the istio mesh
+	IstioOperation = strings.ToLower(smp.ServiceMesh_ISTIO.Enum().String())
+
 	ServerVersion  = status.None
 	ServerGitSHA   = status.None
 	configRootPath = path.Join(utils.GetHome(), ".meshery")

@@ -12,7 +12,7 @@
       "@type": "pattern.meshery.io/mesh/workload",
       "meshVersion": "1.9.7",
       "meshName": "ISTIO",
-      "k8sAPIVersion": "v1alpha3",
+      "k8sAPIVersion": "networking.istio.io/v1alpha3",
       "k8sKind": "Sidecar"
     }
   }

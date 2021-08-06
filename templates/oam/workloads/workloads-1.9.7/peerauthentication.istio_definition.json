@@ -12,7 +12,7 @@
       "@type": "pattern.meshery.io/mesh/workload",
       "meshVersion": "1.9.7",
       "meshName": "ISTIO",
-      "k8sAPIVersion": "v1beta1",
+      "k8sAPIVersion": "security.istio.io/v1beta1",
       "k8sKind": "PeerAuthentication"
     }
   }
