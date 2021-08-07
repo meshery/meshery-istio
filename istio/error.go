@@ -206,10 +206,12 @@ func ErrInvalidOAMComponentType(compName string) error {
 	return errors.New(ErrInvalidOAMComponentTypeCode, errors.Alert, []string{"invalid OAM component name: ", compName}, []string{}, []string{}, []string{})
 }
 
+// ErrIstioCoreComponentFail is the error when core Istion component processing fails
 func ErrIstioCoreComponentFail(err error) error {
 	return errors.New(ErrIstioCoreComponentFailCode, errors.Alert, []string{"error in istio core component"}, []string{err.Error()}, []string{}, []string{})
 }
 
+// ErrProcessOAM is a generic error which is thrown when an OAM operations fails
 func ErrProcessOAM(err error) error {
 	return errors.New(ErrProcessOAMCode, errors.Alert, []string{"error performing OAM operations"}, []string{err.Error()}, []string{}, []string{})
 }
