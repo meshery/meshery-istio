@@ -2,7 +2,6 @@ package oam
 
 import (
 	"fmt"
-	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -90,7 +89,7 @@ func RegisterTraits(runtime, host string) error {
 func load(basePath string) ([]schemaDefinitionPathSet, error) {
 	res := []schemaDefinitionPathSet{}
 
-	if err := filepath.Walk(basePath, func(path string, info fs.FileInfo, err error) error {
+	if err := filepath.Walk(basePath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
