@@ -31,7 +31,14 @@ func (istio *Istio) HandleComponents(comps []v1alpha1.Component, isDel bool) (st
 	for _, comp := range comps {
 		fnc, ok := compFuncMap[comp.Spec.Type]
 		if !ok {
-			return "", ErrInvalidOAMComponentType(comp.Spec.Type)
+			msg, err := handleIstioCoreComponent(istio, comp, isDel, "", "")
+			if err != nil {
+				errs = append(errs, err)
+				continue
+			}
+
+			msgs = append(msgs, msg)
+			continue
 		}
 
 		msg, err := fnc(istio, comp, isDel)
@@ -65,7 +72,7 @@ func (istio *Istio) HandleApplicationConfiguration(config v1alpha1.Configuration
 				}
 			}
 
-			if trait.Name == "automaticsidecarinjection" {
+			if trait.Name == "automaticSidecarInjection" {
 				namespaces := castSliceInterfaceToSliceString(trait.Properties["namespaces"].([]interface{}))
 				if err := handleNamespaceLabel(istio, namespaces, isDel); err != nil {
 					errs = append(errs, err)
@@ -130,6 +137,20 @@ func handleIstioCoreComponent(
 	isDel bool,
 	apiVersion,
 	kind string) (string, error) {
+	if apiVersion == "" {
+		apiVersion = getAPIVersionFromComponent(comp)
+		if apiVersion == "" {
+			return "", ErrIstioCoreComponentFail(fmt.Errorf("failed to get API Version for: %s", comp.Name))
+		}
+	}
+
+	if kind == "" {
+		kind = getKindFromComponent(comp)
+		if kind == "" {
+			return "", ErrIstioCoreComponentFail(fmt.Errorf("failed to get kind for: %s", comp.Name))
+		}
+	}
+
 	component := map[string]interface{}{
 		"apiVersion": apiVersion,
 		"kind":       kind,
@@ -193,6 +214,14 @@ func handleComponentIstioAddon(istio *Istio, comp v1alpha1.Component, isDel bool
 	}
 
 	return msg, err
+}
+
+func getAPIVersionFromComponent(comp v1alpha1.Component) string {
+	return comp.Annotations["pattern.meshery.io.mesh.workload.k8sAPIVersion"]
+}
+
+func getKindFromComponent(comp v1alpha1.Component) string {
+	return comp.Annotations["pattern.meshery.io.mesh.workload.k8sKind"]
 }
 
 func castSliceInterfaceToSliceString(in []interface{}) []string {

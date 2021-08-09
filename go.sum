@@ -570,10 +570,10 @@ github.com/lann/ps v0.0.0-20150810152359-62de8c46ede0/go.mod h1:vmVJ0l/dxyfGW6Fm
 github.com/layer5io/kuttl v0.4.1-0.20200723152044-916f10574334/go.mod h1:UmrVd7x+bNVKrpmKgTtfRiTKHZeNPcMjQproJ0vGwhE=
 github.com/layer5io/learn-layer5/smi-conformance v0.0.0-20210317075357-06b4f88b3e34 h1:QaViadDOBCMDUwYx78kfRvHMkzRVnh/GOhm3s2gxoP4=
 github.com/layer5io/learn-layer5/smi-conformance v0.0.0-20210317075357-06b4f88b3e34/go.mod h1:BQPLwdJt7v7y0fXIejI4whR9zMyX07Wjt5xrbgEmHLw=
-github.com/layer5io/meshery-adapter-library v0.1.21 h1:gW0t2vwx/ycWi9tRVhz3qA3NTImpfGqnhKBii5eCJZQ=
-github.com/layer5io/meshery-adapter-library v0.1.21/go.mod h1:hfCNm2/xOhy4auy0Cir430CuX2bYkVdOsnhcFd+oB0E=
-github.com/layer5io/meshkit v0.2.19 h1:O6Zv253CS2hJcDCnwa9OsQPcZhCYA8braptnh+mKKO4=
-github.com/layer5io/meshkit v0.2.19/go.mod h1:nkTKAEL9jZ74az1LEd157tSe3o382DxPOCgxqI7gCjk=
+github.com/layer5io/meshery-adapter-library v0.1.22 h1:eryv812OTx1uacU2tA5q9oBNm1uJswmSWv6kKHaOK1g=
+github.com/layer5io/meshery-adapter-library v0.1.22/go.mod h1:m8MtMkpF6pRxreZBxz+PqKiHP2msK6o+VIPTfmnlF1I=
+github.com/layer5io/meshkit v0.2.20 h1:a4KIejSCK2YiDeHUgWG0y8lQhIzKKi4vjIi27kScZ5Y=
+github.com/layer5io/meshkit v0.2.20/go.mod h1:nkTKAEL9jZ74az1LEd157tSe3o382DxPOCgxqI7gCjk=
 github.com/layer5io/service-mesh-performance v0.3.2-0.20210122142912-a94e0658b021/go.mod h1:W153amv8aHAeIWxO7b7d7Vibt9RhaEVh4Uh+RG+BumQ=
 github.com/layer5io/service-mesh-performance v0.3.2/go.mod h1:W153amv8aHAeIWxO7b7d7Vibt9RhaEVh4Uh+RG+BumQ=
 github.com/layer5io/service-mesh-performance v0.3.3 h1:KtouYXg64y+G0soPJwDeB0sM6PXolBpkV6Ke15aqwmk=
