@@ -18,30 +18,22 @@ import (
 	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshery-adapter-library/status"
 	"github.com/layer5io/meshery-istio/internal/config"
+	"github.com/layer5io/meshkit/errors"
 	mesherykube "github.com/layer5io/meshkit/utils/kubernetes"
-	"gopkg.in/yaml.v2"
 )
 
-// HelmIndex holds the index.yaml data in the struct format
-type HelmIndex struct {
-	APIVersion string      `yaml:"apiVersion"`
-	Entries    HelmEntries `yaml:"entries"`
-}
+const (
+	platform = runtime.GOOS
+	arch = runtime.GOARCH
+)
 
-// HelmEntries holds the data for all of the entries present
-// in the helm repository
-type HelmEntries map[string][]HelmEntryMetadata
+var (
+	downloadLocation = os.TempDir()
+)
 
-// HelmEntryMetadata is the struct for holding the metadata
-// associated with a helm repositories' entry
-type HelmEntryMetadata struct {
-	APIVersion string `yaml:"apiVersion"`
-	AppVersion string `yaml:"appVersion"`
-	Name       string `yaml:"name"`
-	Version    string `yaml:"version"`
-}
-
-func (istio *Istio) installIstio(del bool, version, namespace string) (string, error) {
+// installs Istio using either helm charts or istioctl.
+// Priority given to helm charts unless useBin set to true
+func (istio *Istio) installIstio(del, useBin bool, version, namespace string) (string, error) {
 	istio.Log.Debug(fmt.Sprintf("Requested install of version: %s", version))
 	istio.Log.Debug(fmt.Sprintf("Requested action is delete: %v", del))
 	istio.Log.Debug(fmt.Sprintf("Requested action is in namespace: %s", namespace))
@@ -57,17 +49,37 @@ func (istio *Istio) installIstio(del bool, version, namespace string) (string, e
 		return st, ErrMeshConfig(err)
 	}
 
-	err = istio.applyHelmChart(del, version, namespace)
+	// Fetch and/or return the path to downloaded and extracted release bundle
+	dirName, err := istio.getIstioRelease(version)
 	if err != nil {
-		return st, ErrApplyHelmChart(err)
+		// ErrGettingIstioRelease
+		return st, err
 	}
 
-	// TODO: keep this as a fallback method
-	//err = istio.runIstioCtlCmd(version, del)
-	//if err != nil {
-	//	istio.Log.Error(ErrInstallIstio(err))
-	//	return st, ErrInstallIstio(err)
-	//}
+	// Install using istioctl if explicitly stated
+	if useBin {
+		err = istio.runIstioCtlCmd(version, del, dirName)
+		if err != nil {
+			//ErrInstallUsingIstioCtl
+			istio.Log.Error(ErrInstallIstio(err))
+			return st, ErrInstallIstio(err)
+		}
+	}
+
+	// Install using Helm Chart and fallback to istioctl
+	err = istio.applyHelmChart(del, version, namespace, dirName)
+	if err != nil {
+		istio.Log.Error(ErrApplyHelmChart(err))
+
+		err = istio.runIstioCtlCmd(version, del, dirName)
+		if err != nil {
+			//ErrInstallUsingIstioCtl
+			istio.Log.Error(ErrInstallIstio(err))
+			return st, ErrInstallIstio(err)
+		}
+
+		return st, nil
+	}
 
 	if del {
 		return status.Removed, nil
@@ -75,25 +87,11 @@ func (istio *Istio) installIstio(del bool, version, namespace string) (string, e
 	return status.Installed, nil
 }
 
-func (istio *Istio) applyHelmChart(del bool, version, namespace string) error {
+func (istio *Istio) applyHelmChart(del bool, version, namespace, dirName string) error {
 	kClient := istio.MesheryKubeclient
 
-	// charts should be here ideally
-	repo := "https://gcsweb.istio.io/gcs/istio-release/releases/charts/"
-
-	chart := "istio"
-
-	chartVersion, err := ConvertAppVersionToChartVersion(repo, chart, version)
-	if err != nil {
-		return ErrConvertingAppVersionToChartVersion(err)
-	}
-
-	err = kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
-		ChartLocation: mesherykube.HelmChartLocation{
-			Repository: repo,
-			Chart:      chart,
-			Version:    chartVersion,
-		},
+	err := kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
+		LocalPath: path.Join(downloadLocation, dirName, "manifests/charts/base"),
 		Namespace:       namespace,
 		Delete:          del,
 		CreateNamespace: true,
@@ -102,80 +100,94 @@ func (istio *Istio) applyHelmChart(del bool, version, namespace string) error {
 	return err
 }
 
-// ConvertAppVersionToChartVersion takes in the repo, chart and app version and
-// returns the corresponding chart version for the same
-func ConvertAppVersionToChartVersion(repo, chart, appVersion string) (string, error) {
-	appVersion = normalizeVersion(appVersion)
+// getIstioRelease gets the manifests for latest istio release.
+// It first checks if the artifacts exist in OS's temp dir. If they don't,
+// it proceeds to fetch the latest one.
+func (istio *Istio) getIstioRelease(release string) (string, error) {
+	releaseName := fmt.Sprintf("istio-%s", release)
 
-	helmIndex, err := CreateHelmIndex(repo)
+	istio.Log.Info("Looking for artifacts of requested version locally...")
+	_, err := os.Stat(path.Join(downloadLocation, releaseName))
+	if err == nil {
+		//ErrGettingIstioRelease
+		return releaseName, nil
+	}
+	istio.Log.Info("Artifacts not found...")
+
+	istio.Log.Info("Downloading requested istio version artifacts...")
+	res, err := downloadTar(releaseName, release)
 	if err != nil {
-		return "", ErrCreatingHelmIndex(err)
+		//ErrGettingIstioRelease
+		return "", err
 	}
 
-	entryMetadata, exists := helmIndex.Entries.GetEntryWithAppVersion(chart, appVersion)
-	if !exists {
-		return "", ErrEntryWithAppVersionNotExists(chart, appVersion)
+	err = extractTar(res)
+	if err != nil {
+		//ErrGettingIstioRelease
+		return "", err
 	}
 
-	return entryMetadata.Version, nil
+	return releaseName, nil
 }
 
-// CreateHelmIndex takes in the repo name and creates a
-// helm index for it. Helm index is basically marshalled version of
-// index.yaml file present in the remote helm repository
-func CreateHelmIndex(repo string) (*HelmIndex, error) {
-	url := fmt.Sprintf("%s/index.yaml", repo)
-
-	// helm repository path will alaways be varaible hence,
-	// #nosec
-	resp, err := http.Get(url)
-	if err != nil || resp.StatusCode != http.StatusOK {
-		return nil, ErrHelmRepositoryNotFound(repo, err)
+func downloadTar(releaseName, release string) (*http.Response, error) {
+	url := "https://github.com/istio/istio/releases/download"
+	switch platform {
+	case "darwin":
+		url = fmt.Sprintf("%s/%s/%s-osx.tar.gz", url, release, releaseName)
+	case "windows":
+		url = fmt.Sprintf("%s/%s/%s-win.zip", url, release, releaseName)
+	case "linux":
+		url = fmt.Sprintf("%s/%s/%s-%s-%s.tar.gz", url, release, releaseName, platform, arch)
+	default:
+		//ErrUnsupportedPlatfrom
+		return nil, errors.NewDefault("platform not supported")
 	}
-	defer func() {
+
+	resp, err := http.Get(url)
+	if err != nil {
+		// ErrDownloadTar
+		return nil, err//ErrDownloadBinary(err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
 		_ = resp.Body.Close()
+		// ErrDownloadTar
+		return nil, err//ErrDownloadBinary(fmt.Errorf("bad status: %s", resp.Status))
+	}
+
+	return resp, nil
+}
+
+func extractTar(res *http.Response) error {
+	// Close the response body
+	defer func() {
+	if err := res.Body.Close(); err != nil {
+			fmt.Println(err)
+		}
 	}()
 
-	var hi HelmIndex
-	dec := yaml.NewDecoder(resp.Body)
-	if err := dec.Decode(&hi); err != nil {
-		return nil, ErrDecodeYaml(err)
-	}
-
-	return &hi, nil
-}
-
-// GetEntryWithAppVersion takes in the entry name and the appversion and returns the corresponding
-// metadata for the parameters if it exists
-func (helmEntries HelmEntries) GetEntryWithAppVersion(entry, appVersion string) (HelmEntryMetadata, bool) {
-	hem, ok := helmEntries[entry]
-	if !ok {
-		return HelmEntryMetadata{}, false
-	}
-
-	for _, v := range hem {
-		if v.Name == entry && v.AppVersion == appVersion {
-			return v, true
+	switch platform {
+	case "darwin":
+		fallthrough
+	case "linux":
+		if err := tarxzf(downloadLocation, res.Body); err != nil {
+			//ErrExtracingFromTar
+			return err//ErrInstallBinary(err)
+		}
+	case "windows":
+		if err := unzip(downloadLocation, res.Body); err != nil {
+			//ErrExtracingFromTar
+			return err//ErrInstallBinary(err)
 		}
 	}
 
-	return HelmEntryMetadata{}, false
+	return nil
 }
-
-// normalizeVerion takes in a version and adds "v" prefix
-// if it isn't already present
-func normalizeVersion(version string) string {
-	if strings.HasPrefix(version, "v") {
-		return version
-	}
-
-	return fmt.Sprintf("v%s", version)
-}
-
 
 // Installs Istio using Istioctl
 // TODO: Figure out why this is not working in containers
-func (istio *Istio) runIstioCtlCmd(version string, isDel bool) error {
+func (istio *Istio) runIstioCtlCmd(version string, isDel bool, dirName string) error {
 	var (
 		out bytes.Buffer
 		er  bytes.Buffer
@@ -302,6 +314,7 @@ func installBinary(location, platform, name string, res *http.Response) error {
 		}
 	}()
 
+	// ~/.meshery/bin
 	err := os.MkdirAll(location, 0750)
 	if err != nil {
 		return err
@@ -349,13 +362,13 @@ func tarxzf(location string, stream io.Reader) error {
 
 		switch header.Typeflag {
 		case tar.TypeDir:
-			// File traversal is required to store the binary at the right place
+			// File traversal is required to store the extracted manifests at the right place
 			// #nosec
 			if err := os.MkdirAll(path.Join(location, header.Name), 0750); err != nil {
 				return ErrTarXZF(err)
 			}
 		case tar.TypeReg:
-			// File traversal is required to store the binary at the right place
+			// File traversal is required to store the extracted manifests at the right place
 			// #nosec
 			outFile, err := os.Create(path.Join(location, header.Name))
 			if err != nil {
