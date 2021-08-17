@@ -10,113 +10,113 @@ var (
 
 	// ErrInstallUsingIstioctlCode represents the errors which are generated
 	// during istio service mesh install process
-	ErrInstallUsingIstioctlCode = "1002"
+	ErrInstallUsingIstioctlCode = "1003"
 
 	// ErrUnzipFileCode represents the errors which are generated
 	// during unzip process
-	ErrUnzipFileCode = "1003"
+	ErrUnzipFileCode = "1004"
 
 	// ErrTarXZFCode represents the errors which are generated
 	// during decompressing and extracting tar.gz file
-	ErrTarXZFCode = "1004"
+	ErrTarXZFCode = "1005"
 
 	// ErrMeshConfigCode represents the errors which are generated
 	// when an invalid mesh config is found
-	ErrMeshConfigCode = "1005"
+	ErrMeshConfigCode = "1006"
 
 	// ErrRunIstioCtlCmdCode represents the errors which are generated
 	// during fetch manifest process
-	ErrRunIstioCtlCmdCode = "1006"
+	ErrRunIstioCtlCmdCode = "1007"
 
 	// ErrSampleAppCode represents the errors which are generated
 	// duing sample app installation
-	ErrSampleAppCode = "1009"
+	ErrSampleAppCode = "1008"
 
 	// ErrEnvoyFilterCode represents the errors which are generated
 	// duing envoy filter patching
-	ErrEnvoyFilterCode = "1010"
+	ErrEnvoyFilterCode = "1009"
 
 	// ErrApplyPolicyCode represents the errors which are generated
 	// duing policy apply operation
-	ErrApplyPolicyCode = "1011"
+	ErrApplyPolicyCode = "1010"
 
 	// ErrCustomOperationCode represents the errors which are generated
 	// when an invalid addon operation is requested
-	ErrCustomOperationCode = "1012"
+	ErrCustomOperationCode = "1011"
 
 	// ErrAddonFromTemplateCode represents the errors which are generated
 	// during addon deployment process
-	ErrAddonFromTemplateCode = "1013"
+	ErrAddonFromTemplateCode = "1012"
 
 	// ErrAddonInvalidConfigCode represents the errors which are generated
 	// when an invalid addon operation is requested
-	ErrAddonInvalidConfigCode = "1014"
+	ErrAddonInvalidConfigCode = "1013"
 
 	// ErrCreatingIstioClientCode represents the errors which are generated
 	// during creating istio client process
-	ErrCreatingIstioClientCode = "1015"
+	ErrCreatingIstioClientCode = "1014"
 
 	// ErrIstioVetSyncCode represents the errors which are generated
 	// during istio-vet sync process
-	ErrIstioVetSyncCode = "1016"
+	ErrIstioVetSyncCode = "1015"
 
 	// ErrIstioVetCode represents the errors which are generated
 	// during istio-vet process
-	ErrIstioVetCode = "1017"
+	ErrIstioVetCode = "1016"
 
 	// ErrParseOAMComponentCode represents the error code which is
 	// generated during the OAM component parsing
-	ErrParseOAMComponentCode = "1018"
+	ErrParseOAMComponentCode = "1017"
 
 	// ErrParseOAMConfigCode represents the error code which is
 	// generated during the OAM configuration parsing
-	ErrParseOAMConfigCode = "1019"
+	ErrParseOAMConfigCode = "1018"
 
 	// ErrNilClientCode represents the error code which is
 	// generated when kubernetes client is nil
-	ErrNilClientCode = "1020"
+	ErrNilClientCode = "1019"
 
 	// ErrParseIstioCoreComponentCode represents the error code which is
 	// generated when istio core component manifest parsing fails
-	ErrParseIstioCoreComponentCode = "1021"
+	ErrParseIstioCoreComponentCode = "1020"
 
 	// ErrInvalidOAMComponentTypeCode represents the error code which is
 	// generated when an invalid oam component is requested
-	ErrInvalidOAMComponentTypeCode = "1022"
+	ErrInvalidOAMComponentTypeCode = "1021"
 
 	// ErrOpInvalidCode represents the error code which is
 	// generated when an invalid operation is requested
-	ErrOpInvalidCode = "1023"
+	ErrOpInvalidCode = "1022"
 
 	// ErrIstioCoreComponentFailCode represents the error code which is
 	// generated when an istio core operations fails
-	ErrIstioCoreComponentFailCode = "1024"
+	ErrIstioCoreComponentFailCode = "1023"
 
 	// ErrProcessOAMCode represents the error code which is
 	// generated when an OAM operations fails
-	ErrProcessOAMCode = "1025"
+	ErrProcessOAMCode = "1024"
 
 	// ErrApplyHelmChartCode represents the error which are generated
 	// during the process of applying helm chart
-	ErrApplyHelmChartCode = "blah_1"
+	ErrApplyHelmChartCode = "1025"
 
 	// ErrGettingIstioReleaseCode implies failure while failing istio release bundle
-	ErrGettingIstioReleaseCode = "blah_7"
+	ErrGettingIstioReleaseCode = "1026"
 
 	// ErrUnsupportedPlatformCode implies unavailbility of Istio on the requested plattform
-	ErrUnsupportedPlatformCode = "blah_8"
+	ErrUnsupportedPlatformCode = "1027"
 
 	// Couldn't find istioctl anywhere on the fs
-	ErrIstioctlNotFoundCode = "blah_9"
+	ErrIstioctlNotFoundCode = "1028"
 
 	// Couldn't download istio tar
-	ErrDownloadingTarCode = "blah_9"
+	ErrDownloadingTarCode = "1029"
 
 	// Couldn't unpacking istio release bundle tar
-	ErrUnpackingTarCode = "blah_10"
+	ErrUnpackingTarCode = "1030"
 
 	// Couldn't make istioctl executable
-	ErrMakingBinExecutableCode = "blah_11"
+	ErrMakingBinExecutableCode = "1031"
 
 	// ErrOpInvalid represents the errors which are generated
 	// when an invalid operation is requested
