@@ -100,22 +100,26 @@ var (
 	// during the process of applying helm chart
 	ErrApplyHelmChartCode = "1025"
 
-	// ErrGettingIstioReleaseCode implies failure while failing istio release bundle
+	// ErrGettingIstioReleaseCode implies failure while failing istio release
+	// bundle
 	ErrGettingIstioReleaseCode = "1026"
 
-	// ErrUnsupportedPlatformCode implies unavailbility of Istio on the requested plattform
+	// ErrUnsupportedPlatformCode implies unavailbility of Istio on the
+	// requested platform
 	ErrUnsupportedPlatformCode = "1027"
 
-	// Couldn't find istioctl anywhere on the fs
+	// ErrIstioctlNotFoundCode implies istioctl couldn't be found anywhere
+	// on the fs
 	ErrIstioctlNotFoundCode = "1028"
 
-	// Couldn't download istio tar
+	// ErrDownladingTarCode implies error while downloading istio tar
 	ErrDownloadingTarCode = "1029"
 
-	// Couldn't unpacking istio release bundle tar
+	// ErrUnpackingTarCode implies error while unpacking istio release
+	// bundle tar
 	ErrUnpackingTarCode = "1030"
 
-	// Couldn't make istioctl executable
+	// ErrMakingBinExecutableCode implies error while makng istioctl executable
 	ErrMakingBinExecutableCode = "1031"
 
 	// ErrOpInvalid represents the errors which are generated
@@ -134,12 +138,15 @@ var (
 	// generated when kubernetes client is nil
 	ErrNilClient = errors.New(ErrNilClientCode, errors.Alert, []string{"kubernetes client not initialized"}, []string{"Kubernetes client is nil"}, []string{"kubernetes client not initialized"}, []string{"Reconnect the adaptor to Meshery server"})
 
+	// ErrUnsupportedPlatform represents runtime platform is
+	// unsupported
 	ErrUnsupportedPlatform = errors.New(ErrUnsupportedPlatformCode, errors.Alert, []string{"requested platform is not supported by Istio"}, []string{"Istio only supports Windows, Linux and Darwin"}, []string{}, []string{""})
 
+	// ErrIstioctlNotFound implies istioctl was not found locally
 	ErrIstioctlNotFound = errors.New(ErrIstioctlNotFoundCode, errors.Alert, []string{"Unable to find Istioctl"}, []string{}, []string{}, []string{})
 )
 
-// ErrInstallIstioctl is the error for install mesh
+// ErrInstallUsingIstioctl is the error for install mesh
 func ErrInstallUsingIstioctl(err error) error {
 	return errors.New(ErrInstallUsingIstioctlCode, errors.Alert, []string{"Error with istio operation"}, []string{"Error occured while installing istio mesh through istioctl", err.Error()}, []string{}, []string{})
 }
@@ -229,19 +236,23 @@ func ErrApplyHelmChart(err error) error {
 	return errors.New(ErrApplyHelmChartCode, errors.Alert, []string{"Error occured while applying Helm Chart"}, []string{err.Error()}, []string{}, []string{})
 }
 
-// ErrDecodeYaml is the error when the yaml unmarshal fails
+// ErrGettingIstioRelease is the error when the yaml unmarshal fails
 func ErrGettingIstioRelease(err error) error {
 	return errors.New(ErrGettingIstioReleaseCode, errors.Alert, []string{"Error occured while fetching Istio release artifacts"}, []string{err.Error()}, []string{}, []string{})
 }
 
+// ErrDownloadingTar is the error when tar download fails
 func ErrDownloadingTar(err error) error {
 	return errors.New(ErrDownloadingTarCode, errors.Alert, []string{"Error occured while downloading Istio tar"}, []string{err.Error()}, []string{}, []string{})
 }
 
+// ErrUnpackingTar is the error when tar unpack fails
 func ErrUnpackingTar(err error) error {
 	return errors.New(ErrUnpackingTarCode, errors.Alert, []string{"Error occured while unpacking tar"}, []string{err.Error()}, []string{}, []string{})
 }
 
+// ErrMakingBinExecutable occurs when istioctl binary couldn't be made
+// executable
 func ErrMakingBinExecutable(err error) error {
 	return errors.New(ErrMakingBinExecutableCode, errors.Alert, []string{"Error while making istioctl an executable"}, []string{err.Error()}, []string{}, []string{})
 }
