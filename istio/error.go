@@ -10,99 +10,99 @@ var (
 
 	// ErrInstallIstioCode represents the errors which are generated
 	// during istio service mesh install process
-	ErrInstallIstioCode = "1002"
+	ErrInstallIstioCode = "istio_4"
 
 	// ErrUnzipFileCode represents the errors which are generated
 	// during unzip process
-	ErrUnzipFileCode = "1003"
+	ErrUnzipFileCode = "istio_5"
 
 	// ErrTarXZFCode represents the errors which are generated
 	// during decompressing and extracting tar.gz file
-	ErrTarXZFCode = "1004"
+	ErrTarXZFCode = "istio_6"
 
 	// ErrMeshConfigCode represents the errors which are generated
 	// when an invalid mesh config is found
-	ErrMeshConfigCode = "1005"
+	ErrMeshConfigCode = "istio_7"
 
 	// ErrRunIstioCtlCmdCode represents the errors which are generated
 	// during fetch manifest process
-	ErrRunIstioCtlCmdCode = "1006"
+	ErrRunIstioCtlCmdCode = "istio_8"
 
 	// ErrDownloadBinaryCode represents the errors which are generated
 	// during binary download process
-	ErrDownloadBinaryCode = "1007"
+	ErrDownloadBinaryCode = "istio_9"
 
 	// ErrInstallBinaryCode represents the errors which are generated
 	// during binary installation process
-	ErrInstallBinaryCode = "1008"
+	ErrInstallBinaryCode = "istio_10"
 
 	// ErrSampleAppCode represents the errors which are generated
 	// duing sample app installation
-	ErrSampleAppCode = "1009"
+	ErrSampleAppCode = "istio_11"
 
 	// ErrEnvoyFilterCode represents the errors which are generated
 	// duing envoy filter patching
-	ErrEnvoyFilterCode = "1010"
+	ErrEnvoyFilterCode = "istio_12"
 
 	// ErrApplyPolicyCode represents the errors which are generated
 	// duing policy apply operation
-	ErrApplyPolicyCode = "1011"
+	ErrApplyPolicyCode = "istio_13"
 
 	// ErrCustomOperationCode represents the errors which are generated
 	// when an invalid addon operation is requested
-	ErrCustomOperationCode = "1012"
+	ErrCustomOperationCode = "istio_14"
 
 	// ErrAddonFromTemplateCode represents the errors which are generated
 	// during addon deployment process
-	ErrAddonFromTemplateCode = "1013"
+	ErrAddonFromTemplateCode = "istio_15"
 
 	// ErrAddonInvalidConfigCode represents the errors which are generated
 	// when an invalid addon operation is requested
-	ErrAddonInvalidConfigCode = "1014"
+	ErrAddonInvalidConfigCode = "istio_16"
 
 	// ErrCreatingIstioClientCode represents the errors which are generated
 	// during creating istio client process
-	ErrCreatingIstioClientCode = "1015"
+	ErrCreatingIstioClientCode = "istio_17"
 
 	// ErrIstioVetSyncCode represents the errors which are generated
 	// during istio-vet sync process
-	ErrIstioVetSyncCode = "1016"
+	ErrIstioVetSyncCode = "istio_18"
 
 	// ErrIstioVetCode represents the errors which are generated
 	// during istio-vet process
-	ErrIstioVetCode = "1017"
+	ErrIstioVetCode = "istio_19"
 
 	// ErrParseOAMComponentCode represents the error code which is
 	// generated during the OAM component parsing
-	ErrParseOAMComponentCode = "1018"
+	ErrParseOAMComponentCode = "istio_20"
 
 	// ErrParseOAMConfigCode represents the error code which is
 	// generated during the OAM configuration parsing
-	ErrParseOAMConfigCode = "1019"
+	ErrParseOAMConfigCode = "istio_21"
 
 	// ErrNilClientCode represents the error code which is
 	// generated when kubernetes client is nil
-	ErrNilClientCode = "1020"
+	ErrNilClientCode = "istio_22"
 
 	// ErrParseIstioCoreComponentCode represents the error code which is
 	// generated when istio core component manifest parsing fails
-	ErrParseIstioCoreComponentCode = "1021"
+	ErrParseIstioCoreComponentCode = "istio_23"
 
 	// ErrInvalidOAMComponentTypeCode represents the error code which is
 	// generated when an invalid oam component is requested
-	ErrInvalidOAMComponentTypeCode = "1022"
+	ErrInvalidOAMComponentTypeCode = "istio_24"
 
 	// ErrOpInvalidCode represents the error code which is
 	// generated when an invalid operation is requested
-	ErrOpInvalidCode = "1023"
+	ErrOpInvalidCode = "istio_25"
 
 	// ErrIstioCoreComponentFailCode represents the error code which is
 	// generated when an istio core operations fails
-	ErrIstioCoreComponentFailCode = "1024"
+	ErrIstioCoreComponentFailCode = "istio_26"
 
 	// ErrProcessOAMCode represents the error code which is
 	// generated when an OAM operations fails
-	ErrProcessOAMCode = "1025"
+	ErrProcessOAMCode = "istio_27"
 
 	// ErrOpInvalid represents the errors which are generated
 	// when an invalid operation is requested
