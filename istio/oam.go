@@ -120,7 +120,7 @@ func handleComponentIstioMesh(istio *Istio, comp v1alpha1.Component, isDel bool)
 	// because the configuration is already validated against the schema
 	version := comp.Spec.Settings["version"].(string)
 
-	return istio.installIstio(isDel, version, comp.Namespace)
+	return istio.installIstio(isDel, false, version, comp.Namespace)
 }
 
 func handleComponentVirtualService(istio *Istio, comp v1alpha1.Component, isDel bool) (string, error) {

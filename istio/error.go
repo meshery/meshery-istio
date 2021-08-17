@@ -8,101 +8,119 @@ import (
 var (
 	// Error code for failed service mesh installation
 
-	// ErrInstallIstioCode represents the errors which are generated
+	// ErrInstallUsingIstioctlCode represents the errors which are generated
 	// during istio service mesh install process
-	ErrInstallIstioCode = "1002"
+	ErrInstallUsingIstioctlCode = "1003"
 
 	// ErrUnzipFileCode represents the errors which are generated
 	// during unzip process
-	ErrUnzipFileCode = "1003"
+	ErrUnzipFileCode = "1004"
 
 	// ErrTarXZFCode represents the errors which are generated
 	// during decompressing and extracting tar.gz file
-	ErrTarXZFCode = "1004"
+	ErrTarXZFCode = "1005"
 
 	// ErrMeshConfigCode represents the errors which are generated
 	// when an invalid mesh config is found
-	ErrMeshConfigCode = "1005"
+	ErrMeshConfigCode = "1006"
 
 	// ErrRunIstioCtlCmdCode represents the errors which are generated
 	// during fetch manifest process
-	ErrRunIstioCtlCmdCode = "1006"
-
-	// ErrDownloadBinaryCode represents the errors which are generated
-	// during binary download process
-	ErrDownloadBinaryCode = "1007"
-
-	// ErrInstallBinaryCode represents the errors which are generated
-	// during binary installation process
-	ErrInstallBinaryCode = "1008"
+	ErrRunIstioCtlCmdCode = "1007"
 
 	// ErrSampleAppCode represents the errors which are generated
 	// duing sample app installation
-	ErrSampleAppCode = "1009"
+	ErrSampleAppCode = "1008"
 
 	// ErrEnvoyFilterCode represents the errors which are generated
 	// duing envoy filter patching
-	ErrEnvoyFilterCode = "1010"
+	ErrEnvoyFilterCode = "1009"
 
 	// ErrApplyPolicyCode represents the errors which are generated
 	// duing policy apply operation
-	ErrApplyPolicyCode = "1011"
+	ErrApplyPolicyCode = "1010"
 
 	// ErrCustomOperationCode represents the errors which are generated
 	// when an invalid addon operation is requested
-	ErrCustomOperationCode = "1012"
+	ErrCustomOperationCode = "1011"
 
 	// ErrAddonFromTemplateCode represents the errors which are generated
 	// during addon deployment process
-	ErrAddonFromTemplateCode = "1013"
+	ErrAddonFromTemplateCode = "1012"
 
 	// ErrAddonInvalidConfigCode represents the errors which are generated
 	// when an invalid addon operation is requested
-	ErrAddonInvalidConfigCode = "1014"
+	ErrAddonInvalidConfigCode = "1013"
 
 	// ErrCreatingIstioClientCode represents the errors which are generated
 	// during creating istio client process
-	ErrCreatingIstioClientCode = "1015"
+	ErrCreatingIstioClientCode = "1014"
 
 	// ErrIstioVetSyncCode represents the errors which are generated
 	// during istio-vet sync process
-	ErrIstioVetSyncCode = "1016"
+	ErrIstioVetSyncCode = "1015"
 
 	// ErrIstioVetCode represents the errors which are generated
 	// during istio-vet process
-	ErrIstioVetCode = "1017"
+	ErrIstioVetCode = "1016"
 
 	// ErrParseOAMComponentCode represents the error code which is
 	// generated during the OAM component parsing
-	ErrParseOAMComponentCode = "1018"
+	ErrParseOAMComponentCode = "1017"
 
 	// ErrParseOAMConfigCode represents the error code which is
 	// generated during the OAM configuration parsing
-	ErrParseOAMConfigCode = "1019"
+	ErrParseOAMConfigCode = "1018"
 
 	// ErrNilClientCode represents the error code which is
 	// generated when kubernetes client is nil
-	ErrNilClientCode = "1020"
+	ErrNilClientCode = "1019"
 
 	// ErrParseIstioCoreComponentCode represents the error code which is
 	// generated when istio core component manifest parsing fails
-	ErrParseIstioCoreComponentCode = "1021"
+	ErrParseIstioCoreComponentCode = "1020"
 
 	// ErrInvalidOAMComponentTypeCode represents the error code which is
 	// generated when an invalid oam component is requested
-	ErrInvalidOAMComponentTypeCode = "1022"
+	ErrInvalidOAMComponentTypeCode = "1021"
 
 	// ErrOpInvalidCode represents the error code which is
 	// generated when an invalid operation is requested
-	ErrOpInvalidCode = "1023"
+	ErrOpInvalidCode = "1022"
 
 	// ErrIstioCoreComponentFailCode represents the error code which is
 	// generated when an istio core operations fails
-	ErrIstioCoreComponentFailCode = "1024"
+	ErrIstioCoreComponentFailCode = "1023"
 
 	// ErrProcessOAMCode represents the error code which is
 	// generated when an OAM operations fails
-	ErrProcessOAMCode = "1025"
+	ErrProcessOAMCode = "1024"
+
+	// ErrApplyHelmChartCode represents the error which are generated
+	// during the process of applying helm chart
+	ErrApplyHelmChartCode = "1025"
+
+	// ErrGettingIstioReleaseCode implies failure while failing istio release
+	// bundle
+	ErrGettingIstioReleaseCode = "1026"
+
+	// ErrUnsupportedPlatformCode implies unavailbility of Istio on the
+	// requested platform
+	ErrUnsupportedPlatformCode = "1027"
+
+	// ErrIstioctlNotFoundCode implies istioctl couldn't be found anywhere
+	// on the fs
+	ErrIstioctlNotFoundCode = "1028"
+
+	// ErrDownloadingTarCode implies error while downloading istio tar
+	ErrDownloadingTarCode = "1029"
+
+	// ErrUnpackingTarCode implies error while unpacking istio release
+	// bundle tar
+	ErrUnpackingTarCode = "1030"
+
+	// ErrMakingBinExecutableCode implies error while makng istioctl executable
+	ErrMakingBinExecutableCode = "1031"
 
 	// ErrOpInvalid represents the errors which are generated
 	// when an invalid operation is requested
@@ -119,11 +137,18 @@ var (
 	// ErrNilClient represents the error which is
 	// generated when kubernetes client is nil
 	ErrNilClient = errors.New(ErrNilClientCode, errors.Alert, []string{"kubernetes client not initialized"}, []string{"Kubernetes client is nil"}, []string{"kubernetes client not initialized"}, []string{"Reconnect the adaptor to Meshery server"})
+
+	// ErrUnsupportedPlatform represents runtime platform is
+	// unsupported
+	ErrUnsupportedPlatform = errors.New(ErrUnsupportedPlatformCode, errors.Alert, []string{"requested platform is not supported by Istio"}, []string{"Istio only supports Windows, Linux and Darwin"}, []string{}, []string{""})
+
+	// ErrIstioctlNotFound implies istioctl was not found locally
+	ErrIstioctlNotFound = errors.New(ErrIstioctlNotFoundCode, errors.Alert, []string{"Unable to find Istioctl"}, []string{}, []string{}, []string{})
 )
 
-// ErrInstallIstio is the error for install mesh
-func ErrInstallIstio(err error) error {
-	return errors.New(ErrInstallIstioCode, errors.Alert, []string{"Error with istio operation"}, []string{"Error occured while installing istio mesh through istioctl", err.Error()}, []string{}, []string{})
+// ErrInstallUsingIstioctl is the error for install mesh
+func ErrInstallUsingIstioctl(err error) error {
+	return errors.New(ErrInstallUsingIstioctlCode, errors.Alert, []string{"Error with istio operation"}, []string{"Error occured while installing istio mesh through istioctl", err.Error()}, []string{}, []string{})
 }
 
 // ErrUnzipFile is the error for unzipping the file
@@ -144,16 +169,6 @@ func ErrMeshConfig(err error) error {
 // ErrRunIstioCtlCmd is the error for mesh port forward
 func ErrRunIstioCtlCmd(err error, des string) error {
 	return errors.New(ErrRunIstioCtlCmdCode, errors.Alert, []string{"Error running istioctl command"}, []string{err.Error()}, []string{"Corrupted istioctl binary", "Command might be invalid"}, []string{})
-}
-
-// ErrDownloadBinary is the error while downloading istio binary
-func ErrDownloadBinary(err error) error {
-	return errors.New(ErrDownloadBinaryCode, errors.Alert, []string{"Error downloading istio binary"}, []string{err.Error(), "Error occured while download istio binary from its github release"}, []string{"Checkout https://docs.github.com/en/rest/reference/repos#releases for more details"}, []string{})
-}
-
-// ErrInstallBinary is the error while downloading istio binary
-func ErrInstallBinary(err error) error {
-	return errors.New(ErrInstallBinaryCode, errors.Alert, []string{"Error installing istio binary"}, []string{err.Error()}, []string{"Corrupted istio release binary", "Invalid installation location"}, []string{})
 }
 
 // ErrSampleApp is the error for streaming event
@@ -214,4 +229,30 @@ func ErrIstioCoreComponentFail(err error) error {
 // ErrProcessOAM is a generic error which is thrown when an OAM operations fails
 func ErrProcessOAM(err error) error {
 	return errors.New(ErrProcessOAMCode, errors.Alert, []string{"error performing OAM operations"}, []string{err.Error()}, []string{}, []string{})
+}
+
+// ErrApplyHelmChart is the error for applying helm chart
+func ErrApplyHelmChart(err error) error {
+	return errors.New(ErrApplyHelmChartCode, errors.Alert, []string{"Error occured while applying Helm Chart"}, []string{err.Error()}, []string{}, []string{})
+}
+
+// ErrGettingIstioRelease is the error when the yaml unmarshal fails
+func ErrGettingIstioRelease(err error) error {
+	return errors.New(ErrGettingIstioReleaseCode, errors.Alert, []string{"Error occured while fetching Istio release artifacts"}, []string{err.Error()}, []string{}, []string{})
+}
+
+// ErrDownloadingTar is the error when tar download fails
+func ErrDownloadingTar(err error) error {
+	return errors.New(ErrDownloadingTarCode, errors.Alert, []string{"Error occured while downloading Istio tar"}, []string{err.Error()}, []string{}, []string{})
+}
+
+// ErrUnpackingTar is the error when tar unpack fails
+func ErrUnpackingTar(err error) error {
+	return errors.New(ErrUnpackingTarCode, errors.Alert, []string{"Error occured while unpacking tar"}, []string{err.Error()}, []string{}, []string{})
+}
+
+// ErrMakingBinExecutable occurs when istioctl binary couldn't be made
+// executable
+func ErrMakingBinExecutable(err error) error {
+	return errors.New(ErrMakingBinExecutableCode, errors.Alert, []string{"Error while making istioctl an executable"}, []string{err.Error()}, []string{}, []string{})
 }

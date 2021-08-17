@@ -19,6 +19,8 @@
 
 meshery-istio
 
+main
+
 # Miscellaneous
 **errorutil_analyze_errors.json
 **errorutil_analyze_summary.json
