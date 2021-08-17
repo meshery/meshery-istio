@@ -94,7 +94,7 @@ func (istio *Istio) applyHelmChart(del bool, version, namespace, dirName string)
 	istio.Log.Info("Installing using helm charts...")
 	err := kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
 		LocalPath:       path.Join(downloadLocation, dirName, "manifests/charts/base"),
-		Namespace:       namespace,
+		Namespace:       "istio-system",
 		Delete:          del,
 		CreateNamespace: true,
 	})
@@ -104,7 +104,7 @@ func (istio *Istio) applyHelmChart(del bool, version, namespace, dirName string)
 
 	err = kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
 		LocalPath:       path.Join(downloadLocation, dirName, "manifests/charts/istio-control/istio-discovery"),
-		Namespace:       namespace,
+		Namespace:       "istio-system",
 		Delete:          del,
 		CreateNamespace: true,
 	})
@@ -114,7 +114,7 @@ func (istio *Istio) applyHelmChart(del bool, version, namespace, dirName string)
 
 	err = kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
 		LocalPath:       path.Join(downloadLocation, dirName, "manifests/charts/gateways/istio-ingress"),
-		Namespace:       namespace,
+		Namespace:       "istio-system",
 		Delete:          del,
 		CreateNamespace: true,
 	})
@@ -124,7 +124,7 @@ func (istio *Istio) applyHelmChart(del bool, version, namespace, dirName string)
 
 	err = kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
 		LocalPath:       path.Join(downloadLocation, dirName, "manifests/charts/gateways/istio-egress"),
-		Namespace:       namespace,
+		Namespace:       "istio-system",
 		Delete:          del,
 		CreateNamespace: true,
 	})
@@ -348,9 +348,9 @@ func tarxzf(location string, stream io.Reader) error {
 				return ErrTarXZF(err)
 			}
 
-			// make istioctl binary executable
 			if header.FileInfo().Name() == "istioctl" {
-				fmt.Println(outFile.Name())
+				// istioctl binary needs to be executable
+				// #nosec
 				if err = os.Chmod(outFile.Name(), 0750); err != nil {
 					return err
 				}
