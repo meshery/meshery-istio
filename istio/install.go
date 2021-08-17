@@ -18,7 +18,6 @@ import (
 	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshery-adapter-library/status"
 	"github.com/layer5io/meshery-istio/internal/config"
-	"github.com/layer5io/meshkit/errors"
 	mesherykube "github.com/layer5io/meshkit/utils/kubernetes"
 )
 
@@ -53,16 +52,15 @@ func (istio *Istio) installIstio(del, useBin bool, version, namespace string) (s
 	dirName, err := istio.getIstioRelease(version)
 	if err != nil {
 		// ErrGettingIstioRelease
-		return st, err
+		return st, ErrGettingIstioRelease(err)
 	}
 
 	// Install using istioctl if explicitly stated
 	if useBin {
+		istio.Log.Info("Installing istio using istioctl...")
 		err = istio.runIstioCtlCmd(version, del, dirName)
 		if err != nil {
-			//ErrInstallUsingIstioCtl
-			istio.Log.Error(ErrInstallIstio(err))
-			return st, ErrInstallIstio(err)
+			return st, ErrInstallUsingIstioctl(err)
 		}
 	}
 
@@ -70,12 +68,11 @@ func (istio *Istio) installIstio(del, useBin bool, version, namespace string) (s
 	err = istio.applyHelmChart(del, version, namespace, dirName)
 	if err != nil {
 		istio.Log.Error(err)
+		istio.Log.Info("Retrying to install using istioctl...")
 
 		err = istio.runIstioCtlCmd(version, del, dirName)
 		if err != nil {
-			//ErrInstallUsingIstioCtl
-			istio.Log.Error(ErrInstallIstio(err))
-			return st, ErrInstallIstio(err)
+			return st, ErrInstallUsingIstioctl(err)
 		}
 
 		return st, nil
@@ -89,8 +86,10 @@ func (istio *Istio) installIstio(del, useBin bool, version, namespace string) (s
 
 func (istio *Istio) applyHelmChart(del bool, version, namespace, dirName string) error {
 	kClient := istio.MesheryKubeclient
+	if kClient == nil {
+		return ErrNilClient
+	}
 
-	// STUPID: apply charts one by one
 	istio.Log.Info("Installing using helm charts...")
 	err := kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
 		LocalPath:       path.Join(downloadLocation, dirName, "manifests/charts/base"),
@@ -99,7 +98,7 @@ func (istio *Istio) applyHelmChart(del bool, version, namespace, dirName string)
 		CreateNamespace: true,
 	})
 	if err != nil {
-		return err
+		return ErrApplyHelmChart(err)
 	}
 
 	err = kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
@@ -109,7 +108,7 @@ func (istio *Istio) applyHelmChart(del bool, version, namespace, dirName string)
 		CreateNamespace: true,
 	})
 	if err != nil {
-		return err
+		return ErrApplyHelmChart(err)
 	}
 
 	err = kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
@@ -119,7 +118,7 @@ func (istio *Istio) applyHelmChart(del bool, version, namespace, dirName string)
 		CreateNamespace: true,
 	})
 	if err != nil {
-		return err
+		return ErrApplyHelmChart(err)
 	}
 
 	err = kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
@@ -129,10 +128,10 @@ func (istio *Istio) applyHelmChart(del bool, version, namespace, dirName string)
 		CreateNamespace: true,
 	})
 	if err != nil {
-		return err
+		return ErrApplyHelmChart(err)
 	}
 
-	return err
+	return nil
 }
 
 // getIstioRelease gets the manifests for latest istio release.
@@ -152,14 +151,12 @@ func (istio *Istio) getIstioRelease(release string) (string, error) {
 	istio.Log.Info("Downloading requested istio version artifacts...")
 	res, err := downloadTar(releaseName, release)
 	if err != nil {
-		//ErrGettingIstioRelease
-		return "", err
+		return "", ErrGettingIstioRelease(err)
 	}
 
 	err = extractTar(res)
 	if err != nil {
-		//ErrGettingIstioRelease
-		return "", err
+		return "", ErrGettingIstioRelease(err)
 	}
 
 	return releaseName, nil
@@ -175,20 +172,17 @@ func downloadTar(releaseName, release string) (*http.Response, error) {
 	case "linux":
 		url = fmt.Sprintf("%s/%s/%s-%s-%s.tar.gz", url, release, releaseName, platform, arch)
 	default:
-		//ErrUnsupportedPlatfrom
-		return nil, errors.NewDefault("platform not supported")
+		return nil, ErrUnsupportedPlatform
 	}
 
 	resp, err := http.Get(url)
 	if err != nil {
-		// ErrDownloadTar
-		return nil, err //ErrDownloadBinary(err)
+		return nil, ErrDownloadingTar(err)
 	}
 
 	if resp.StatusCode != http.StatusOK {
 		_ = resp.Body.Close()
-		// ErrDownloadTar
-		return nil, err //ErrDownloadBinary(fmt.Errorf("bad status: %s", resp.Status))
+		return nil, ErrDownloadingTar(err)
 	}
 
 	return resp, nil
@@ -208,12 +202,11 @@ func extractTar(res *http.Response) error {
 	case "linux":
 		if err := tarxzf(downloadLocation, res.Body); err != nil {
 			//ErrExtracingFromTar
-			return err //ErrInstallBinary(err)
+			return ErrUnpackingTar(err)
 		}
 	case "windows":
 		if err := unzip(downloadLocation, res.Body); err != nil {
-			//ErrExtracingFromTar
-			return err //ErrInstallBinary(err)
+			return ErrUnpackingTar(err)
 		}
 	}
 
@@ -303,7 +296,7 @@ func (istio *Istio) getExecutable(release, dirName string) (string, error) {
 	}
 
 	istio.Log.Info("Done")
-	return "", errors.NewDefault("Unable to get istioctl")
+	return "", ErrIstioctlNotFound
 }
 
 func tarxzf(location string, stream io.Reader) error {
@@ -352,7 +345,7 @@ func tarxzf(location string, stream io.Reader) error {
 				// istioctl binary needs to be executable
 				// #nosec
 				if err = os.Chmod(outFile.Name(), 0750); err != nil {
-					return err
+					return ErrMakingBinExecutable(err)
 				}
 			}
 
