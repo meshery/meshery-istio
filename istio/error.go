@@ -110,7 +110,7 @@ var (
 	// during the process of applying helm chart
 	ErrApplyHelmChartCode = "blah_1"
 
-		// ErrConvertingAppVersionToChartVersionCode represents the errors which are generated
+	// ErrConvertingAppVersionToChartVersionCode represents the errors which are generated
 	// during the process of converting app version to chart version
 	ErrConvertingAppVersionToChartVersionCode = "blah_2"
 

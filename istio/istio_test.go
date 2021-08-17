@@ -27,7 +27,7 @@ func TestNew(t *testing.T) {
 	}
 
 	tests := []test{
-		test{
+		{
 			name: "no arguments",
 			args: args{
 				c:  nil,

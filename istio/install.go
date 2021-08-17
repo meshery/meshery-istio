@@ -24,7 +24,7 @@ import (
 
 const (
 	platform = runtime.GOOS
-	arch = runtime.GOARCH
+	arch     = runtime.GOARCH
 )
 
 var (
@@ -92,7 +92,7 @@ func (istio *Istio) applyHelmChart(del bool, version, namespace, dirName string)
 
 	istio.Log.Info("Installing using helm charts...")
 	err := kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
-		LocalPath: path.Join(downloadLocation, dirName, "manifests/charts/base/Chart.yaml"),
+		LocalPath:       path.Join(downloadLocation, dirName, "manifests/charts/base/Chart.yaml"),
 		Namespace:       namespace,
 		Delete:          del,
 		CreateNamespace: true,
@@ -148,13 +148,13 @@ func downloadTar(releaseName, release string) (*http.Response, error) {
 	resp, err := http.Get(url)
 	if err != nil {
 		// ErrDownloadTar
-		return nil, err//ErrDownloadBinary(err)
+		return nil, err //ErrDownloadBinary(err)
 	}
 
 	if resp.StatusCode != http.StatusOK {
 		_ = resp.Body.Close()
 		// ErrDownloadTar
-		return nil, err//ErrDownloadBinary(fmt.Errorf("bad status: %s", resp.Status))
+		return nil, err //ErrDownloadBinary(fmt.Errorf("bad status: %s", resp.Status))
 	}
 
 	return resp, nil
@@ -163,7 +163,7 @@ func downloadTar(releaseName, release string) (*http.Response, error) {
 func extractTar(res *http.Response) error {
 	// Close the response body
 	defer func() {
-	if err := res.Body.Close(); err != nil {
+		if err := res.Body.Close(); err != nil {
 			fmt.Println(err)
 		}
 	}()
@@ -174,12 +174,12 @@ func extractTar(res *http.Response) error {
 	case "linux":
 		if err := tarxzf(downloadLocation, res.Body); err != nil {
 			//ErrExtracingFromTar
-			return err//ErrInstallBinary(err)
+			return err //ErrInstallBinary(err)
 		}
 	case "windows":
 		if err := unzip(downloadLocation, res.Body); err != nil {
 			//ErrExtracingFromTar
-			return err//ErrInstallBinary(err)
+			return err //ErrInstallBinary(err)
 		}
 	}
 
