@@ -69,7 +69,7 @@ func (istio *Istio) installIstio(del, useBin bool, version, namespace string) (s
 	// Install using Helm Chart and fallback to istioctl
 	err = istio.applyHelmChart(del, version, namespace, dirName)
 	if err != nil {
-		istio.Log.Error(ErrApplyHelmChart(err))
+		istio.Log.Error(err)
 
 		err = istio.runIstioCtlCmd(version, del, dirName)
 		if err != nil {
@@ -90,8 +90,9 @@ func (istio *Istio) installIstio(del, useBin bool, version, namespace string) (s
 func (istio *Istio) applyHelmChart(del bool, version, namespace, dirName string) error {
 	kClient := istio.MesheryKubeclient
 
+	istio.Log.Info("Installing using helm charts...")
 	err := kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
-		LocalPath: path.Join(downloadLocation, dirName, "manifests/charts/base"),
+		LocalPath: path.Join(downloadLocation, dirName, "manifests/charts/base/Chart.yaml"),
 		Namespace:       namespace,
 		Delete:          del,
 		CreateNamespace: true,
@@ -193,7 +194,9 @@ func (istio *Istio) runIstioCtlCmd(version string, isDel bool, dirName string) e
 		er  bytes.Buffer
 	)
 
-	Executable, err := istio.getExecutable(version)
+	istio.Log.Info("Installing using istioctl...")
+
+	Executable, err := istio.getExecutable(version, dirName)
 	if err != nil {
 		return ErrRunIstioCtlCmd(err, err.Error())
 	}
@@ -233,16 +236,14 @@ func (istio *Istio) applyManifest(contents []byte, isDel bool, namespace string)
 // 1. $PATH
 // 2. Root config path
 //
-// If it doesn't find the executable in the path then it proceeds
-// to download the binary from github releases and installs it
-// in the root config path
-func (istio *Istio) getExecutable(release string) (string, error) {
-	const platform = runtime.GOOS
+// If it doesn't find the executable in the above two, it uses the one
+// in "istio-version/bin" directory in temp dir
+func (istio *Istio) getExecutable(release, dirName string) (string, error) {
 	binaryName := generatePlatformSpecificBinaryName("istioctl", platform)
 	alternateBinaryName := generatePlatformSpecificBinaryName("istioctl-"+release, platform)
 
 	// Look for the executable in the path
-	istio.Log.Info("Looking for istio in the path...")
+	istio.Log.Info("Looking for istioctl in the path...")
 	executable, err := exec.LookPath(binaryName)
 	if err == nil {
 		return executable, nil
@@ -255,90 +256,20 @@ func (istio *Istio) getExecutable(release string) (string, error) {
 	binPath := path.Join(config.RootPath(), "bin")
 
 	// Look for config in the root path
-	istio.Log.Info("Looking for istio in", binPath, "...")
+	istio.Log.Info("Looking for istioctl in", binPath, "...")
 	executable = path.Join(binPath, alternateBinaryName)
 	if _, err := os.Stat(executable); err == nil {
 		return executable, nil
 	}
 
-	// Proceed to download the binary in the config root path
-	istio.Log.Info("istio not found in the path, downloading...")
-	res, err := downloadBinary(platform, runtime.GOARCH, release)
-	if err != nil {
-		return "", err
-	}
-	// Install the binary
-	istio.Log.Info("Installing...")
-	if err = installBinary(binPath, platform, binaryName, res); err != nil {
-		return "", err
-	}
-	// Rename the binary
-	err = os.Rename(path.Join(binPath, binaryName), path.Join(binPath, alternateBinaryName))
-	if err != nil {
-		return "", err
+	istio.Log.Info("Using istioctl from the downloaded release bundle...")
+	executable = path.Join(dirName, "bin", binaryName)
+	if _, err := os.Stat(executable); err == nil {
+		return executable, nil
 	}
 
 	istio.Log.Info("Done")
-	return path.Join(binPath, alternateBinaryName), nil
-}
-
-func downloadBinary(platform, arch, release string) (*http.Response, error) {
-	var url = "https://github.com/istio/istio/releases/download"
-	switch platform {
-	case "darwin":
-		url = fmt.Sprintf("%s/%s/istioctl-%s-osx.tar.gz", url, release, release)
-	case "windows":
-		url = fmt.Sprintf("%s/%s/istioctl-%s-win.zip", url, release, release)
-	case "linux":
-		url = fmt.Sprintf("%s/%s/istioctl-%s-%s-%s.tar.gz", url, release, release, platform, arch)
-	}
-
-	resp, err := http.Get(url)
-	if err != nil {
-		return nil, ErrDownloadBinary(err)
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		_ = resp.Body.Close()
-		return nil, ErrDownloadBinary(fmt.Errorf("bad status: %s", resp.Status))
-	}
-
-	return resp, nil
-}
-
-func installBinary(location, platform, name string, res *http.Response) error {
-	// Close the response body
-	defer func() {
-		if err := res.Body.Close(); err != nil {
-			fmt.Println(err)
-		}
-	}()
-
-	// ~/.meshery/bin
-	err := os.MkdirAll(location, 0750)
-	if err != nil {
-		return err
-	}
-
-	switch platform {
-	case "darwin":
-		fallthrough
-	case "linux":
-		if err := tarxzf(location, res.Body); err != nil {
-			return ErrInstallBinary(err)
-		}
-		// Change permissions, we need the binary to be executable, hence
-		// #nosec
-		if err = os.Chmod(path.Join(location, name), 0750); err != nil {
-			return err
-		}
-	case "windows":
-		if err := unzip(location, res.Body); err != nil {
-			return ErrInstallBinary(err)
-		}
-	}
-
-	return nil
+	return "", errors.NewDefault("Unable to get istioctl")
 }
 
 func tarxzf(location string, stream io.Reader) error {
@@ -381,6 +312,14 @@ func tarxzf(location string, stream io.Reader) error {
 			}
 			if err = outFile.Close(); err != nil {
 				return ErrTarXZF(err)
+			}
+
+			// make istioctl binary executable
+			if header.FileInfo().Name() == "istioctl" {
+				fmt.Println(outFile.Name())
+				if err = os.Chmod(outFile.Name(), 0750); err != nil {
+					return err
+				}
 			}
 
 		default:
