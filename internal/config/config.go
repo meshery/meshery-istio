@@ -6,8 +6,8 @@ import (
 
 	"github.com/layer5io/meshery-adapter-library/common"
 	"github.com/layer5io/meshery-adapter-library/config"
-	configprovider "github.com/layer5io/meshery-adapter-library/config/provider"
 	"github.com/layer5io/meshery-adapter-library/status"
+	configprovider "github.com/layer5io/meshkit/config/provider"
 	"github.com/layer5io/meshkit/utils"
 	smp "github.com/layer5io/service-mesh-performance/spec"
 )
@@ -55,10 +55,9 @@ var (
 	configRootPath = path.Join(utils.GetHome(), ".meshery")
 
 	Config = configprovider.Options{
-		ServerConfig:   ServerConfig,
-		MeshSpec:       MeshSpec,
-		ProviderConfig: ProviderConfig,
-		Operations:     Operations,
+		FilePath: configRootPath,
+		FileName: "istio",
+		FileType: "yaml",
 	}
 
 	ServerConfig = map[string]string{
@@ -104,8 +103,11 @@ func New(provider string) (config.Handler, error) {
 }
 
 func NewKubeconfigBuilder(provider string) (config.Handler, error) {
-	opts := configprovider.Options{}
-	opts.ProviderConfig = KubeConfig
+	opts := configprovider.Options{
+		FilePath: configRootPath,
+		FileType: "yaml",
+		FileName: "kubeconfig",
+	}
 
 	// Config provider
 	switch provider {
