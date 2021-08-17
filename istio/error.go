@@ -112,7 +112,7 @@ var (
 	// on the fs
 	ErrIstioctlNotFoundCode = "1028"
 
-	// ErrDownladingTarCode implies error while downloading istio tar
+	// ErrDownloadingTarCode implies error while downloading istio tar
 	ErrDownloadingTarCode = "1029"
 
 	// ErrUnpackingTarCode implies error while unpacking istio release
