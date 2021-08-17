@@ -92,7 +92,7 @@ func (istio *Istio) applyHelmChart(del bool, version, namespace, dirName string)
 
 	istio.Log.Info("Installing using helm charts...")
 	err := kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
-		LocalPath:       path.Join(downloadLocation, dirName, "manifests/charts/base/Chart.yaml"),
+		LocalPath:       path.Join(downloadLocation, dirName, "manifests/charts/base"),
 		Namespace:       namespace,
 		Delete:          del,
 		CreateNamespace: true,
