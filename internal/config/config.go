@@ -4,10 +4,11 @@ import (
 	"path"
 	"strings"
 
+	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshery-adapter-library/common"
 	"github.com/layer5io/meshery-adapter-library/config"
-	configprovider "github.com/layer5io/meshery-adapter-library/config/provider"
 	"github.com/layer5io/meshery-adapter-library/status"
+	configprovider "github.com/layer5io/meshkit/config/provider"
 	"github.com/layer5io/meshkit/utils"
 	smp "github.com/layer5io/service-mesh-performance/spec"
 )
@@ -55,10 +56,9 @@ var (
 	configRootPath = path.Join(utils.GetHome(), ".meshery")
 
 	Config = configprovider.Options{
-		ServerConfig:   ServerConfig,
-		MeshSpec:       MeshSpec,
-		ProviderConfig: ProviderConfig,
-		Operations:     Operations,
+		FilePath: configRootPath,
+		FileName: "istio",
+		FileType: "yaml",
 	}
 
 	ServerConfig = map[string]string{
@@ -91,21 +91,47 @@ var (
 )
 
 // New creates a new config instance
-func New(provider string) (config.Handler, error) {
+func New(provider string) (h config.Handler, err error) {
 	// Config provider
 	switch provider {
 	case configprovider.ViperKey:
-		return configprovider.NewViper(Config)
+		h, err = configprovider.NewViper(Config)
+		if err != nil {
+			return nil, err
+		}
 	case configprovider.InMemKey:
-		return configprovider.NewInMem(Config)
+		h, err = configprovider.NewInMem(Config)
+		if err != nil {
+			return nil, err
+		}
+	default:
+		return nil, ErrEmptyConfig
 	}
 
-	return nil, ErrEmptyConfig
+	// Setup server config
+	if err := h.SetObject(adapter.ServerKey, ServerConfig); err != nil {
+		return nil, err
+	}
+
+	// Setup mesh config
+	if err := h.SetObject(adapter.MeshSpecKey, MeshSpec); err != nil {
+		return nil, err
+	}
+
+	// Setup Operations Config
+	if err := h.SetObject(adapter.OperationsKey, Operations); err != nil {
+		return nil, err
+	}
+
+	return h, nil
 }
 
 func NewKubeconfigBuilder(provider string) (config.Handler, error) {
-	opts := configprovider.Options{}
-	opts.ProviderConfig = KubeConfig
+	opts := configprovider.Options{
+		FilePath: configRootPath,
+		FileType: "yaml",
+		FileName: "kubeconfig",
+	}
 
 	// Config provider
 	switch provider {
