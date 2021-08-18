@@ -4,6 +4,7 @@ import (
 	"path"
 	"strings"
 
+	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshery-adapter-library/common"
 	"github.com/layer5io/meshery-adapter-library/config"
 	"github.com/layer5io/meshery-adapter-library/status"
@@ -90,16 +91,39 @@ var (
 )
 
 // New creates a new config instance
-func New(provider string) (config.Handler, error) {
+func New(provider string) (h config.Handler, err error) {
 	// Config provider
 	switch provider {
 	case configprovider.ViperKey:
-		return configprovider.NewViper(Config)
+		h, err = configprovider.NewViper(Config)
+		if err != nil {
+			return nil, err
+		}
 	case configprovider.InMemKey:
-		return configprovider.NewInMem(Config)
+		h, err = configprovider.NewInMem(Config)
+		if err != nil {
+			return nil, err
+		}
+	default:
+		return nil, ErrEmptyConfig
 	}
 
-	return nil, ErrEmptyConfig
+	// Setup server config
+	if err := h.SetObject(adapter.ServerKey, ServerConfig); err != nil {
+		return nil, err
+	}
+
+	// Setup mesh config
+	if err := h.SetObject(adapter.MeshSpecKey, MeshSpec); err != nil {
+		return nil, err
+	}
+
+	// Setup Operations Config
+	if err := h.SetObject(adapter.OperationsKey, Operations); err != nil {
+		return nil, err
+	}
+
+	return h, nil
 }
 
 func NewKubeconfigBuilder(provider string) (config.Handler, error) {
