@@ -1,0 +1,219 @@
+{
+  "description": "See more details at:",
+  "properties": {
+    "actions": {
+      "items": {
+        "properties": {
+          "constraints": {
+            "description": "Optional.",
+            "items": {
+              "properties": {
+                "key": {
+                  "description": "Key of the constraint.",
+                  "format": "string",
+                  "type": "string"
+                },
+                "values": {
+                  "description": "List of valid values for the constraint.",
+                  "items": {
+                    "format": "string",
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "hosts": {
+            "items": {
+              "format": "string",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "methods": {
+            "description": "Optional.",
+            "items": {
+              "format": "string",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "notHosts": {
+            "items": {
+              "format": "string",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "notMethods": {
+            "items": {
+              "format": "string",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "notPaths": {
+            "items": {
+              "format": "string",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "notPorts": {
+            "items": {
+              "format": "int32",
+              "type": "integer",
+              "minimum": -2147483648,
+              "maximum": 2147483647
+            },
+            "type": "array"
+          },
+          "paths": {
+            "description": "Optional.",
+            "items": {
+              "format": "string",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "ports": {
+            "items": {
+              "format": "int32",
+              "type": "integer",
+              "minimum": -2147483648,
+              "maximum": 2147483647
+            },
+            "type": "array"
+          },
+          "services": {
+            "description": "A list of service names.",
+            "items": {
+              "format": "string",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "mode": {
+      "enum": [
+        "ENFORCED",
+        "PERMISSIVE"
+      ],
+      "type": "string"
+    },
+    "role": {
+      "format": "string",
+      "type": "string"
+    },
+    "roleRef": {
+      "description": "Reference to the ServiceRole object.",
+      "properties": {
+        "kind": {
+          "description": "The type of the role being referenced.",
+          "format": "string",
+          "type": "string"
+        },
+        "name": {
+          "description": "The name of the ServiceRole object being referenced.",
+          "format": "string",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "subjects": {
+      "description": "List of subjects that are assigned the ServiceRole object.",
+      "items": {
+        "properties": {
+          "group": {
+            "format": "string",
+            "type": "string"
+          },
+          "groups": {
+            "items": {
+              "format": "string",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "ips": {
+            "items": {
+              "format": "string",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "names": {
+            "items": {
+              "format": "string",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "namespaces": {
+            "items": {
+              "format": "string",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "notGroups": {
+            "items": {
+              "format": "string",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "notIps": {
+            "items": {
+              "format": "string",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "notNames": {
+            "items": {
+              "format": "string",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "notNamespaces": {
+            "items": {
+              "format": "string",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "properties": {
+            "additionalProperties": {
+              "format": "string",
+              "type": "string"
+            },
+            "description": "Optional.",
+            "type": "object"
+          },
+          "user": {
+            "description": "Optional.",
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "type": "array"
+    }
+  },
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "version": "1.6.2",
+  "object-type": "ServiceRoleBinding",
+  "service-mesh": "Istio"
+}

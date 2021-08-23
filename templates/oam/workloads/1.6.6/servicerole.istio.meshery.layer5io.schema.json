@@ -1,0 +1,111 @@
+{
+  "description": "See more details at:",
+  "properties": {
+    "rules": {
+      "description": "The set of access rules (permissions) that the role has.",
+      "items": {
+        "properties": {
+          "constraints": {
+            "description": "Optional.",
+            "items": {
+              "properties": {
+                "key": {
+                  "description": "Key of the constraint.",
+                  "format": "string",
+                  "type": "string"
+                },
+                "values": {
+                  "description": "List of valid values for the constraint.",
+                  "items": {
+                    "format": "string",
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "hosts": {
+            "items": {
+              "format": "string",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "methods": {
+            "description": "Optional.",
+            "items": {
+              "format": "string",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "notHosts": {
+            "items": {
+              "format": "string",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "notMethods": {
+            "items": {
+              "format": "string",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "notPaths": {
+            "items": {
+              "format": "string",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "notPorts": {
+            "items": {
+              "format": "int32",
+              "type": "integer",
+              "minimum": -2147483648,
+              "maximum": 2147483647
+            },
+            "type": "array"
+          },
+          "paths": {
+            "description": "Optional.",
+            "items": {
+              "format": "string",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "ports": {
+            "items": {
+              "format": "int32",
+              "type": "integer",
+              "minimum": -2147483648,
+              "maximum": 2147483647
+            },
+            "type": "array"
+          },
+          "services": {
+            "description": "A list of service names.",
+            "items": {
+              "format": "string",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "type": "array"
+    }
+  },
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "version": "1.6.6",
+  "object-type": "ServiceRole",
+  "service-mesh": "Istio"
+}

@@ -1,0 +1,19 @@
+{
+  "apiVersion": "core.oam.dev/v1alpha1",
+  "kind": "WorkloadDefinition",
+  "metadata": {
+    "name": "rule.Istio"
+  },
+  "spec": {
+    "definitionRef": {
+      "name": "rule.istio.meshery.layer5.io"
+    },
+    "metadata": {
+      "@type": "pattern.meshery.io/mesh/workload",
+      "meshVersion": "1.7.8",
+      "meshName": "ISTIO",
+      "k8sAPIVersion": "config.istio.io/v1alpha2",
+      "k8sKind": "rule"
+    }
+  }
+}
