@@ -1,0 +1,19 @@
+{
+  "apiVersion": "core.oam.dev/v1alpha1",
+  "kind": "WorkloadDefinition",
+  "metadata": {
+    "name": "HTTPAPISpec.Istio"
+  },
+  "spec": {
+    "definitionRef": {
+      "name": "httpapispec.istio.meshery.layer5.io"
+    },
+    "metadata": {
+      "@type": "pattern.meshery.io/mesh/workload",
+      "meshVersion": "1.6.7",
+      "meshName": "ISTIO",
+      "k8sAPIVersion": "config.istio.io/v1alpha2",
+      "k8sKind": "HTTPAPISpec"
+    }
+  }
+}

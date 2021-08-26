@@ -1,0 +1,71 @@
+{
+  "description": "See more details at:",
+  "properties": {
+    "enforcementMode": {
+      "enum": [
+        "ENFORCED",
+        "PERMISSIVE"
+      ],
+      "type": "string"
+    },
+    "exclusion": {
+      "description": "A list of services or namespaces that should not be enforced by Istio RBAC policies.",
+      "properties": {
+        "namespaces": {
+          "description": "A list of namespaces.",
+          "items": {
+            "format": "string",
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "services": {
+          "description": "A list of services.",
+          "items": {
+            "format": "string",
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "inclusion": {
+      "description": "A list of services or namespaces that should be enforced by Istio RBAC policies.",
+      "properties": {
+        "namespaces": {
+          "description": "A list of namespaces.",
+          "items": {
+            "format": "string",
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "services": {
+          "description": "A list of services.",
+          "items": {
+            "format": "string",
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "mode": {
+      "description": "Istio RBAC mode.",
+      "enum": [
+        "OFF",
+        "ON",
+        "ON_WITH_INCLUSION",
+        "ON_WITH_EXCLUSION"
+      ],
+      "type": "string"
+    }
+  },
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "version": "1.6.5",
+  "object-type": "RbacConfig",
+  "service-mesh": "Istio"
+}

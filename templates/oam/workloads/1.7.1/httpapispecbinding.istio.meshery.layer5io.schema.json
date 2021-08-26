@@ -1,0 +1,82 @@
+{
+  "properties": {
+    "api_specs": {
+      "items": {
+        "properties": {
+          "name": {
+            "description": "The short name of the HTTPAPISpec.",
+            "format": "string",
+            "type": "string"
+          },
+          "namespace": {
+            "description": "Optional namespace of the HTTPAPISpec.",
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "apiSpecs": {
+      "items": {
+        "properties": {
+          "name": {
+            "description": "The short name of the HTTPAPISpec.",
+            "format": "string",
+            "type": "string"
+          },
+          "namespace": {
+            "description": "Optional namespace of the HTTPAPISpec.",
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "services": {
+      "description": "One or more services to map the listed HTTPAPISpec onto.",
+      "items": {
+        "properties": {
+          "domain": {
+            "description": "Domain suffix used to construct the service FQDN in implementations that support such specification.",
+            "format": "string",
+            "type": "string"
+          },
+          "labels": {
+            "additionalProperties": {
+              "format": "string",
+              "type": "string"
+            },
+            "description": "Optional one or more labels that uniquely identify the service version.",
+            "type": "object"
+          },
+          "name": {
+            "description": "The short name of the service such as \"foo\".",
+            "format": "string",
+            "type": "string"
+          },
+          "namespace": {
+            "description": "Optional namespace of the service.",
+            "format": "string",
+            "type": "string"
+          },
+          "service": {
+            "description": "The service FQDN.",
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "type": "array"
+    }
+  },
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "version": "1.7.1",
+  "object-type": "HTTPAPISpecBinding",
+  "service-mesh": "Istio"
+}
