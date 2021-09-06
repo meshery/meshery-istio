@@ -12,7 +12,6 @@ replace (
 
 require (
 	github.com/aspenmesh/istio-vet v0.0.0-20200806222806-9c8e9a962b9f
-	github.com/cenkalti/backoff v2.2.1+incompatible
 	github.com/layer5io/meshery-adapter-library v0.1.23
 	github.com/layer5io/meshkit v0.2.24
 	github.com/layer5io/service-mesh-performance v0.3.3
