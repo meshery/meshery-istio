@@ -22,6 +22,8 @@ import (
 
 	"github.com/layer5io/meshery-istio/istio"
 	"github.com/layer5io/meshkit/logger"
+	"github.com/layer5io/meshkit/utils/manifests"
+	smp "github.com/layer5io/service-mesh-performance/spec"
 
 	// "github.com/layer5io/meshkit/tracing"
 	"github.com/layer5io/meshery-adapter-library/adapter"
@@ -163,17 +165,38 @@ func registerDynamicCapabilities(port string, log logger.Handler) {
 	const reRegisterAfter = 24
 	ticker := time.NewTicker(reRegisterAfter * time.Hour)
 	for {
-		select {
-		case <-ticker.C:
-			registerWorkloads(port, log)
-		}
+		<-ticker.C
+		registerWorkloads(port, log)
 	}
 
 }
 func registerWorkloads(port string, log logger.Handler) {
 	log.Info("Registering latest workload components")
+	release, err := config.GetLatestReleases(1)
+	if err != nil {
+		log.Info("Could not get latest stable release")
+		return
+	}
+	version := release[0].TagName
+	log.Info("version " + version)
 	// Register workloads
-	if err := oam.RegisterWorkLoadsDynamically(mesheryServerAddress(), serviceAddress()+":"+port); err != nil {
+	if err := adapter.RegisterWorkLoadsDynamically(mesheryServerAddress(), serviceAddress()+":"+port, &adapter.DynamicComponentsConfig{
+		TimeoutInMinutes: 30,
+		URL:              "https://raw.githubusercontent.com/istio/istio/" + version + "/manifests/charts/base/crds/crd-all.gen.yaml",
+		GenerationMethod: adapter.Manifests,
+		Config: manifests.Config{
+			Name:        smp.ServiceMesh_Type_name[int32(smp.ServiceMesh_ISTIO)],
+			MeshVersion: version,
+			Filter: manifests.CrdFilter{
+				RootFilter:    []string{"$[?(@.kind==\"CustomResourceDefinition\")]"},
+				NameFilter:    []string{"$..[\"spec\"][\"names\"][\"kind\"]"},
+				VersionFilter: []string{"$..spec.versions[0]", " --o-filter", "$[0]"},
+				GroupFilter:   []string{"$..spec", " --o-filter", "$[]"},
+				SpecFilter:    []string{"$..openAPIV3Schema.properties.spec", " --o-filter", "$[]"},
+			},
+		},
+		Operation: config.IstioOperation,
+	}); err != nil {
 		log.Info(err.Error())
 		return
 	}
