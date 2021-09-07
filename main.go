@@ -171,14 +171,13 @@ func registerDynamicCapabilities(port string, log logger.Handler) {
 
 }
 func registerWorkloads(port string, log logger.Handler) {
-	log.Info("Registering latest workload components")
 	release, err := config.GetLatestReleases(1)
 	if err != nil {
 		log.Info("Could not get latest stable release")
 		return
 	}
 	version := release[0].TagName
-	log.Info("version " + version)
+	log.Info("Registering latest workload components for version ", version)
 	// Register workloads
 	if err := adapter.RegisterWorkLoadsDynamically(mesheryServerAddress(), serviceAddress()+":"+port, &adapter.DynamicComponentsConfig{
 		TimeoutInMinutes: 30,
