@@ -35,7 +35,7 @@ jobs:
           commit_author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
           commit_options: '--signoff'
           commit_message: 'run error codes utility'
-          file_pattern: helpers/ **/error.go
+          file_pattern: helpers/ **error.go
 
       # to push changes to meshery docs
       - name: Checkout meshery
@@ -59,5 +59,5 @@ jobs:
           commit_user_email: ci@layer5.io
           commit_author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
           commit_options: '--signoff'
-          commit_message: '[Docs] Error Code Reference: Updated codes for Istio adapter'
+          commit_message: '[Docs] Error Code Reference: Meshery Adapter for Istio updated'
           file_pattern: docs/
