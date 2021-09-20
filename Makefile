@@ -23,3 +23,10 @@ run:
 
 error:
 	go run github.com/layer5io/meshkit/cmd/errorutil -d . analyze -i ./helpers -o ./helpers
+
+test:
+	export CURRENTCONTEXT="$(kubectl config current-context)" 
+	echo "current-context:" ${CURRENTCONTEXT} 
+	export KUBECONFIG="${HOME}/.kube/config"
+	echo "environment-kubeconfig:" ${KUBECONFIG}
+	GOPROXY=direct GOSUMDB=off GO111MODULE=on go test -v ./...
