@@ -1,0 +1,179 @@
+name: EmojiVotoIstioApplication
+services:
+  emoji:
+    type: Application
+    namespace: emojivoto
+    settings:
+      advanced:
+        labels:
+          app.kubernetes.io/name: emoji
+          app.kubernetes.io/part-of: emojivoto
+          app.kubernetes.io/version: v11
+      containers:
+        - env:
+          - name: GRPC_PORT
+            value: "8080"
+          - name: PROM_PORT
+            value: "8801"
+          image: docker.l5d.io/buoyantio/emojivoto-emoji-svc:v11
+          name: emoji-svc
+          ports:
+            - containerPort: 8080
+              name: grpc
+            - containerPort: 8801
+              name: prom
+          resources:
+            requests:
+              cpu: 100m
+      name: emoji
+      namespace: emojivoto
+      replicas: 1
+      selector:
+        matchLabels:
+          app: emoji-svc
+          version: v11
+  emoji-service:
+    type: Service.K8s
+    namespace: emojivoto
+    settings:
+      name: emoji-svc
+      namespace: emojivoto
+      selector:
+        app: emoji-svc
+      ports:
+      - name: grpc
+        port: 8080
+        targetPort: 8080
+      - name: prom
+        port: 8801
+        targetPort: 8801
+
+  vote-bot:
+    type: Application
+    namespace: emojivoto
+    settings:
+      advanced:
+        labels:
+          app.kubernetes.io/name: vote-bot
+          app.kubernetes.io/part-of: emojivoto
+          app.kubernetes.io/version: v11
+      containers:
+      - image: docker.l5d.io/buoyantio/emojivoto-web:v11
+        command:
+        - emojivoto-vote-bot
+        env:
+        - name: WEB_HOST
+          value: web-svc.emojivoto:80
+        name: vote-bot
+        resources:
+          requests:
+            cpu: 10m
+  voting:
+    type: Application
+    namespace: emojivoto
+    settings:
+      advanced:
+        labels:
+          app.kubernetes.io/name: voting
+          app.kubernetes.io/part-of: emojivoto
+          app.kubernetes.io/version: v11
+      containers:
+      - env:
+        - name: GRPC_PORT
+          value: "8080"
+        - name: PROM_PORT
+          value: "8801"
+        image: docker.l5d.io/buoyantio/emojivoto-voting-svc:v11
+        name: voting-svc
+        ports:
+        - containerPort: 8080
+          name: grpc
+        - containerPort: 8801
+          name: prom
+        resources:
+          requests:
+            cpu: 100m
+  voting-service:
+    type: Service.K8s
+    namespace: emojivoto
+    settings:
+      name: voting-svc
+      namespace: emojivoto
+      ports:
+      - name: grpc
+        port: 8080
+        targetPort: 8080
+      - name: prom
+        port: 8801
+        targetPort: 8801
+
+  web:
+    type: Application
+    namespace: emojivoto
+    settings:
+      advanced:
+        labels:
+          app.kubernetes.io/name: web
+          app.kubernetes.io/part-of: emojivoto
+          app.kubernetes.io/version: v11
+      containers:
+      - env:
+        - name: WEB_PORT
+          value: "8080"
+        - name: EMOJISVC_HOST
+          value: emoji-svc.emojivoto:8080
+        - name: VOTINGSVC_HOST
+          value: voting-svc.emojivoto:8080
+        - name: INDEX_BUNDLE
+          value: dist/index_bundle.js
+        image: docker.l5d.io/buoyantio/emojivoto-web:v11
+        name: web-svc
+        ports:
+        - containerPort: 8080
+          name: http
+        resources:
+          requests:
+            cpu: 100m
+  web-svc:
+    type: Application
+    namespace: emojivoto
+    settings:
+      name: web-svc
+      namespace: emojivoto
+      type: ClusterIP
+      selector:
+        app: web-svc
+      ports:
+      - name: http
+        port: 80
+        targetPort: 8080
+
+  sample-app-gateway:
+    type: Gateway.Istio
+    namespace: emojivoto
+    settings:
+      name: sample-app-gateway
+      namespace: emojivoto
+      selector:
+        istio: ingressgateway
+      servers:
+      - hosts:
+        - '*'
+        port:
+          name: http
+          number: 80
+          protocol: HTTP
+  emojivoto-vs:
+    type: VirtualService.Istio
+    namespace: emojivoto
+    settings:
+      gateways:
+      - sample-app-gateway
+      hosts:
+      - emojivoto.meshery.io
+      http:
+      - route:
+        - destination:
+            host: web-svc
+            port:
+              number: 80

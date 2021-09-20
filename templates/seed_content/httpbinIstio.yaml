@@ -1,0 +1,61 @@
+name: HttpBinIstioApplication
+services:
+  httpbin:
+    type: Application
+    namespace: default
+    settings:
+      advanced:
+        labels:
+          app: httpbin
+          version: v1
+      containers:
+      - image: docker.io/kennethreitz/httpbin
+        name: httpbin
+        ports:
+        - containerPort: 80
+      name: httpbin
+      namespace: default
+      replicas: 1
+  httpbin-service:
+    type: Service.K8s
+    namespace: default
+    settings:
+      name: httpbin
+      namespace: default
+      ports:
+      - name: http
+        port: 8080
+        targetPort: 80
+      selector:
+        app: httpbin
+  httpbin-gateway:
+    type: Gateway.Istio
+    namespace: default
+    settings:
+      name: httpbin-gateway
+      namespace: default
+      selector:
+        istio: ingressgateway
+        servers:
+        - hosts:
+          - '*'
+          port:
+            name: http
+            number: 80
+            protocol: HTTP
+  httpbivirtual-service:
+    type: VirtualService.Istio
+    namespace: default
+    settings:
+      - gateways:
+        - httpbin-gateway
+        hosts:
+          - httpbin.meshery.io
+        http:
+        - route:
+          - destination:
+              host: httpbin
+              port:
+                number: 8000
+        name: httpbin-virtual-service
+        namespace: default
