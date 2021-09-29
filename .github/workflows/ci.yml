@@ -18,10 +18,10 @@ jobs:
         with:
           fetch-depth: 1
       - name: Setup Go
-        uses: actions/setup-go@v1
+        uses: actions/setup-go@v2
         with:
           go-version: ${{ secrets.GO_VERSION }}
-      - run: GOPROXY=direct GOSUMDB=off go get -u golang.org/x/lint/golint; go list ./istio/... | grep -v /vendor/ | xargs -L1 /home/runner/go/bin/golint -set_exit_status
+      - run: GOPROXY=https://proxy.golang.org,direct GOSUMDB=off go get -u golang.org/x/lint/golint; go list ./istio/... | grep -v /vendor/ | xargs -L1 /home/runner/go/bin/golint -set_exit_status
   error_check:
     name: Error check
     runs-on: ubuntu-latest
@@ -31,10 +31,10 @@ jobs:
         with:
           fetch-depth: 1
       - name: Setup Go
-        uses: actions/setup-go@v1
+        uses: actions/setup-go@v2
         with:
           go-version: ${{ secrets.GO_VERSION }}
-      - run: GOPROXY=direct GOSUMDB=off GO111MODULE=on go get -u github.com/kisielk/errcheck; /home/runner/go/bin/errcheck -tags draft ./...
+      - run: GOPROXY=https://proxy.golang.org,direct GOSUMDB=off GO111MODULE=on go get -u github.com/kisielk/errcheck; /home/runner/go/bin/errcheck -tags draft ./...
   static_check:
     name: Static check
     runs-on: ubuntu-latest
@@ -44,10 +44,10 @@ jobs:
         with:
           fetch-depth: 1
       - name: Setup Go
-        uses: actions/setup-go@v1
+        uses: actions/setup-go@v2
         with:
           go-version: ${{ secrets.GO_VERSION }}
-      - run: GOPROXY=direct GOSUMDB=off GO111MODULE=on go get -u honnef.co/go/tools/cmd/staticcheck; /home/runner/go/bin/staticcheck -tags draft -checks all ./istio/... # https://staticcheck.io/docs/checks
+      - run: GOPROXY=https://proxy.golang.org,direct GOSUMDB=off GO111MODULE=on go get -u honnef.co/go/tools/cmd/staticcheck; /home/runner/go/bin/staticcheck -tags draft -checks all ./istio/... # https://staticcheck.io/docs/checks
   vet:
     name: Vet
     runs-on: ubuntu-latest
@@ -57,10 +57,10 @@ jobs:
         with:
           fetch-depth: 1
       - name: Setup Go
-        uses: actions/setup-go@v1
+        uses: actions/setup-go@v2
         with:
           go-version: ${{ secrets.GO_VERSION }}
-      - run: GOPROXY=direct GOSUMDB=off GO111MODULE=on go vet -tags draft ./...
+      - run: GOPROXY=https://proxy.golang.org,direct GOSUMDB=off GO111MODULE=on go vet -tags draft ./...
   sec_check:
     name: Security check
     runs-on: ubuntu-latest
@@ -87,7 +87,7 @@ jobs:
        with:
         fetch-depth: 1
      - name: Setup Go
-       uses: actions/setup-go@v1
+       uses: actions/setup-go@v2
        with:
         go-version: ${{ secrets.GO_VERSION }}
      - name: Create cluster using KinD
@@ -99,4 +99,4 @@ jobs:
          echo "current-context:" ${CURRENTCONTEXT}   
          export KUBECONFIG="${HOME}/.kube/config"
          echo "environment-kubeconfig:" ${KUBECONFIG}
-         GOPROXY=direct GOSUMDB=off GO111MODULE=on go test -v ./...
+         GOPROXY=https://proxy.golang.org,direct GOSUMDB=off GO111MODULE=on go test -v ./...
