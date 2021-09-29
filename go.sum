@@ -576,6 +576,8 @@ github.com/layer5io/meshkit v0.2.24 h1:ILWDRmnDPtXyLiNGxn5OTu1iF/XyBDQLgz/Y8paVw
 github.com/layer5io/meshkit v0.2.24/go.mod h1:blHAWgbcsNJ3rjKr8YvYke8jQILV75vRaARXYwSh0YA=
 github.com/layer5io/meshkit v0.2.28 h1:ZAMMRVuK2f2v+URlfgiy+uMPp99O7ygK/lrdK8GN3cc=
 github.com/layer5io/meshkit v0.2.28/go.mod h1:blHAWgbcsNJ3rjKr8YvYke8jQILV75vRaARXYwSh0YA=
+github.com/layer5io/meshkit v0.2.29 h1:Sdp40Jmwq78i3NAaQb6+pkaaiBTfRD+oQhOz91SAxlc=
+github.com/layer5io/meshkit v0.2.29/go.mod h1:blHAWgbcsNJ3rjKr8YvYke8jQILV75vRaARXYwSh0YA=
 github.com/layer5io/service-mesh-performance v0.3.2-0.20210122142912-a94e0658b021/go.mod h1:W153amv8aHAeIWxO7b7d7Vibt9RhaEVh4Uh+RG+BumQ=
 github.com/layer5io/service-mesh-performance v0.3.2/go.mod h1:W153amv8aHAeIWxO7b7d7Vibt9RhaEVh4Uh+RG+BumQ=
 github.com/layer5io/service-mesh-performance v0.3.3 h1:KtouYXg64y+G0soPJwDeB0sM6PXolBpkV6Ke15aqwmk=
