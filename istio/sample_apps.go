@@ -112,7 +112,7 @@ func (istio *Istio) LoadNamespaceToMesh(namespace string, remove bool) error {
 
 	ns, err := istio.KubeClient.CoreV1().Namespaces().Get(context.TODO(), namespace, metav1.GetOptions{})
 	if err != nil {
-		return err
+		return ErrLoadNamespace(err,namespace)
 	}
 
 	if ns.ObjectMeta.Labels == nil {
