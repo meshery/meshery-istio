@@ -122,7 +122,7 @@ var (
 	// ErrMakingBinExecutableCode implies error while makng istioctl executable
 	ErrMakingBinExecutableCode = "1031"
 
-	//ErrLoadNamespace implies error while finding namespace
+	// ErrLoadNamespaceCode implies error while finding namespace
 	ErrLoadNamespaceCode = "replace"
 
 	// ErrOpInvalid represents the errors which are generated
@@ -260,6 +260,7 @@ func ErrMakingBinExecutable(err error) error {
 	return errors.New(ErrMakingBinExecutableCode, errors.Alert, []string{"Error while making istioctl an executable"}, []string{err.Error()}, []string{}, []string{})
 }
 
+// ErrLoadNamespace implies error while finding namespace
 func ErrLoadNamespace(err error ,str string) error {
 	return errors.New(ErrLoadNamespaceCode, errors.Alert, []string{"Error while labeling namespace:", str}, []string{err.Error()}, []string{}, []string{})
 }
