@@ -123,7 +123,7 @@ var (
 	ErrMakingBinExecutableCode = "1031"
 
 	// ErrLoadNamespaceCode implies error while finding namespace
-	ErrLoadNamespaceCode = "replace"
+	ErrLoadNamespaceCode = "1032"
 
 	// ErrOpInvalid represents the errors which are generated
 	// when an invalid operation is requested
@@ -261,6 +261,6 @@ func ErrMakingBinExecutable(err error) error {
 }
 
 // ErrLoadNamespace implies error while finding namespace
-func ErrLoadNamespace(err error ,str string) error {
+func ErrLoadNamespace(err error, str string) error {
 	return errors.New(ErrLoadNamespaceCode, errors.Alert, []string{"Error while labeling namespace:", str}, []string{err.Error()}, []string{}, []string{})
 }
