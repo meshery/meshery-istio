@@ -91,10 +91,16 @@ func (istio *Istio) applyHelmChart(del bool, version, namespace, dirName string)
 	}
 
 	istio.Log.Info("Installing using helm charts...")
+	var act mesherykube.HelmChartAction
+	if del {
+		act = mesherykube.UNINSTALL
+	} else {
+		act = mesherykube.INSTALL
+	}
 	err := kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
 		LocalPath:       path.Join(downloadLocation, dirName, "manifests/charts/base"),
 		Namespace:       "istio-system",
-		Delete:          del,
+		Action:          act,
 		CreateNamespace: true,
 	})
 	if err != nil {
@@ -104,7 +110,7 @@ func (istio *Istio) applyHelmChart(del bool, version, namespace, dirName string)
 	err = kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
 		LocalPath:       path.Join(downloadLocation, dirName, "manifests/charts/istio-control/istio-discovery"),
 		Namespace:       "istio-system",
-		Delete:          del,
+		Action:          act,
 		CreateNamespace: true,
 	})
 	if err != nil {
@@ -114,7 +120,7 @@ func (istio *Istio) applyHelmChart(del bool, version, namespace, dirName string)
 	err = kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
 		LocalPath:       path.Join(downloadLocation, dirName, "manifests/charts/gateways/istio-ingress"),
 		Namespace:       "istio-system",
-		Delete:          del,
+		Action:          act,
 		CreateNamespace: true,
 	})
 	if err != nil {
@@ -124,7 +130,7 @@ func (istio *Istio) applyHelmChart(del bool, version, namespace, dirName string)
 	err = kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
 		LocalPath:       path.Join(downloadLocation, dirName, "manifests/charts/gateways/istio-egress"),
 		Namespace:       "istio-system",
-		Delete:          del,
+		Action:          act,
 		CreateNamespace: true,
 	})
 	if err != nil {

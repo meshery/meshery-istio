@@ -618,6 +618,8 @@ github.com/layer5io/meshery-adapter-library v0.1.24/go.mod h1:SLknhKksSoUtKzG2tv
 github.com/layer5io/meshkit v0.2.24/go.mod h1:blHAWgbcsNJ3rjKr8YvYke8jQILV75vRaARXYwSh0YA=
 github.com/layer5io/meshkit v0.2.30 h1:ubhnZaMxz3jfW0QX1S9LeBagq2RVnXxsnEyLaOzza8s=
 github.com/layer5io/meshkit v0.2.30/go.mod h1:WyC18J2CRVwlphKjj0V/W36szAy0yJMNKu3PId19RPE=
+github.com/layer5io/meshkit v0.2.31 h1:YOQ+XQzI34BDXmV+pHISChO7y7xcRK2L9KqlrhYx0Jk=
+github.com/layer5io/meshkit v0.2.31/go.mod h1:WyC18J2CRVwlphKjj0V/W36szAy0yJMNKu3PId19RPE=
 github.com/layer5io/service-mesh-performance v0.3.2-0.20210122142912-a94e0658b021/go.mod h1:W153amv8aHAeIWxO7b7d7Vibt9RhaEVh4Uh+RG+BumQ=
 github.com/layer5io/service-mesh-performance v0.3.2/go.mod h1:W153amv8aHAeIWxO7b7d7Vibt9RhaEVh4Uh+RG+BumQ=
 github.com/layer5io/service-mesh-performance v0.3.3 h1:KtouYXg64y+G0soPJwDeB0sM6PXolBpkV6Ke15aqwmk=
