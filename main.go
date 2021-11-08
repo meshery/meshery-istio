@@ -149,10 +149,11 @@ func serviceAddress() string {
 
 func registerCapabilities(port string, log logger.Handler) {
 	// Register workloads
+	log.Info("Registering static workloads...")
 	if err := oam.RegisterWorkloads(mesheryServerAddress(), serviceAddress()+":"+port); err != nil {
 		log.Info(err.Error())
 	}
-
+	log.Info("Registering static workloads completed")
 	// Register traits
 	if err := oam.RegisterTraits(mesheryServerAddress(), serviceAddress()+":"+port); err != nil {
 		log.Info(err.Error())
@@ -171,12 +172,18 @@ func registerDynamicCapabilities(port string, log logger.Handler) {
 
 }
 func registerWorkloads(port string, log logger.Handler) {
-	release, err := config.GetLatestReleases(1)
-	if err != nil {
-		log.Info("Could not get latest stable release")
+	// release, err := config.GetLatestReleases(1)
+	// if err != nil {
+	// 	log.Info("Could not get latest stable release")
+	// 	return
+	// }
+	// version := release[0].TagName
+	version := "1.11.4"
+	if os.Getenv("DYNAMIC_COMP_GEN") != "force" && oam.AvailableVersions[version] {
+		log.Info("Latest(", version, ") component already available via static component generation\n")
+		log.Info("Skipping dynamic component registeration")
 		return
 	}
-	version := release[0].TagName
 	log.Info("Registering latest workload components for version ", version)
 	// Register workloads
 	if err := adapter.RegisterWorkLoadsDynamically(mesheryServerAddress(), serviceAddress()+":"+port, &adapter.DynamicComponentsConfig{
