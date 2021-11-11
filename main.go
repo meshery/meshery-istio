@@ -172,13 +172,12 @@ func registerDynamicCapabilities(port string, log logger.Handler) {
 
 }
 func registerWorkloads(port string, log logger.Handler) {
-	// release, err := config.GetLatestReleases(1)
-	// if err != nil {
-	// 	log.Info("Could not get latest stable release")
-	// 	return
-	// }
-	// version := release[0].TagName
-	version := "1.11.4"
+	release, err := config.GetLatestReleases(1)
+	if err != nil {
+		log.Info("Could not get latest stable release")
+		return
+	}
+	version := release[0].TagName
 	if os.Getenv("DYNAMIC_COMP_GEN") != "force" && oam.AvailableVersions[version] {
 		log.Info("Latest(", version, ") component already available via static component generation\n")
 		log.Info("Skipping dynamic component registeration")
