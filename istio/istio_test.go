@@ -96,20 +96,20 @@ func TestIstio_ApplyOperation(t *testing.T) {
 		//	wantErr: false,
 		//},
 		// Tests for stale operation
-		{
-			name:   "Stale operation",
-			fields: fs,
-			args: args{
-				ctx: context.TODO(),
-				opReq: adapter.OperationRequest{
-					OperationName:     "stale",
-					Namespace:         "default",
-					IsDeleteOperation: false,
-					OperationID:       "test_id",
-				},
-			},
-			wantErr: false,
-		},
+		// {
+		// 	name:   "Stale operation",
+		// 	fields: fs,
+		// 	args: args{
+		// 		ctx: context.TODO(),
+		// 		opReq: adapter.OperationRequest{
+		// 			OperationName:     "stale",
+		// 			Namespace:         "default",
+		// 			IsDeleteOperation: false,
+		// 			OperationID:       "test_id",
+		// 		},
+		// 	},
+		// 	wantErr: false,
+		// },
 		// Tests for istio operation
 		{
 			name:   "Istio operation",
