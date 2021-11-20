@@ -34,6 +34,10 @@ func New(c meshkitCfg.Handler, l logger.Handler, kc meshkitCfg.Handler) adapter.
 // ApplyOperation applies the operation on istio
 func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationRequest) error {
 	operations := make(adapter.Operations)
+	fmt.Println("adapter.OperationsKey- ", adapter.OperationsKey)
+	if istio.Config == nil {
+		fmt.Println("THIS IS NIL")
+	}
 	err := istio.Config.GetObject(adapter.OperationsKey, &operations)
 	if err != nil {
 		return err

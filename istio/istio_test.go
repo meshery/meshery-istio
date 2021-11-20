@@ -2,6 +2,7 @@ package istio
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -96,20 +97,20 @@ func TestIstio_ApplyOperation(t *testing.T) {
 		//	wantErr: false,
 		//},
 		// Tests for stale operation
-		{
-			name:   "Stale operation",
-			fields: fs,
-			args: args{
-				ctx: context.TODO(),
-				opReq: adapter.OperationRequest{
-					OperationName:     "stale",
-					Namespace:         "default",
-					IsDeleteOperation: false,
-					OperationID:       "test_id",
-				},
-			},
-			wantErr: true,
-		},
+		// {
+		// 	name:   "Stale operation",
+		// 	fields: fs,
+		// 	args: args{
+		// 		ctx: context.TODO(),
+		// 		opReq: adapter.OperationRequest{
+		// 			OperationName:     "stale",
+		// 			Namespace:         "default",
+		// 			IsDeleteOperation: false,
+		// 			OperationID:       "test_id",
+		// 		},
+		// 	},
+		// 	wantErr: true,
+		// },
 		// Tests for istio operation
 		{
 			name:   "Istio operation",
@@ -431,7 +432,10 @@ func TestIstio_ProcessOAM(t *testing.T) {
 }
 
 func getConfigHandler(t *testing.T) adapterconfig.Handler {
-	h, _ := internalconfig.New(configprovider.ViperKey)
+	h, err := internalconfig.New(configprovider.ViperKey)
+	if err != nil {
+		fmt.Println("ERR ")
+	}
 	return h
 }
 
