@@ -406,6 +406,7 @@ func unzip(location string, zippedContent io.Reader) error {
 			if err != nil {
 				return ErrUnzipFile(err)
 			}
+			/* #nosec G307 */
 			defer func() {
 				if err := outputFile.Close(); err != nil {
 					fmt.Println(err)
