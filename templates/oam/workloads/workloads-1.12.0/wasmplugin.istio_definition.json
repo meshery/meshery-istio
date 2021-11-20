@@ -1,0 +1,19 @@
+{
+  "apiVersion": "core.oam.dev/v1alpha1",
+  "kind": "WorkloadDefinition",
+  "metadata": {
+    "name": "WasmPlugin.Istio"
+  },
+  "spec": {
+    "definitionRef": {
+      "name": "wasmplugin.istio.meshery.layer5.io"
+    },
+    "metadata": {
+      "@type": "pattern.meshery.io/mesh/workload",
+      "meshVersion": "1.12.0",
+      "meshName": "ISTIO",
+      "k8sAPIVersion": "extensions.istio.io/v1alpha1",
+      "k8sKind": "WasmPlugin"
+    }
+  }
+}
