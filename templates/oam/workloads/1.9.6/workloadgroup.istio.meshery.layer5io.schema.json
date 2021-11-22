@@ -211,8 +211,5 @@
     }
   },
   "type": "object",
-  "$schema": "http://json-schema.org/draft-04/schema#",
-  "version": "1.9.6",
-  "object-type": "WorkloadGroup",
-  "service-mesh": "Istio"
+  "$schema": "http://json-schema.org/draft-04/schema#"
 }

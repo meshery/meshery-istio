@@ -245,8 +245,5 @@
     }
   },
   "type": "object",
-  "$schema": "http://json-schema.org/draft-04/schema#",
-  "version": "1.11.2",
-  "object-type": "AuthorizationPolicy",
-  "service-mesh": "Istio"
+  "$schema": "http://json-schema.org/draft-04/schema#"
 }
