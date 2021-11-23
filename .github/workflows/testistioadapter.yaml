@@ -82,8 +82,8 @@ jobs:
         run: mesheryctl pattern apply -f ./.github/install/deploy_istio.yaml 
 
 
-      - name: Sleep for 300 sec
-        run: sleep 300s
+      - name: Sleep for 290 sec
+        run: sleep 290s
    
       - name: Check adapter logs
         run: |
