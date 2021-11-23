@@ -104,8 +104,5 @@
     }
   },
   "type": "object",
-  "$schema": "http://json-schema.org/draft-04/schema#",
-  "version": "1.6.1",
-  "object-type": "ServiceRole",
-  "service-mesh": "Istio"
+  "$schema": "http://json-schema.org/draft-04/schema#"
 }

@@ -461,8 +461,5 @@
     }
   },
   "type": "object",
-  "$schema": "http://json-schema.org/draft-04/schema#",
-  "version": "1.6.6",
-  "object-type": "HTTPAPISpec",
-  "service-mesh": "Istio"
+  "$schema": "http://json-schema.org/draft-04/schema#"
 }

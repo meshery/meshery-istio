@@ -51,8 +51,5 @@
     }
   },
   "type": "object",
-  "$schema": "http://json-schema.org/draft-04/schema#",
-  "version": "1.7.1",
-  "object-type": "PeerAuthentication",
-  "service-mesh": "Istio"
+  "$schema": "http://json-schema.org/draft-04/schema#"
 }
