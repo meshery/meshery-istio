@@ -8,7 +8,7 @@ on:
       - "v*"
   pull_request:
     branches:
-      - main
+      - master
 jobs:
   SetPatterfile:
     runs-on: ubuntu-latest
