@@ -26,6 +26,7 @@ jobs:
            
            yq e -i '.services.istio.settings.version="${{ steps.gettag.outputs.release }}"' ./.github/install/deploy.yaml 
            cat ./.github/install/deploy.yaml
+      - name: Uploading file
         uses: actions/upload-artifact@v2
         with:
           name: patternfile
