@@ -28,7 +28,7 @@ jobs:
 
   TestIstio:
     needs: SetPatterfile
-    uses: meshery/meshery/.github/workflows/testadapters.yaml@master
+    uses: Revolyssup/test-workflows/.github/workflows/general.yaml@main
     with:
       expected_pods: istiod,istio-egressgateway,istio-ingressgateway
       expected_pods_namespaces: istio-system,istio-system,istio-system
