@@ -5,4 +5,4 @@ services:
     type: IstioMesh
     namespace: istio-system
     settings:
-      version: 1.9.1
+      version: 
