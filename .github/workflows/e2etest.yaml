@@ -15,12 +15,17 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v2
+      - name: Get latest release tag
+        id: gettag
+        uses: pozetroninc/github-action-get-latest-release@master
+        with:
+          repository: istio/istio
+          excludes: prerelease, draft
       - name: Change service mesh version in patternfile
         run: | 
            
-           yq e -i '.services.istio.settings.version="1.9.1"' ./.github/install/deploy.yaml 
+           yq e -i '.services.istio.settings.version="${{ steps.gettag.outputs.release }}"' ./.github/install/deploy.yaml 
            cat ./.github/install/deploy.yaml
-      - name: Uploading file
         uses: actions/upload-artifact@v2
         with:
           name: patternfile

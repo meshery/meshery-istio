@@ -5,4 +5,4 @@ services:
     type: IstioMesh
     namespace: istio-system
     settings:
-      version: 
+      version: #will be filled dynamically in workflow
