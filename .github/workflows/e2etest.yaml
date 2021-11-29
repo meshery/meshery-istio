@@ -1,0 +1,46 @@
+name: Test Istio Adapter
+
+on:
+  push:
+    branches:
+      - "*"
+    tags:
+      - "v*"
+  pull_request:
+    branches:
+      - "*"
+jobs:
+  SetPatterfile:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+      - name: Get latest release tag
+        id: gettag
+        uses: pozetroninc/github-action-get-latest-release@master
+        with:
+          repository: istio/istio
+          excludes: prerelease, draft
+      - name: Change service mesh version in patternfile
+        run: | 
+           
+           yq e -i '.services.istio.settings.version="${{ steps.gettag.outputs.release }}"' ./.github/install/deploy.yaml 
+           cat ./.github/install/deploy.yaml
+      - name: Uploading file
+        uses: actions/upload-artifact@v2
+        with:
+          name: patternfile
+          path: ./.github/install/deploy.yaml 
+
+  TestIstio:
+    needs: SetPatterfile
+    uses: meshery/meshery/.github/workflows/testadapters.yaml@master
+    with:
+      expected_pods: istiod,istio-egressgateway,istio-ingressgateway
+      expected_pods_namespaces: istio-system,istio-system,istio-system
+      deployment_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-istio-deployment.yaml
+      service_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-istio-service.yaml
+      adapter_name: istio
+      patternfile_name: deploy.yaml
+    secrets:
+      token: ${{ secrets.PROVIDER_TOKEN }}
