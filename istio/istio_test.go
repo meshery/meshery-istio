@@ -386,10 +386,7 @@ func TestIstio_ApplyOperation(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			istio := &Istio{
-				Adapter: tt.fields.Adapter,
-			}
-			if err := istio.ApplyOperation(tt.args.ctx, tt.args.opReq); (err != nil) != tt.wantErr {
+			if err := tt.fields.Adapter.ApplyOperation(tt.args.ctx, tt.args.opReq); (err != nil) != tt.wantErr {
 				t.Errorf("Istio.ApplyOperation() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
