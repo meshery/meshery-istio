@@ -1,4 +1,4 @@
-name: Test Istio Adapter
+name: Test Istio Adapter - control plane 
 
 on:
   push:
