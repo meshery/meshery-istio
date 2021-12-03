@@ -43,6 +43,9 @@ func (istio *Istio) installAddon(namespace string, del bool, service string, pat
 	}
 
 	for _, patch := range patches {
+		if patch == "" {
+			continue //avoid throwing error when a given patch key didn't exist for a specific addon type in operations
+		}
 		if !del {
 			_, err := url.ParseRequestURI(patch)
 			if err != nil {
