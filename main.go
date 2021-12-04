@@ -171,18 +171,36 @@ func registerDynamicCapabilities(port string, log logger.Handler) {
 
 }
 func registerWorkloads(port string, log logger.Handler) {
-	release, err := config.GetLatestReleases(1)
-	if err != nil {
-		log.Info("Could not get latest stable release")
-		return
+	var url string
+	var gm string
+	//If a URL is passed from env variable, it will be used for component generation with default method being "using manifests"
+	// In case a helm chart URL is passed, COMP_GEN_METHOD env variable should be set to Helm otherwise the component generation fails
+	if os.Getenv("COMP_GEN_URL") != "" {
+		url = os.Getenv("COMP_GEN_URL")
+		if os.Getenv("COMP_GEN_METHOD") == "Helm" || os.Getenv("COMP_GEN_METHOD") == "Manifest" {
+			gm = os.Getenv("COMP_GEN_METHOD")
+		} else {
+			gm = adapter.Manifests
+		}
+		log.Info("Registering workload components from url ", url, " using ", gm, " method...")
+	} else {
+		release, err := config.GetLatestReleases(1)
+		if err != nil {
+			log.Info("Could not get latest stable release")
+			return
+		}
+		version := release[0].TagName
+		log.Info("Registering latest workload components for version ", version)
+		//default way
+		url = "https://raw.githubusercontent.com/istio/istio/" + version + "/manifests/charts/base/crds/crd-all.gen.yaml"
+		gm = adapter.Manifests
 	}
-	version := release[0].TagName
-	log.Info("Registering latest workload components for version ", version)
+
 	// Register workloads
 	if err := adapter.RegisterWorkLoadsDynamically(mesheryServerAddress(), serviceAddress()+":"+port, &adapter.DynamicComponentsConfig{
 		TimeoutInMinutes: 30,
-		URL:              "https://raw.githubusercontent.com/istio/istio/" + version + "/manifests/charts/base/crds/crd-all.gen.yaml",
-		GenerationMethod: adapter.Manifests,
+		URL:              url,
+		GenerationMethod: gm,
 		Config: manifests.Config{
 			Name:        smp.ServiceMesh_Type_name[int32(smp.ServiceMesh_ISTIO)],
 			MeshVersion: version,
