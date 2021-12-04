@@ -406,11 +406,9 @@ func unzip(location string, zippedContent io.Reader) error {
 			if err != nil {
 				return ErrUnzipFile(err)
 			}
-<<<<<<< HEAD
-			//#nosec
-=======
+
 			/* #nosec G307 */
->>>>>>> upstream/master
+
 			defer func() {
 				if err := outputFile.Close(); err != nil {
 					fmt.Println(err)
