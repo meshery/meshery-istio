@@ -174,7 +174,7 @@ func registerWorkloads(port string, log logger.Handler) {
 	var url string
 	var gm string
 	//If a URL is passed from env variable, it will be used for component generation with default method being "using manifests"
-	// In case a helm chart url is passed,COMP_GEN_METHOD env variable should be set to Helm otherwise the component generation fails
+	// In case a helm chart URL is passed, COMP_GEN_METHOD env variable should be set to Helm otherwise the component generation fails
 	if os.Getenv("COMP_GEN_URL") != "" {
 		url = os.Getenv("COMP_GEN_URL")
 		if os.Getenv("COMP_GEN_METHOD") == "Helm" || os.Getenv("COMP_GEN_METHOD") == "Manifest" {
