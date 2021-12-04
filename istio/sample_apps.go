@@ -124,9 +124,23 @@ func (istio *Istio) LoadNamespaceToMesh(namespace string, remove bool) error {
 		delete(ns.ObjectMeta.Labels, "istio-injection")
 	}
 
+	// How to use meshkit errors which are logged using meshkit logger
+	//
+	// The LoadNamespaceToMesh() function is called in istio/istio.go and the
+	// error returned by this is logged through the meshkit logger
+	//
+	// The below function returns Go's built-in error type but we can't
+	// log that using meshkit logger.
+	//
+	// Thus, the error returned in the line below should be wrapped into a meshkit
+	// error first and then returned.
 	_, err = istio.KubeClient.CoreV1().Namespaces().Update(context.TODO(), ns, metav1.UpdateOptions{})
 	if err != nil {
-		return err
+		// Don't do this ❌
+		// return err
+
+		// Do this ✔
+		return ErrLoadNamespace(err, namespace)
 	}
 	return nil
 }
