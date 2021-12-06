@@ -174,6 +174,17 @@ func registerDynamicCapabilities(port string, log logger.Handler) {
 func registerWorkloads(port string, log logger.Handler) {
 	var url string
 	var gm string
+	// Prechecking to skip comp gen
+	release, err := config.GetLatestReleases(1)
+	if err != nil {
+		log.Info("Could not get latest stable release")
+		return
+	}
+	version := release[0].TagName
+	if os.Getenv("FORCE_DYNAMIC_REG") != "true" && oam.AvailableVersions[version] {
+		log.Info("Components available statically for version ", version, ". Skipping dynamic component registeration")
+		return
+	}
 	//If a URL is passed from env variable, it will be used for component generation with default method being "using manifests"
 	// In case a helm chart URL is passed, COMP_GEN_METHOD env variable should be set to Helm otherwise the component generation fails
 	if os.Getenv("COMP_GEN_URL") != "" {
@@ -185,12 +196,6 @@ func registerWorkloads(port string, log logger.Handler) {
 		}
 		log.Info("Registering workload components from url ", url, " using ", gm, " method...")
 	} else {
-		release, err := config.GetLatestReleases(1)
-		if err != nil {
-			log.Info("Could not get latest stable release")
-			return
-		}
-		version := release[0].TagName
 		log.Info("Registering latest workload components for version ", version)
 		//default way
 		url = "https://raw.githubusercontent.com/istio/istio/" + version + "/manifests/charts/base/crds/crd-all.gen.yaml"
