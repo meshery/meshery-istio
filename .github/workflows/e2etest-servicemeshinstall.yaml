@@ -1,4 +1,4 @@
-name: Test Istio Adapter
+name: Test Meshery Adapter for Istio - control plane 
 
 on:
   push:
