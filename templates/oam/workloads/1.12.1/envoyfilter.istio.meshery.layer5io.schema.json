@@ -16,7 +16,8 @@
               "VIRTUAL_HOST",
               "HTTP_ROUTE",
               "CLUSTER",
-              "EXTENSION_CONFIG"
+              "EXTENSION_CONFIG",
+              "BOOTSTRAP"
             ],
             "type": "string"
           },
@@ -66,7 +67,6 @@
                 "properties": {
                   "name": {
                     "description": "The exact name of the cluster to match.",
-                    "format": "string",
                     "type": "string"
                   },
                   "portNumber": {
@@ -75,12 +75,10 @@
                   },
                   "service": {
                     "description": "The fully qualified service name for this cluster.",
-                    "format": "string",
                     "type": "string"
                   },
                   "subset": {
                     "description": "The subset associated with the service.",
-                    "format": "string",
                     "type": "string"
                   }
                 },
@@ -104,7 +102,6 @@
                     "properties": {
                       "applicationProtocols": {
                         "description": "Applies only to sidecars.",
-                        "format": "string",
                         "type": "string"
                       },
                       "destinationPort": {
@@ -116,14 +113,12 @@
                         "properties": {
                           "name": {
                             "description": "The filter name to match on.",
-                            "format": "string",
                             "type": "string"
                           },
                           "subFilter": {
                             "properties": {
                               "name": {
                                 "description": "The filter name to match on.",
-                                "format": "string",
                                 "type": "string"
                               }
                             },
@@ -134,17 +129,14 @@
                       },
                       "name": {
                         "description": "The name assigned to the filter chain.",
-                        "format": "string",
                         "type": "string"
                       },
                       "sni": {
                         "description": "The SNI value used by a filter chain's match condition.",
-                        "format": "string",
                         "type": "string"
                       },
                       "transportProtocol": {
                         "description": "Applies only to `SIDECAR_INBOUND` context.",
-                        "format": "string",
                         "type": "string"
                       }
                     },
@@ -152,11 +144,9 @@
                   },
                   "name": {
                     "description": "Match a specific listener by its name.",
-                    "format": "string",
                     "type": "string"
                   },
                   "portName": {
-                    "format": "string",
                     "type": "string"
                   },
                   "portNumber": {
@@ -170,13 +160,11 @@
                 "properties": {
                   "metadata": {
                     "additionalProperties": {
-                      "format": "string",
                       "type": "string"
                     },
                     "type": "object"
                   },
                   "proxyVersion": {
-                    "format": "string",
                     "type": "string"
                   }
                 },
@@ -186,17 +174,14 @@
                 "description": "Match on envoy HTTP route configuration attributes.",
                 "properties": {
                   "gateway": {
-                    "format": "string",
                     "type": "string"
                   },
                   "name": {
                     "description": "Route configuration name to match on.",
-                    "format": "string",
                     "type": "string"
                   },
                   "portName": {
                     "description": "Applicable only for GATEWAY context.",
-                    "format": "string",
                     "type": "string"
                   },
                   "portNumber": {
@@ -205,7 +190,6 @@
                   "vhost": {
                     "properties": {
                       "name": {
-                        "format": "string",
                         "type": "string"
                       },
                       "route": {
@@ -222,7 +206,6 @@
                             "type": "string"
                           },
                           "name": {
-                            "format": "string",
                             "type": "string"
                           }
                         },
@@ -266,7 +249,8 @@
               },
               "value": {
                 "description": "The JSON config of the object being patched.",
-                "type": "object"
+                "type": "object",
+                "x-kubernetes-preserve-unknown-fields": true
               }
             },
             "type": "object"
@@ -276,11 +260,17 @@
       },
       "type": "array"
     },
+    "priority": {
+      "description": "Priority defines the order in which patch sets are applied within a context.",
+      "format": "int32",
+      "type": "integer",
+      "minimum": -2147483648,
+      "maximum": 2147483647
+    },
     "workloadSelector": {
       "properties": {
         "labels": {
           "additionalProperties": {
-            "format": "string",
             "type": "string"
           },
           "type": "object"
@@ -290,5 +280,6 @@
     }
   },
   "type": "object",
-  "$schema": "http://json-schema.org/draft-04/schema#"
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "EnvoyFilter"
 }

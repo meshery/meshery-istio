@@ -5,7 +5,6 @@
       "items": {
         "properties": {
           "bind": {
-            "format": "string",
             "type": "string"
           },
           "captureMode": {
@@ -18,7 +17,6 @@
           },
           "hosts": {
             "items": {
-              "format": "string",
               "type": "string"
             },
             "type": "array"
@@ -28,7 +26,6 @@
             "properties": {
               "name": {
                 "description": "Label assigned to the port.",
-                "format": "string",
                 "type": "string"
               },
               "number": {
@@ -37,7 +34,6 @@
               },
               "protocol": {
                 "description": "The protocol exposed on the port.",
-                "format": "string",
                 "type": "string"
               },
               "targetPort": {
@@ -56,7 +52,6 @@
         "properties": {
           "bind": {
             "description": "The IP to which the listener should be bound.",
-            "format": "string",
             "type": "string"
           },
           "captureMode": {
@@ -68,7 +63,6 @@
             "type": "string"
           },
           "defaultEndpoint": {
-            "format": "string",
             "type": "string"
           },
           "port": {
@@ -76,7 +70,6 @@
             "properties": {
               "name": {
                 "description": "Label assigned to the port.",
-                "format": "string",
                 "type": "string"
               },
               "number": {
@@ -85,7 +78,6 @@
               },
               "protocol": {
                 "description": "The protocol exposed on the port.",
-                "format": "string",
                 "type": "string"
               },
               "targetPort": {
@@ -106,7 +98,6 @@
           "properties": {
             "host": {
               "description": "The name of a service from the service registry.",
-              "format": "string",
               "type": "string"
             },
             "port": {
@@ -120,7 +111,6 @@
             },
             "subset": {
               "description": "The name of a subset within the service.",
-              "format": "string",
               "type": "string"
             }
           },
@@ -140,7 +130,6 @@
       "properties": {
         "labels": {
           "additionalProperties": {
-            "format": "string",
             "type": "string"
           },
           "type": "object"
@@ -150,5 +139,6 @@
     }
   },
   "type": "object",
-  "$schema": "http://json-schema.org/draft-04/schema#"
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Sidecar"
 }

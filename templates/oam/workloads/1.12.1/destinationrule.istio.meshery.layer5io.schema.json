@@ -4,14 +4,12 @@
     "exportTo": {
       "description": "A list of namespaces to which this destination rule is exported.",
       "items": {
-        "format": "string",
         "type": "string"
       },
       "type": "array"
     },
     "host": {
       "description": "The name of a service from the service registry.",
-      "format": "string",
       "type": "string"
     },
     "subsets": {
@@ -19,14 +17,12 @@
         "properties": {
           "labels": {
             "additionalProperties": {
-              "format": "string",
               "type": "string"
             },
             "type": "object"
           },
           "name": {
             "description": "Name of the subset.",
-            "format": "string",
             "type": "string"
           },
           "trafficPolicy": {
@@ -262,12 +258,10 @@
                         "properties": {
                           "name": {
                             "description": "Name of the cookie.",
-                            "format": "string",
                             "type": "string"
                           },
                           "path": {
                             "description": "Path to set for the cookie.",
-                            "format": "string",
                             "type": "string"
                           },
                           "ttl": {
@@ -279,12 +273,10 @@
                       },
                       "httpHeaderName": {
                         "description": "Hash based on a specific HTTP header.",
-                        "format": "string",
                         "type": "string"
                       },
                       "httpQueryParameterName": {
                         "description": "Hash based on a specific HTTP query parameter.",
-                        "format": "string",
                         "type": "string"
                       },
                       "minimumRingSize": {
@@ -300,12 +292,11 @@
                   "localityLbSetting": {
                     "properties": {
                       "distribute": {
-                        "description": "Optional: only one of distribute or failover can be set.",
+                        "description": "Optional: only one of distribute, failover or failoverPriority can be set.",
                         "items": {
                           "properties": {
                             "from": {
                               "description": "Originating locality, '/' separated, e.g.",
-                              "format": "string",
                               "type": "string"
                             },
                             "to": {
@@ -328,20 +319,25 @@
                         ]
                       },
                       "failover": {
-                        "description": "Optional: only failover or distribute can be set.",
+                        "description": "Optional: only one of distribute, failover or failoverPriority can be set.",
                         "items": {
                           "properties": {
                             "from": {
                               "description": "Originating region.",
-                              "format": "string",
                               "type": "string"
                             },
                             "to": {
-                              "format": "string",
                               "type": "string"
                             }
                           },
                           "type": "object"
+                        },
+                        "type": "array"
+                      },
+                      "failoverPriority": {
+                        "description": "failoverPriority is an ordered list of labels used to sort endpoints to do priority based load balancing.",
+                        "items": {
+                          "type": "string"
                         },
                         "type": "array"
                       }
@@ -386,6 +382,12 @@
                       "null"
                     ]
                   },
+                  "consecutiveLocalOriginFailures": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ]
+                  },
                   "interval": {
                     "description": "Time interval between ejection sweep analysis.",
                     "type": "string"
@@ -401,6 +403,10 @@
                     "type": "integer",
                     "minimum": -2147483648,
                     "maximum": 2147483647
+                  },
+                  "splitExternalLocalOriginErrors": {
+                    "description": "Determines whether to distinguish local origin failures from external errors.",
+                    "type": "boolean"
                   }
                 },
                 "type": "object"
@@ -639,12 +645,10 @@
                               "properties": {
                                 "name": {
                                   "description": "Name of the cookie.",
-                                  "format": "string",
                                   "type": "string"
                                 },
                                 "path": {
                                   "description": "Path to set for the cookie.",
-                                  "format": "string",
                                   "type": "string"
                                 },
                                 "ttl": {
@@ -656,12 +660,10 @@
                             },
                             "httpHeaderName": {
                               "description": "Hash based on a specific HTTP header.",
-                              "format": "string",
                               "type": "string"
                             },
                             "httpQueryParameterName": {
                               "description": "Hash based on a specific HTTP query parameter.",
-                              "format": "string",
                               "type": "string"
                             },
                             "minimumRingSize": {
@@ -677,12 +679,11 @@
                         "localityLbSetting": {
                           "properties": {
                             "distribute": {
-                              "description": "Optional: only one of distribute or failover can be set.",
+                              "description": "Optional: only one of distribute, failover or failoverPriority can be set.",
                               "items": {
                                 "properties": {
                                   "from": {
                                     "description": "Originating locality, '/' separated, e.g.",
-                                    "format": "string",
                                     "type": "string"
                                   },
                                   "to": {
@@ -705,20 +706,25 @@
                               ]
                             },
                             "failover": {
-                              "description": "Optional: only failover or distribute can be set.",
+                              "description": "Optional: only one of distribute, failover or failoverPriority can be set.",
                               "items": {
                                 "properties": {
                                   "from": {
                                     "description": "Originating region.",
-                                    "format": "string",
                                     "type": "string"
                                   },
                                   "to": {
-                                    "format": "string",
                                     "type": "string"
                                   }
                                 },
                                 "type": "object"
+                              },
+                              "type": "array"
+                            },
+                            "failoverPriority": {
+                              "description": "failoverPriority is an ordered list of labels used to sort endpoints to do priority based load balancing.",
+                              "items": {
+                                "type": "string"
                               },
                               "type": "array"
                             }
@@ -763,6 +769,12 @@
                             "null"
                           ]
                         },
+                        "consecutiveLocalOriginFailures": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ]
+                        },
                         "interval": {
                           "description": "Time interval between ejection sweep analysis.",
                           "type": "string"
@@ -778,6 +790,10 @@
                           "type": "integer",
                           "minimum": -2147483648,
                           "maximum": 2147483647
+                        },
+                        "splitExternalLocalOriginErrors": {
+                          "description": "Determines whether to distinguish local origin failures from external errors.",
+                          "type": "boolean"
                         }
                       },
                       "type": "object"
@@ -794,17 +810,20 @@
                       "description": "TLS related settings for connections to the upstream service.",
                       "properties": {
                         "caCertificates": {
-                          "format": "string",
                           "type": "string"
                         },
                         "clientCertificate": {
                           "description": "REQUIRED if mode is `MUTUAL`.",
-                          "format": "string",
                           "type": "string"
                         },
                         "credentialName": {
-                          "format": "string",
                           "type": "string"
+                        },
+                        "insecureSkipVerify": {
+                          "type": [
+                            "boolean",
+                            "null"
+                          ]
                         },
                         "mode": {
                           "enum": [
@@ -817,17 +836,14 @@
                         },
                         "privateKey": {
                           "description": "REQUIRED if mode is `MUTUAL`.",
-                          "format": "string",
                           "type": "string"
                         },
                         "sni": {
                           "description": "SNI string to present to the server during TLS handshake.",
-                          "format": "string",
                           "type": "string"
                         },
                         "subjectAltNames": {
                           "items": {
-                            "format": "string",
                             "type": "string"
                           },
                           "type": "array"
@@ -844,17 +860,20 @@
                 "description": "TLS related settings for connections to the upstream service.",
                 "properties": {
                   "caCertificates": {
-                    "format": "string",
                     "type": "string"
                   },
                   "clientCertificate": {
                     "description": "REQUIRED if mode is `MUTUAL`.",
-                    "format": "string",
                     "type": "string"
                   },
                   "credentialName": {
-                    "format": "string",
                     "type": "string"
+                  },
+                  "insecureSkipVerify": {
+                    "type": [
+                      "boolean",
+                      "null"
+                    ]
                   },
                   "mode": {
                     "enum": [
@@ -867,17 +886,14 @@
                   },
                   "privateKey": {
                     "description": "REQUIRED if mode is `MUTUAL`.",
-                    "format": "string",
                     "type": "string"
                   },
                   "sni": {
                     "description": "SNI string to present to the server during TLS handshake.",
-                    "format": "string",
                     "type": "string"
                   },
                   "subjectAltNames": {
                     "items": {
-                      "format": "string",
                       "type": "string"
                     },
                     "type": "array"
@@ -1125,12 +1141,10 @@
                   "properties": {
                     "name": {
                       "description": "Name of the cookie.",
-                      "format": "string",
                       "type": "string"
                     },
                     "path": {
                       "description": "Path to set for the cookie.",
-                      "format": "string",
                       "type": "string"
                     },
                     "ttl": {
@@ -1142,12 +1156,10 @@
                 },
                 "httpHeaderName": {
                   "description": "Hash based on a specific HTTP header.",
-                  "format": "string",
                   "type": "string"
                 },
                 "httpQueryParameterName": {
                   "description": "Hash based on a specific HTTP query parameter.",
-                  "format": "string",
                   "type": "string"
                 },
                 "minimumRingSize": {
@@ -1163,12 +1175,11 @@
             "localityLbSetting": {
               "properties": {
                 "distribute": {
-                  "description": "Optional: only one of distribute or failover can be set.",
+                  "description": "Optional: only one of distribute, failover or failoverPriority can be set.",
                   "items": {
                     "properties": {
                       "from": {
                         "description": "Originating locality, '/' separated, e.g.",
-                        "format": "string",
                         "type": "string"
                       },
                       "to": {
@@ -1191,20 +1202,25 @@
                   ]
                 },
                 "failover": {
-                  "description": "Optional: only failover or distribute can be set.",
+                  "description": "Optional: only one of distribute, failover or failoverPriority can be set.",
                   "items": {
                     "properties": {
                       "from": {
                         "description": "Originating region.",
-                        "format": "string",
                         "type": "string"
                       },
                       "to": {
-                        "format": "string",
                         "type": "string"
                       }
                     },
                     "type": "object"
+                  },
+                  "type": "array"
+                },
+                "failoverPriority": {
+                  "description": "failoverPriority is an ordered list of labels used to sort endpoints to do priority based load balancing.",
+                  "items": {
+                    "type": "string"
                   },
                   "type": "array"
                 }
@@ -1249,6 +1265,12 @@
                 "null"
               ]
             },
+            "consecutiveLocalOriginFailures": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
             "interval": {
               "description": "Time interval between ejection sweep analysis.",
               "type": "string"
@@ -1264,6 +1286,10 @@
               "type": "integer",
               "minimum": -2147483648,
               "maximum": 2147483647
+            },
+            "splitExternalLocalOriginErrors": {
+              "description": "Determines whether to distinguish local origin failures from external errors.",
+              "type": "boolean"
             }
           },
           "type": "object"
@@ -1502,12 +1528,10 @@
                         "properties": {
                           "name": {
                             "description": "Name of the cookie.",
-                            "format": "string",
                             "type": "string"
                           },
                           "path": {
                             "description": "Path to set for the cookie.",
-                            "format": "string",
                             "type": "string"
                           },
                           "ttl": {
@@ -1519,12 +1543,10 @@
                       },
                       "httpHeaderName": {
                         "description": "Hash based on a specific HTTP header.",
-                        "format": "string",
                         "type": "string"
                       },
                       "httpQueryParameterName": {
                         "description": "Hash based on a specific HTTP query parameter.",
-                        "format": "string",
                         "type": "string"
                       },
                       "minimumRingSize": {
@@ -1540,12 +1562,11 @@
                   "localityLbSetting": {
                     "properties": {
                       "distribute": {
-                        "description": "Optional: only one of distribute or failover can be set.",
+                        "description": "Optional: only one of distribute, failover or failoverPriority can be set.",
                         "items": {
                           "properties": {
                             "from": {
                               "description": "Originating locality, '/' separated, e.g.",
-                              "format": "string",
                               "type": "string"
                             },
                             "to": {
@@ -1568,20 +1589,25 @@
                         ]
                       },
                       "failover": {
-                        "description": "Optional: only failover or distribute can be set.",
+                        "description": "Optional: only one of distribute, failover or failoverPriority can be set.",
                         "items": {
                           "properties": {
                             "from": {
                               "description": "Originating region.",
-                              "format": "string",
                               "type": "string"
                             },
                             "to": {
-                              "format": "string",
                               "type": "string"
                             }
                           },
                           "type": "object"
+                        },
+                        "type": "array"
+                      },
+                      "failoverPriority": {
+                        "description": "failoverPriority is an ordered list of labels used to sort endpoints to do priority based load balancing.",
+                        "items": {
+                          "type": "string"
                         },
                         "type": "array"
                       }
@@ -1626,6 +1652,12 @@
                       "null"
                     ]
                   },
+                  "consecutiveLocalOriginFailures": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ]
+                  },
                   "interval": {
                     "description": "Time interval between ejection sweep analysis.",
                     "type": "string"
@@ -1641,6 +1673,10 @@
                     "type": "integer",
                     "minimum": -2147483648,
                     "maximum": 2147483647
+                  },
+                  "splitExternalLocalOriginErrors": {
+                    "description": "Determines whether to distinguish local origin failures from external errors.",
+                    "type": "boolean"
                   }
                 },
                 "type": "object"
@@ -1657,17 +1693,20 @@
                 "description": "TLS related settings for connections to the upstream service.",
                 "properties": {
                   "caCertificates": {
-                    "format": "string",
                     "type": "string"
                   },
                   "clientCertificate": {
                     "description": "REQUIRED if mode is `MUTUAL`.",
-                    "format": "string",
                     "type": "string"
                   },
                   "credentialName": {
-                    "format": "string",
                     "type": "string"
+                  },
+                  "insecureSkipVerify": {
+                    "type": [
+                      "boolean",
+                      "null"
+                    ]
                   },
                   "mode": {
                     "enum": [
@@ -1680,17 +1719,14 @@
                   },
                   "privateKey": {
                     "description": "REQUIRED if mode is `MUTUAL`.",
-                    "format": "string",
                     "type": "string"
                   },
                   "sni": {
                     "description": "SNI string to present to the server during TLS handshake.",
-                    "format": "string",
                     "type": "string"
                   },
                   "subjectAltNames": {
                     "items": {
-                      "format": "string",
                       "type": "string"
                     },
                     "type": "array"
@@ -1707,17 +1743,20 @@
           "description": "TLS related settings for connections to the upstream service.",
           "properties": {
             "caCertificates": {
-              "format": "string",
               "type": "string"
             },
             "clientCertificate": {
               "description": "REQUIRED if mode is `MUTUAL`.",
-              "format": "string",
               "type": "string"
             },
             "credentialName": {
-              "format": "string",
               "type": "string"
+            },
+            "insecureSkipVerify": {
+              "type": [
+                "boolean",
+                "null"
+              ]
             },
             "mode": {
               "enum": [
@@ -1730,17 +1769,14 @@
             },
             "privateKey": {
               "description": "REQUIRED if mode is `MUTUAL`.",
-              "format": "string",
               "type": "string"
             },
             "sni": {
               "description": "SNI string to present to the server during TLS handshake.",
-              "format": "string",
               "type": "string"
             },
             "subjectAltNames": {
               "items": {
-                "format": "string",
                 "type": "string"
               },
               "type": "array"
@@ -1753,4 +1789,6 @@
     }
   },
   "type": "object",
-  "$schema": "http://json-schema.org/draft-04/schema#"}
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "DestinationRule"
+}
