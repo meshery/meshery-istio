@@ -74,7 +74,7 @@ jobs:
       - name: Run Gosec Security Scanner
         uses: securego/gosec@master
         with:
-          args: ./... -exclude=G301,G304,G107,G101,G110
+          args: -exclude=G301,G304,G107,G101,G110,G204,G409,G305,G302 ./... 
   tests:
     #  needs: [lint, error_check, static_check, vet, sec_check]
      name: Tests
