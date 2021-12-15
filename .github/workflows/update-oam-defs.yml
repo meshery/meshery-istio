@@ -87,7 +87,7 @@ jobs:
             apiGroup=$(./kubeopenapi-jsonschema --location ~/istio.yml -t yaml --filter '$[?(@.kind=="CustomResourceDefinition" && @.spec.names.kind=='$t')]..spec' --o-filter "$[].group" -o json | jq '.[]' | tr -d '"')
 
             ./kubeopenapi-jsonschema --location ~/istio.yml -t yaml --filter '$[?(@.kind=="CustomResourceDefinition" && @.spec.names.kind=='$t')]..openAPIV3Schema.properties.spec' --o-filter "$[]" -o json |\
-            jq '.[] | ."title" = "'$t'"' > $dirPath/$nameLower.istio.meshery.layer5io.schema.json
+            jq '.[] | ."title" = "'$nameUpper'"' > $dirPath/$nameLower.istio.meshery.layer5io.schema.json
 
             echo $template |\
             jq '
