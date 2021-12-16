@@ -21,6 +21,8 @@ docker-run:
 run:
 	DEBUG=true GOPROXY=direct GOSUMDB=off go run main.go
 
+run-force-dynamic-reg:
+	FORCE_DYNAMIC_REG=true DEBUG=true GOPROXY=direct GOSUMDB=off go run main.go
 error:
 	go run github.com/layer5io/meshkit/cmd/errorutil -d . analyze -i ./helpers -o ./helpers
 
