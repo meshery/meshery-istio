@@ -26,7 +26,7 @@ jobs:
 
       - name: Check if manifests for latest release exist
         run: |
-          if [ -d templates/oam/workloads/workloads-${{ steps.glrt.outputs.release }} ]
+          if [ -d templates/oam/workloads/${{ steps.glrt.outputs.release }} ]
           then
             echo "EXISTS=true" > $GITHUB_ENV
           else
@@ -65,7 +65,7 @@ jobs:
 
       - name: Generate Workload definitions
         run: |
-          dirPath=../templates/oam/workloads/workloads-$NEW_ISTIO_VERSION
+          dirPath=../templates/oam/workloads/$NEW_ISTIO_VERSION
           cd util
           mkdir -p $dirPath
 
@@ -87,7 +87,7 @@ jobs:
             apiGroup=$(./kubeopenapi-jsonschema --location ~/istio.yml -t yaml --filter '$[?(@.kind=="CustomResourceDefinition" && @.spec.names.kind=='$t')]..spec' --o-filter "$[].group" -o json | jq '.[]' | tr -d '"')
 
             ./kubeopenapi-jsonschema --location ~/istio.yml -t yaml --filter '$[?(@.kind=="CustomResourceDefinition" && @.spec.names.kind=='$t')]..openAPIV3Schema.properties.spec' --o-filter "$[]" -o json |\
-            jq '.[] | ."title" = "'$nameLower'"' > $dirPath/$nameLower.istio.meshery.layer5io.schema.json
+            jq '.[] | ."title" = "'$nameUpper'"' > $dirPath/$nameLower.istio.meshery.layer5io.schema.json
 
             echo $template |\
             jq '
