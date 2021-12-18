@@ -25,6 +25,7 @@ RUN chmod +x /kubeopenapi-jsonschema
 # Use distroless as minimal base image to package the manager binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
 FROM gcr.io/distroless/nodejs:16
+RUN npm install ansi-regex@latest
 ENV DISTRO="debian"
 ENV GOARCH="amd64"
 ENV SERVICE_ADDR="meshery-istio"
