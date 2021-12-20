@@ -78,7 +78,7 @@ jobs:
       - uses: actions/checkout@master
         with:
           repository: meshery/meshery 
-          token: ${{ secrets.GITHUB_TOKEN }}   
+          token: ${{ secrets.GH_ACCESS_TOKEN }}   
       - name: DownloadJSON
         uses: actions/download-artifact@v2
         with:
