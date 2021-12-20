@@ -4,6 +4,7 @@ import (
 	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshery-adapter-library/common"
 	"github.com/layer5io/meshery-adapter-library/meshes"
+	"github.com/layer5io/meshkit/utils"
 )
 
 var (
@@ -11,8 +12,11 @@ var (
 )
 
 func getOperations(dev adapter.Operations) adapter.Operations {
-	versions, _ := getLatestReleaseNames(3)
-
+	var adapterVersions []adapter.Version
+	versions, _ := utils.GetLatestReleaseTagsSorted("istio", "istio")
+	for _, v := range versions {
+		adapterVersions = append(adapterVersions, adapter.Version(v))
+	}
 	// Add Istio networking resources to sample applications
 	dev[common.BookInfoOperation].Templates = append(dev[common.BookInfoOperation].Templates, "file://templates/bookinfo/gateway.yaml")
 	dev[common.HTTPBinOperation].Templates = append(dev[common.HTTPBinOperation].Templates, "file://templates/httpbin/gateway.yaml")
@@ -22,7 +26,7 @@ func getOperations(dev adapter.Operations) adapter.Operations {
 	dev[IstioOperation] = &adapter.Operation{
 		Type:                 int32(meshes.OpCategory_INSTALL),
 		Description:          "Istio Service Mesh",
-		Versions:             versions,
+		Versions:             adapterVersions,
 		AdditionalProperties: map[string]string{},
 	}
 
