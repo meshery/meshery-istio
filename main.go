@@ -22,6 +22,7 @@ import (
 
 	"github.com/layer5io/meshery-istio/istio"
 	"github.com/layer5io/meshkit/logger"
+	"github.com/layer5io/meshkit/utils"
 	"github.com/layer5io/meshkit/utils/manifests"
 	smp "github.com/layer5io/service-mesh-performance/spec"
 
@@ -175,12 +176,12 @@ func registerWorkloads(port string, log logger.Handler) {
 	var url string
 	var gm string
 	// Prechecking to skip comp gen
-	release, err := config.GetLatestReleases(1)
+	versions, err := utils.GetLatestReleaseTagsSorted("istio", "istio")
 	if err != nil {
 		log.Info("Could not get latest stable release")
 		return
 	}
-	version := release[0].TagName
+	version := versions[len(versions)-1]
 	if os.Getenv("FORCE_DYNAMIC_REG") != "true" && oam.AvailableVersions[version] {
 		log.Info("Components available statically for version ", version, ". Skipping dynamic component registeration")
 		return
