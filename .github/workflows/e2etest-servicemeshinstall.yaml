@@ -83,6 +83,8 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: data.json
+      - name: Add commit SHORT_SHA
+        run: echo "SHORT_SHA=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_ENV
       - name: echo results
         run: |
           pretty=$(jq . data.json)
@@ -93,7 +95,7 @@ jobs:
           echo $pretty > data.json
           cat data.json
           touch test.md
-          filename=$(date '+%Y-%m-%d-%H:%M:%S')
+          filename=$(date '+_${SHORT_SHA}')
           echo $filename
           echo "---
           timestamp: $(jq '.metadata.runon' data.json)
