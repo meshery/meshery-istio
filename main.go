@@ -145,7 +145,7 @@ func serviceAddress() string {
 		return svcAddr
 	}
 
-	return "mesherylocal.layer5.io"
+	return "localhost"
 }
 
 func registerCapabilities(port string, log logger.Handler) {
