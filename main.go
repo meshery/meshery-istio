@@ -150,15 +150,15 @@ func serviceAddress() string {
 
 func registerCapabilities(port string, log logger.Handler) {
 	// Register workloads
-	log.Info("Registering static workloads...")
+	log.Info("Registering static workloads with Meshery Server...")
 	if err := oam.RegisterWorkloads(mesheryServerAddress(), serviceAddress()+":"+port); err != nil {
 		log.Info(err.Error())
 	}
-	log.Info("Registering static workloads completed")
 	// Register traits
 	if err := oam.RegisterTraits(mesheryServerAddress(), serviceAddress()+":"+port); err != nil {
 		log.Info(err.Error())
 	}
+	log.Info("Successfully registered static components with Meshery Server.")
 }
 
 func registerDynamicCapabilities(port string, log logger.Handler) {
