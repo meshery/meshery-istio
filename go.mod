@@ -12,6 +12,7 @@ replace (
 
 require (
 	github.com/aspenmesh/istio-vet v0.0.0-20200806222806-9c8e9a962b9f
+	github.com/containerd/containerd v1.5.4 // indirect
 	github.com/layer5io/meshery-adapter-library v0.1.25
 	github.com/layer5io/meshkit v0.2.36
 	github.com/layer5io/service-mesh-performance v0.3.3
