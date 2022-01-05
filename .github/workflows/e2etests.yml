@@ -55,8 +55,8 @@ jobs:
       patternfile_name: deploy.yaml
       provider: Local
       k8s_version: v1.20.1
-      sm_version: ${{ needs.SetPatternfile.outputs.sm_version }}
-      adapter_version:  ${{ needs.SetPatternfile.outputs.adapter_version }}
+      sm_version: ${{ needs.SetPatternfileForServicemeshInstall.outputs.sm_version }}
+      adapter_version:  ${{ needs.SetPatternfileForServicemeshInstall.outputs.adapter_version }}
       output_filename: data.json
     secrets:
       token: ${{ secrets.PROVIDER_TOKEN }} 
@@ -167,8 +167,8 @@ jobs:
       patternfile_name: deploywithaddons.yaml
       provider: Local
       k8s_version: v1.20.1
-      sm_version: ${{ needs.SetPatternfile.outputs.sm_version }}
-      adapter_version:  ${{ needs.SetPatternfile.outputs.adapter_version }}
+      sm_version: ${{ needs.SetPatternfileForServicemeshAndAddon.outputs.sm_version }}
+      adapter_version:  ${{ needs.SetPatternfileForServicemeshAndAddon.outputs.adapter_version }}
       output_filename: data.json
     secrets:
       token: ${{ secrets.PROVIDER_TOKEN }} 
