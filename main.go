@@ -36,7 +36,7 @@ import (
 
 var (
 	serviceName = "istio-adapter"
-	version     = "none"
+	version     = "edge"
 	gitsha      = "none"
 )
 
