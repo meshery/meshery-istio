@@ -1,11 +1,15 @@
 package build
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/layer5io/meshery-adapter-library/adapter"
+)
 
 //TestCreateComponents can be used to directly invoke CreateComponents for writing new definitions and schemas onto the file system.
 // This test is left here only for development purposes
 func TestCreateComponents(t *testing.T) {
-	err := CreateComponents(StaticCompConfig{
+	err := adapter.CreateComponents(adapter.StaticCompConfig{
 		URL:     DefaultGenerationURL,
 		Method:  DefaultGenerationMethod,
 		Path:    WorkloadPath,
