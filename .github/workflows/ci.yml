@@ -90,6 +90,16 @@ jobs:
        uses: actions/setup-go@v2
        with:
         go-version: 1.17
+     - name: Download KubeOpenAPI binary
+       run: |
+        wd=$(pwd)
+        mkdir -p ~/.meshery/bin
+        cd ~/.meshery/bin
+        Version=$(curl --silent "https://api.github.com/repos/layer5io/kubeopenapi-jsonschema/releases/latest" |                          
+        grep '"tag_name":' |
+        sed -E 's/.*"([^"]+)".*/\1/')
+        curl -L https://github.com/layer5io/kubeopenapi-jsonschema/releases/download/$Version/kubeopenapi-jsonschema --output ./kubeopenapi-jsonschema
+        cd $wd
      - name: Create cluster using KinD
        uses: engineerd/setup-kind@v0.3.0
        with:
