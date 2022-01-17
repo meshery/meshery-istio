@@ -171,7 +171,7 @@ func registerCapabilitiesDynamically(port string, log logger.Handler) {
 	}
 }
 func registerWorkloads(port string, log logger.Handler) {
-	log.Info("Registering latest components dynamically with Meshery server")
+	log.Info("Registering latest components with Meshery Server")
 
 	//First we create and store any new components if available
 	version := build.LatestVersion
@@ -204,10 +204,10 @@ func registerWorkloads(port string, log logger.Handler) {
 		return
 	}
 	//The below log is checked in the workflows. If you change this log, reflect that change in the workflow where components are generated
-	log.Info("Component Creation completed for version ", version)
+	log.Info("Component creation completed for version ", version)
 
 	//Now we will register in case
-	log.Info("Registering workloads with Meshery Server for version...", version)
+	log.Info("Registering workloads with Meshery Server for version ", version)
 	originalPath := oam.WorkloadPath
 	oam.WorkloadPath = filepath.Join(originalPath, version)
 	defer resetWorkloadPath(originalPath)
