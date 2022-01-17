@@ -16,7 +16,7 @@ var DefaultGenerationURL string
 var LatestVersion string
 var WorkloadPath string
 
-//Should stay here
+//NewConfig creates the configuration for creating components
 func NewConfig(version string) manifests.Config {
 	return manifests.Config{
 		Name:        smp.ServiceMesh_Type_name[int32(smp.ServiceMesh_ISTIO)],
