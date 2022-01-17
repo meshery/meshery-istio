@@ -91,6 +91,7 @@ func writeToFile(path string, data []byte, force bool) error {
 			return err
 		}
 	}
+	// #nosec
 	return ioutil.WriteFile(path, data, 0777)
 }
 
