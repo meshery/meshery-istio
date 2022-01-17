@@ -31,10 +31,10 @@ jobs:
     - name: Commit changes
       uses: stefanzweifel/git-auto-commit-action@v4
       with:
-          file_pattern: templates/
-          commit_user_name: l5io
-          commit_user_email: ci@layer5.io
-          commit_author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
-          commit_options: "--signoff"
-          commit_message: "[Patterns] Pattern components generated from latest Istio manifests"
-          branch: master
+        file_pattern: templates/
+        commit_user_name: l5io
+        commit_user_email: ci@layer5.io
+        commit_author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
+        commit_options: "--signoff"
+        commit_message: "[Patterns] Pattern components generated from latest Istio manifests"
+        branch: master
