@@ -107,8 +107,8 @@ func main() {
 	service.StartedAt = time.Now()
 	service.Version = version
 	service.GitSHA = gitsha
-	go registerCapabilities(service.Port, log)        //Registering static capabilities
-	go registerDynamicCapabilities(service.Port, log) //Registering latest capabilities periodically
+	go registerCapabilities(service.Port, log)            //Registering static capabilities
+	go registerCapabilitiesDynamically(service.Port, log) //Registering latest capabilities periodically
 
 	// Server Initialization
 	log.Info("Adaptor Listening at port: ", service.Port)
@@ -160,7 +160,7 @@ func registerCapabilities(port string, log logger.Handler) {
 	log.Info("Successfully registered static components with Meshery Server.")
 }
 
-func registerDynamicCapabilities(port string, log logger.Handler) {
+func registerCapabilitiesDynamically(port string, log logger.Handler) {
 	registerWorkloads(port, log)
 	//Start the ticker
 	const reRegisterAfter = 24
@@ -171,6 +171,9 @@ func registerDynamicCapabilities(port string, log logger.Handler) {
 	}
 }
 func registerWorkloads(port string, log logger.Handler) {
+	log.Info("Registering latest components dynamically with Meshery server")
+
+	//First we create and store any new components if available
 	version := build.LatestVersion
 	url := build.DefaultGenerationURL
 	gm := build.DefaultGenerationMethod
@@ -194,7 +197,6 @@ func registerWorkloads(port string, log logger.Handler) {
 		Path:    build.WorkloadPath,
 		DirName: version,
 		Config:  build.NewConfig(version),
-		Force:   true,
 	})
 
 	if err != nil {
@@ -204,6 +206,7 @@ func registerWorkloads(port string, log logger.Handler) {
 	//The below log is checked in the workflows. If you change this log, reflect that change in the workflow where components are generated
 	log.Info("Component Creation completed for version ", version)
 
+	//Now we will register in case
 	log.Info("Registering workloads with Meshery Server for version...", version)
 	originalPath := oam.WorkloadPath
 	oam.WorkloadPath = filepath.Join(originalPath, version)
