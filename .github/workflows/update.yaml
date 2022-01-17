@@ -15,27 +15,10 @@ jobs:
       uses: actions/setup-go@v1
       with:
         go-version: 1.17
-    - name: Build jsonschema util
-      run: |
-          wd=$(pwd)
-          mkdir -p ~/.meshery/bin
-          cd ~/.meshery/bin
-          curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash
-          export NVM_DIR="$HOME/.nvm"
-          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-          nvm install v14.15.3
-          nvm install-latest-npm
-          git clone https://github.com/layer5io/kubeopenapi-jsonschema util
-          cd util
-          npm i; npm i nexe -g
-          make linux
-          cd ..
-          mv ./util/kubeopenapi-jsonschema kubeopenapi-jsonschema
-          pwd;ls
-          cd $wd
     - name: Run adapter to create components
       run: |
         touch log.txt
+        mkdir -p ~/.meshery/bin
         (FORCE_DYNAMIC_REG=true DEBUG=true go run main.go > log.txt 2>&1) &  
         end=$((SECONDS+300))
         while [ $SECONDS -lt $end ]; do
