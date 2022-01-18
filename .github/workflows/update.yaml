@@ -9,32 +9,36 @@ jobs:
   GenerateComponents:
     runs-on: ubuntu-latest
     steps:
-    - name: Check out code
-      uses: actions/checkout@master
-    - name: Setup Go
-      uses: actions/setup-go@v1
-      with:
-        go-version: 1.17
-    - name: Run adapter to create components
-      run: |
-        touch log.txt
-        mkdir -p ~/.meshery/bin
-        (FORCE_DYNAMIC_REG=true DEBUG=true go run main.go > log.txt 2>&1) &  
-        end=$((SECONDS+300))
-        while [ $SECONDS -lt $end ]; do
-            if  [ "$(cat log.txt | grep "Component Creation completed for version")" != "" ];then
-                echo "New components created"
-                break
-            fi
-        done
-        rm log.txt
-    - name: Commit changes
-      uses: stefanzweifel/git-auto-commit-action@v4
-      with:
-        file_pattern: templates/
-        commit_user_name: l5io
-        commit_user_email: ci@layer5.io
-        commit_author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
-        commit_options: "--signoff"
-        commit_message: "[Patterns] Pattern components generated from latest Istio manifests"
-        branch: master
+      - name: Check out code
+        uses: actions/checkout@master
+        with:
+          fetch-depth: 1
+          token: ${{ secrets.GH_ACCESS_TOKEN }}
+          ref: "master"
+      - name: Setup Go
+        uses: actions/setup-go@v1
+        with:
+          go-version: 1.17
+      - name: Run adapter to create components
+        run: |
+          touch log.txt
+          mkdir -p ~/.meshery/bin
+          (FORCE_DYNAMIC_REG=true DEBUG=true go run main.go > log.txt 2>&1) &  
+          end=$((SECONDS+300))
+          while [ $SECONDS -lt $end ]; do
+              if  [ "$(cat log.txt | grep "Component Creation completed for version")" != "" ];then
+                  echo "New components created"
+                  break
+              fi
+          done
+          rm log.txt
+      - name: Commit changes
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          file_pattern: templates/
+          commit_user_name: l5io
+          commit_user_email: ci@layer5.io
+          commit_author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
+          commit_options: "--signoff"
+          commit_message: "[Patterns] Pattern components generated from latest Istio manifests"
+          branch: master
