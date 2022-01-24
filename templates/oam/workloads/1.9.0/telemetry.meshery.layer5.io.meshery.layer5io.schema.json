@@ -1,0 +1,142 @@
+{
+ "description": "Telemetry defines how the telemetry is generated for workloads within a mesh.",
+ "properties": {
+  "selector": {
+   "description": "Optional.",
+   "properties": {
+    "matchLabels": {
+     "additionalProperties": {
+      "format": "string",
+      "type": "string"
+     },
+     "type": "object"
+    }
+   },
+   "type": "object"
+  },
+  "tracing": {
+   "description": "Optional.",
+   "items": {
+    "properties": {
+     "customTags": {
+      "additionalProperties": {
+       "oneOf": [
+        {
+         "not": {
+          "anyOf": [
+           {
+            "required": [
+             "literal"
+            ]
+           },
+           {
+            "required": [
+             "environment"
+            ]
+           },
+           {
+            "required": [
+             "header"
+            ]
+           }
+          ]
+         }
+        },
+        {
+         "required": [
+          "literal"
+         ]
+        },
+        {
+         "required": [
+          "environment"
+         ]
+        },
+        {
+         "required": [
+          "header"
+         ]
+        }
+       ],
+       "properties": {
+        "environment": {
+         "description": "Environment adds the value of an environment variable to each span.",
+         "properties": {
+          "defaultValue": {
+           "description": "Optional.",
+           "format": "string",
+           "type": "string"
+          },
+          "name": {
+           "description": "Name of the environment variable from which to extract the tag value.",
+           "format": "string",
+           "type": "string"
+          }
+         },
+         "type": "object"
+        },
+        "header": {
+         "description": "RequestHeader adds the value of an header from the request to each span.",
+         "properties": {
+          "defaultValue": {
+           "description": "Optional.",
+           "format": "string",
+           "type": "string"
+          },
+          "name": {
+           "description": "Name of the header from which to extract the tag value.",
+           "format": "string",
+           "type": "string"
+          }
+         },
+         "type": "object"
+        },
+        "literal": {
+         "description": "Literal adds the same, hard-coded value to each span.",
+         "properties": {
+          "value": {
+           "description": "The tag value to use.",
+           "format": "string",
+           "type": "string"
+          }
+         },
+         "type": "object"
+        }
+       },
+       "type": "object"
+      },
+      "description": "Optional.",
+      "type": "object"
+     },
+     "disableSpanReporting": {
+      "description": "Controls span reporting.",
+      "nullable": true,
+      "type": "boolean"
+     },
+     "providers": {
+      "description": "Optional.",
+      "items": {
+       "properties": {
+        "name": {
+         "description": "Required.",
+         "format": "string",
+         "type": "string"
+        }
+       },
+       "type": "object"
+      },
+      "type": "array"
+     },
+     "randomSamplingPercentage": {
+      "nullable": true,
+      "type": "number"
+     }
+    },
+    "type": "object"
+   },
+   "type": "array"
+  }
+ },
+ "title": "Telemetry",
+ "type": "object"
+}

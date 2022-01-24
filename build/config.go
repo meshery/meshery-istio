@@ -15,6 +15,7 @@ var DefaultGenerationMethod string
 var DefaultGenerationURL string
 var LatestVersion string
 var WorkloadPath string
+var AllVersions []string
 
 //NewConfig creates the configuration for creating components
 func NewConfig(version string) manifests.Config {
@@ -37,11 +38,11 @@ func NewConfig(version string) manifests.Config {
 func init() {
 	wd, _ := os.Getwd()
 	WorkloadPath = filepath.Join(wd, "templates", "oam", "workloads")
-	versions, _ := utils.GetLatestReleaseTagsSorted("istio", "istio")
-	if len(versions) == 0 {
+	AllVersions, _ = utils.GetLatestReleaseTagsSorted("istio", "istio")
+	if len(AllVersions) == 0 {
 		return
 	}
-	LatestVersion = versions[len(versions)-1]
+	LatestVersion = AllVersions[len(AllVersions)-1]
 	DefaultGenerationMethod = adapter.Manifests
 	DefaultGenerationURL = "https://raw.githubusercontent.com/istio/istio/" + LatestVersion + "/manifests/charts/base/crds/crd-all.gen.yaml"
 }
