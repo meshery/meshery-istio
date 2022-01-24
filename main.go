@@ -191,18 +191,16 @@ func registerWorkloads(port string, log logger.Handler) {
 	}
 
 	log.Info("Registering latest workload components for version ", version)
-	for _, version := range build.AllVersions {
-		err := adapter.CreateComponents(adapter.StaticCompConfig{
-			URL:     url,
-			Method:  gm,
-			Path:    build.WorkloadPath,
-			DirName: version,
-			Config:  build.NewConfig(version),
-		})
-		if err != nil {
-			log.Info("Failed to generate components for version "+version, "ERR: ", err.Error())
-			return
-		}
+	err := adapter.CreateComponents(adapter.StaticCompConfig{
+		URL:     url,
+		Method:  gm,
+		Path:    build.WorkloadPath,
+		DirName: version,
+		Config:  build.NewConfig(version),
+	})
+	if err != nil {
+		log.Info("Failed to generate components for version "+version, "ERR: ", err.Error())
+		return
 	}
 
 	//The below log is checked in the workflows. If you change this log, reflect that change in the workflow where components are generated
