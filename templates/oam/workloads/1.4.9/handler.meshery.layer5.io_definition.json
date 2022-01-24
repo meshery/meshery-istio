@@ -1,0 +1,20 @@
+{
+ "kind": "WorkloadDefinition",
+ "apiVersion": "core.oam.dev/v1alpha1",
+ "metadata": {
+  "name": "handler",
+  "creationTimestamp": null
+ },
+ "spec": {
+  "definitionRef": {
+   "name": "handler.meshery.layer5.io"
+  },
+  "metadata": {
+   "@type": "pattern.meshery.io/mesh/workload",
+   "k8sAPIVersion": "config.istio.io/v1alpha2",
+   "k8sKind": "handler",
+   "meshName": "ISTIO",
+   "meshVersion": "1.4.9"
+  }
+ }
+}

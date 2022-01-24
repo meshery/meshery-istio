@@ -1,0 +1,20 @@
+{
+ "kind": "WorkloadDefinition",
+ "apiVersion": "core.oam.dev/v1alpha1",
+ "metadata": {
+  "name": "ServiceRoleBinding",
+  "creationTimestamp": null
+ },
+ "spec": {
+  "definitionRef": {
+   "name": "servicerolebinding.meshery.layer5.io"
+  },
+  "metadata": {
+   "@type": "pattern.meshery.io/mesh/workload",
+   "k8sAPIVersion": "rbac.istio.io/v1alpha1",
+   "k8sKind": "ServiceRoleBinding",
+   "meshName": "ISTIO",
+   "meshVersion": "1.4.9"
+  }
+ }
+}
