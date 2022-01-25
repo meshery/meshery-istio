@@ -174,7 +174,7 @@ jobs:
       token: ${{ secrets.PROVIDER_TOKEN }} 
 
   UpdateDocsForServicemeshAndAddon:
-    needs: TestIstioForServicemeshAndAddon
+    needs: [TestIstioForServicemeshAndAddon, UpdateDocsForServicemeshInstall]
     if:  "always() && github.event_name != 'pull_request' "
     runs-on: ubuntu-latest
     steps:
