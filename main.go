@@ -151,11 +151,11 @@ func registerCapabilities(port string, log logger.Handler) {
 	// Register workloads
 	log.Info("Registering static workloads with Meshery Server...")
 	if err := oam.RegisterWorkloads(mesheryServerAddress(), serviceAddress()+":"+port); err != nil {
-		log.Info(err.Error())
+		log.Error(err)
 	}
 	// Register traits
 	if err := oam.RegisterTraits(mesheryServerAddress(), serviceAddress()+":"+port); err != nil {
-		log.Info(err.Error())
+		log.Error(err)
 	}
 	log.Info("Successfully registered static components with Meshery Server.")
 }
@@ -199,7 +199,8 @@ func registerWorkloads(port string, log logger.Handler) {
 		Config:  build.NewConfig(version),
 	})
 	if err != nil {
-		log.Info("Failed to generate components for version "+version, "ERR: ", err.Error())
+		log.Info("Failed to generate components for version " + version)
+		log.Error(err)
 		return
 	}
 
@@ -212,7 +213,7 @@ func registerWorkloads(port string, log logger.Handler) {
 	oam.WorkloadPath = filepath.Join(originalPath, version)
 	defer resetWorkloadPath(originalPath)
 	if err := oam.RegisterWorkloads(mesheryServerAddress(), serviceAddress()+":"+port); err != nil {
-		log.Info(err.Error())
+		log.Error(err)
 		return
 	}
 	log.Info("Latest workload components successfully registered for version ", version)
