@@ -1,0 +1,20 @@
+{
+ "kind": "WorkloadDefinition",
+ "apiVersion": "core.oam.dev/v1alpha1",
+ "metadata": {
+  "name": "Telemetry.Istio",
+  "creationTimestamp": null
+ },
+ "spec": {
+  "definitionRef": {
+   "name": "telemetry.Istio.meshery.layer5.io"
+  },
+  "metadata": {
+   "@type": "pattern.meshery.io/mesh/workload",
+   "k8sAPIVersion": "telemetry.istio.io/v1alpha1",
+   "k8sKind": "Telemetry",
+   "meshName": "ISTIO",
+   "meshVersion": "1.11.0-rc.3"
+  }
+ }
+}

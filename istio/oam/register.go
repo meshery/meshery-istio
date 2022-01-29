@@ -34,7 +34,10 @@ type schemaDefinitionPathSet struct {
 // Registration process will send POST request to $runtime/api/oam/workload
 func RegisterWorkloads(runtime, host string) error {
 	oamRDP := []adapter.OAMRegistrantDefinitionPath{}
-
+	pathSets, err := load(WorkloadPath)
+	if err != nil {
+		return err
+	}
 	for _, pathSet := range pathSets {
 		metadata := map[string]string{
 			config.OAMAdapterNameMetadataKey: config.IstioOperation,
@@ -109,8 +112,7 @@ func load(basePath string) ([]schemaDefinitionPathSet, error) {
 				jsonSchemaPath:    fmt.Sprintf("%s.meshery.layer5io.schema.json", nameWithPath),
 				name:              filepath.Base(nameWithPath),
 			})
-			AvailableVersions[filepath.Base(filepath.Dir(path))] = true
-
+			AvailableVersions[filepath.Base(filepath.Dir(path))] = true // Getting available versions already existing on file system
 		}
 
 		return nil
@@ -121,10 +123,6 @@ func load(basePath string) ([]schemaDefinitionPathSet, error) {
 	return res, nil
 }
 func init() {
-	var err error
-	pathSets, err = load(WorkloadPath)
-	if err != nil {
-		fmt.Printf("Could not load definitions and schemas for static component registeration: %v", err.Error())
-		return
-	}
+	//This is done only to find available versions at startup
+	load(WorkloadPath)
 }
