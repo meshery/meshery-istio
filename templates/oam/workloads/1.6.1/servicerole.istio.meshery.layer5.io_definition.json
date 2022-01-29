@@ -1,0 +1,20 @@
+{
+ "kind": "WorkloadDefinition",
+ "apiVersion": "core.oam.dev/v1alpha1",
+ "metadata": {
+  "name": "ServiceRole.Istio",
+  "creationTimestamp": null
+ },
+ "spec": {
+  "definitionRef": {
+   "name": "servicerole.Istio.meshery.layer5.io"
+  },
+  "metadata": {
+   "@type": "pattern.meshery.io/mesh/workload",
+   "k8sAPIVersion": "rbac.istio.io/v1alpha1",
+   "k8sKind": "ServiceRole",
+   "meshName": "ISTIO",
+   "meshVersion": "1.6.1"
+  }
+ }
+}

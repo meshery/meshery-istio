@@ -7,6 +7,10 @@
     "spec": {
         "definitionRef": {
             "name": "envoyfilter.meshery.layer5.io"
-        }
+        },
+        "metadata": {
+            "@type": "pattern.meshery.io/core"
+          }
+         
     }
 }
