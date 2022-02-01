@@ -5,7 +5,6 @@ import (
 	"archive/zip"
 	"bytes"
 	"compress/gzip"
-	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -87,7 +86,7 @@ func (istio *Istio) installIstio(del, useBin bool, version, namespace string, pr
 
 func (istio *Istio) applyHelmChart(del bool, version, namespace, dirName string, profile string) error {
 	if profile != "demo" && profile != "default" && profile != "minimal" {
-		return errors.New("Invalid profile passed")
+		return ErrInvalidInstallationProfile(profile) // This code will never be executed as json schema would have been validated beforehand
 	}
 	kClient := istio.MesheryKubeclient
 	if kClient == nil {
