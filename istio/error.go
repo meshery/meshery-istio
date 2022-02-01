@@ -267,7 +267,7 @@ func ErrLoadNamespace(err error, str string) error {
 	return errors.New(ErrLoadNamespaceCode, errors.Alert, []string{"Error while labeling namespace:", str}, []string{err.Error()}, []string{}, []string{})
 }
 
-//ErrInvalidInstallationProfileCode implies error while invalid profile option is passed in pattern file
+//ErrInvalidInstallationProfile implies error while invalid profile option is passed in pattern file
 func ErrInvalidInstallationProfile(str string) error {
 	return errors.New(ErrInvalidInstallationProfileCode, errors.Alert, []string{"Error while installing istio due to wrong profile"}, []string{"Gotten profile " + str}, []string{"Invalid profile passed"}, []string{"Provide one of the profiles: \"demo\",\"minimal\",\"default\" profiles"})
 }
