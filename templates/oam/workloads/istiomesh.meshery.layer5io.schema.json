@@ -7,7 +7,12 @@
         "version": {
             "type": "string",
             "description": "version of istio service mesh"
+        },
+        "profile":{
+            "type":"string",
+            "enum": ["default","minimal","demo"],
+            "description": "name of the profile"
         }
     },
-    "required": ["version"]
+    "required": ["version","profile"]
 }
