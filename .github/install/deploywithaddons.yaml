@@ -6,6 +6,7 @@ services:
     namespace: istio-system
     settings:
       version: #will be filled dynamically in workflow
+      profile: demo
     traits:
       automaticSidecarInjection:
         namespaces:
