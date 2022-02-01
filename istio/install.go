@@ -5,6 +5,7 @@ import (
 	"archive/zip"
 	"bytes"
 	"compress/gzip"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -32,7 +33,7 @@ var (
 
 // installs Istio using either helm charts or istioctl.
 // Priority given to helm charts unless useBin set to true
-func (istio *Istio) installIstio(del, useBin bool, version, namespace string) (string, error) {
+func (istio *Istio) installIstio(del, useBin bool, version, namespace string, profile string) (string, error) {
 	istio.Log.Debug(fmt.Sprintf("Requested install of version: %s", version))
 	istio.Log.Debug(fmt.Sprintf("Requested action is delete: %v", del))
 	istio.Log.Debug(fmt.Sprintf("Requested action is in namespace: %s", namespace))
@@ -65,7 +66,7 @@ func (istio *Istio) installIstio(del, useBin bool, version, namespace string) (s
 	}
 
 	// Install using Helm Chart and fallback to istioctl
-	err = istio.applyHelmChart(del, version, namespace, dirName)
+	err = istio.applyHelmChart(del, version, namespace, dirName, profile)
 	if err != nil {
 		istio.Log.Error(err)
 		istio.Log.Info("Retrying to install using istioctl...")
@@ -84,7 +85,10 @@ func (istio *Istio) installIstio(del, useBin bool, version, namespace string) (s
 	return status.Installed, nil
 }
 
-func (istio *Istio) applyHelmChart(del bool, version, namespace, dirName string) error {
+func (istio *Istio) applyHelmChart(del bool, version, namespace, dirName string, profile string) error {
+	if profile != "demo" && profile != "default" && profile != "minimal" {
+		return errors.New("Invalid profile passed")
+	}
 	kClient := istio.MesheryKubeclient
 	if kClient == nil {
 		return ErrNilClient
@@ -117,6 +121,9 @@ func (istio *Istio) applyHelmChart(del bool, version, namespace, dirName string)
 		return ErrApplyHelmChart(err)
 	}
 
+	if profile == "minimal" {
+		return nil
+	}
 	err = kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
 		LocalPath:       path.Join(downloadLocation, dirName, "manifests/charts/gateways/istio-ingress"),
 		Namespace:       "istio-system",
@@ -127,6 +134,9 @@ func (istio *Istio) applyHelmChart(del bool, version, namespace, dirName string)
 		return ErrApplyHelmChart(err)
 	}
 
+	if profile == "default" {
+		return nil
+	}
 	err = kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
 		LocalPath:       path.Join(downloadLocation, dirName, "manifests/charts/gateways/istio-egress"),
 		Namespace:       "istio-system",
