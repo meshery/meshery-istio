@@ -137,7 +137,7 @@ var (
 
 	// ErrParseOAMConfig represents the error which is
 	// generated during the OAM configuration parsing
-	ErrParseOAMConfig = errors.New(ErrParseOAMConfigCode, errors.Alert, []string{"error parsing the configuration"}, []string{"Error occured while parsing application configuration in the OAM request made by meshery server"}, []string{"Could not unmarshall OAM config recieved via ProcessOAM gRPC call into a valid Config struct"}, []string{"Check if meshery server is creating valid config for ProcessOAM gRPC call. This error should never happen and can be reported as a bug in meshery server. Also check if meshery server and adapters are referring to same config struct provided in meshkit"})
+	ErrParseOAMConfig = errors.New(ErrParseOAMConfigCode, errors.Alert, []string{"error parsing the configuration"}, []string{"Error occured while parsing application configuration in the OAM request made by Meshery Server"}, []string{"Could not unmarshall OAM config recieved via ProcessOAM gRPC call into a valid Config struct"}, []string{"Check if Meshery Server is creating valid config for ProcessOAM gRPC call. This error should never happen and can be reported as a bug in Meshery Server. Also, confirm that Meshery Server and Adapters are referring to same config struct provided in MeshKit"})
 
 	// ErrNilClient represents the error which is
 	// generated when kubernetes client is nil
