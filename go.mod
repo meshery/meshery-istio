@@ -12,6 +12,8 @@ replace (
 //golang.org/x/sys => golang.org/x/sys v0.0.0-20200826173525-f9321e4c35a6
 )
 
+replace github.com/layer5io/meshery-adapter-library => ../meshery-adapter-library
+
 require (
 	github.com/aspenmesh/istio-vet v0.0.0-20200806222806-9c8e9a962b9f
 	github.com/layer5io/meshery-adapter-library v0.5.2

@@ -13,6 +13,7 @@ import (
 	meshkitCfg "github.com/layer5io/meshkit/config"
 	"github.com/layer5io/meshkit/logger"
 	"github.com/layer5io/meshkit/models/oam/core/v1alpha1"
+	"github.com/layer5io/meshkit/errors"
 )
 
 // Istio represents the istio adapter and embeds adapter.Adapter
@@ -43,16 +44,26 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 		Operationid: opReq.OperationID,
 		Summary:     status.Deploying,
 		Details:     "Operation is not supported",
+		ErrCode:     "undefined",
+		Cause:       "undefined",
+		Remedy:      "undefined",
 	}
 
 	switch opReq.OperationName {
 	case internalconfig.IstioOperation:
 		go func(hh *Istio, ee *adapter.Event) {
 			version := string(operations[opReq.OperationName].Versions[0])
-			stat, err := hh.installIstio(opReq.IsDeleteOperation, false, version, opReq.Namespace, "default")
+			stat, err := hh.installIstio(opReq.IsDeleteOperation, true, version, opReq.Namespace, "default")
 			if err != nil {
 				e.Summary = fmt.Sprintf("Error while %s Istio service mesh", stat)
 				e.Details = err.Error()
+				fmt.Println(errors.GetCode(err));
+				e.Cause = errors.GetCause(err)
+				e.ErrCode = errors.GetCode(err)
+				e.Remedy = errors.GetRemedy(err)
+				fmt.Println(e);
+
+				fmt.Printf("cause: " + errors.GetCause(err) + "\ncode: " + errors.GetCode(err) + "\n")
 				hh.StreamErr(e, err)
 				return
 			}
