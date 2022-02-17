@@ -53,17 +53,13 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 	case internalconfig.IstioOperation:
 		go func(hh *Istio, ee *adapter.Event) {
 			version := string(operations[opReq.OperationName].Versions[0])
-			stat, err := hh.installIstio(opReq.IsDeleteOperation, true, version, opReq.Namespace, "default")
+			stat, err := hh.installIstio(opReq.IsDeleteOperation, false, version, opReq.Namespace, "default")
 			if err != nil {
 				e.Summary = fmt.Sprintf("Error while %s Istio service mesh", stat)
 				e.Details = err.Error()
-				fmt.Println(errors.GetCode(err));
 				e.Cause = errors.GetCause(err)
 				e.ErrCode = errors.GetCode(err)
 				e.Remedy = errors.GetRemedy(err)
-				fmt.Println(e);
-
-				fmt.Printf("cause: " + errors.GetCause(err) + "\ncode: " + errors.GetCode(err) + "\n")
 				hh.StreamErr(e, err)
 				return
 			}
