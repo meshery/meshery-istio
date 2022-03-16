@@ -19,6 +19,7 @@ docker-run:
 	layer5/meshery-istio:edge-latest
 
 run:
+	go mod tidy; \
 	DEBUG=true GOPROXY=direct GOSUMDB=off go run main.go
 
 run-force-dynamic-reg:
