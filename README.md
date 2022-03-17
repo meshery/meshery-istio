@@ -5,7 +5,8 @@
 
 [![Docker Pulls](https://img.shields.io/docker/pulls/layer5/meshery-istio.svg)](https://hub.docker.com/r/layer5/meshery-istio)
 [![Go Report Card](https://goreportcard.com/badge/github.com/layer5io/meshery-istio)](https://goreportcard.com/report/github.com/layer5io/meshery-istio)
-[![Build Status](https://github.com/layer5io/meshery-istio/workflows/Meshery-Istio/badge.svg)](https://github.com/layer5io/meshery-istio/actions)
+<a href="https://github.com/meshery/meshery-istio/actions" alt="Build Status">
+  <img src="https://img.shields.io/github/workflow/status/meshery/meshery-istio/Meshery%20Adapter%20for%20Istio%20Build%20and%20Releaser" /></a>
 [![GitHub](https://img.shields.io/github/license/layer5io/meshery-istio.svg)](LICENSE)
 [![GitHub issues by-label](https://img.shields.io/github/issues/layer5io/meshery-istio/help%20wanted.svg)](https://github.com/layer5io/meshery-istio/issues?q=is%3Aopen+is%3Aissue+label%3A"help+wanted")
 [![Website](https://img.shields.io/website/https/layer5.io/meshery.svg)](https://layer5.io/meshery/)
