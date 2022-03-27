@@ -120,6 +120,13 @@ func handleComponentIstioMesh(istio *Istio, comp v1alpha1.Component, isDel bool)
 	// because the configuration is already validated against the schema
 	version := comp.Spec.Settings["version"].(string)
 	profile := comp.Spec.Settings["profile"].(string)
+	dataplaneNS, ok := comp.Spec.Settings["dataplaneNamespace"].([]interface{})
+	if ok && len(dataplaneNS) != 0 {
+		err := handleNamespaceLabel(istio, castSliceInterfaceToSliceString(dataplaneNS), isDel)
+		if err != nil {
+			return "failed labelling namespace", err
+		}
+	}
 	return istio.installIstio(isDel, false, version, comp.Namespace, profile)
 }
 

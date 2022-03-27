@@ -12,6 +12,13 @@
             "type":"string",
             "enum": ["default","minimal","demo"],
             "description": "name of the profile"
+        },
+        "dataplaneNamespace":{
+            "items": {
+                "type": "string"
+               },
+               "type": "array",
+            "description": "Namespaces of the data plane"
         }
     },
     "required": ["version","profile"]
