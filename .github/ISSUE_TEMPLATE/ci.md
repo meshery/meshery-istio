@@ -17,6 +17,7 @@ assignees: ''
 #### Acceptance Tests
 <!-- Stipulations of functional behavior or non-functional items that must be in-place in order for the issue to be closed. -->
 
-#### Reference:
-
-- [Meshery Build & Release Strategy](https://docs.meshery.io/project/build-and-release)
+---
+#### Contributor [Guides](https://docs.meshery.io/project/contributing) and Resources
+- 🛠 [Meshery Build & Release Strategy](https://docs.meshery.io/project/build-and-release)
+- 🙋🏾🙋🏼 Questions: [Layer5 Discussion Forum](https://discuss.layer5.io) and [Layer5 Community Slack](http://slack.layer5.io)
