@@ -261,7 +261,7 @@ jobs:
           excludes: prerelease, draft, edge 
       - name: Change service mesh version in patternfile
         run: | 
-           yq e -i '.services.istio.settings.version="${{ steps.gettag.outputs.release }}"' ./.github/install/deploywithsampleapp.yaml 
+           yq e -i '.services.istioinstallation.settings.istioVersion="${{ steps.gettag.outputs.release }}"' ./.github/install/deploywithsampleapp.yaml 
            cat ./.github/install/deploywithsampleapp.yaml
       - name: Uploading file
         uses: actions/upload-artifact@v2
@@ -273,7 +273,7 @@ jobs:
     needs: SetPatternfileForServicemeshAndSampleApp
     uses: meshery/meshery/.github/workflows/testadapters.yaml@master
     with:
-      expected_pods: istiod,istio-egressgateway,istio-ingressgateway,details-v1,productpage-v1,ratings-v1,reviews-v1,reviews-v2,reviews-v3
+      expected_pods: istiod,istio-egressgateway,istio-ingressgateway,details,productpage,ratings,reviews-v1,reviews-v2,reviews-v3
       expected_pods_namespaces: istio-system,istio-system,istio-system,default,default,default,default,default,default
       deployment_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-istio-deployment.yaml
       service_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-istio-service.yaml
@@ -281,8 +281,8 @@ jobs:
       patternfile_name: deploywithsampleapp.yaml
       provider: Local
       k8s_version: v1.20.1
-      sm_version: ${{ needs.SetPatternfileForServicemeshAndAddon.outputs.sm_version }}
-      adapter_version:  ${{ needs.SetPatternfileForServicemeshAndAddon.outputs.adapter_version }}
+      sm_version: ${{ needs.SetPatternfileForServicemeshAndSampleApp.outputs.sm_version }}
+      adapter_version:  ${{ needs.SetPatternfileForServicemeshAndSampleApp.outputs.adapter_version }}
       output_filename: data.json
     secrets:
       token: ${{ secrets.PROVIDER_TOKEN }} 
