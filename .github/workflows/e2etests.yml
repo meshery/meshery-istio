@@ -273,8 +273,8 @@ jobs:
     needs: SetPatternfileForServicemeshAndSampleApp
     uses: meshery/meshery/.github/workflows/testadapters.yaml@master
     with:
-      expected_pods: istiod,istio-egressgateway,istio-ingressgateway,details,productpage,ratings,reviews-v1,reviews-v2,reviews-v3
-      expected_pods_namespaces: istio-system,istio-system,istio-system,default,default,default,default,default,default
+      expected_pods: istiod,details73de2529,productpageb6cd6107,ratings8229a44f,reviews-v13837c681,reviews-v27200aff4,reviews-v35f86bb6a
+      expected_pods_namespaces: istio-system,default,default,default,default,default,default
       deployment_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-istio-deployment.yaml
       service_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-istio-service.yaml
       adapter_name: istio
@@ -334,14 +334,12 @@ jobs:
           service-mesh-version: $(jq '.metadata.service_mesh_version' data.json)
           tests:
             istiod: $(jq '.pods_status."istiod"' data.json)
-            istio-egressgateway: $(jq '.pods_status."istio-egressgateway"' data.json)
-            istio-ingressgateway:  $(jq '.pods_status."istio-ingressgateway"' data.json)
-            details-v1: $(jq '.pods_status."details-v1"' data.json)
-            productpage-v1: $(jq '.pods_status."productpage-v1"' data.json)
-            ratings-v1: $(jq '.pods_status."ratings-v1"' data.json)
-            reviews-v1: $(jq '.pods_status."reviews-v1"' data.json)
-            reviews-v2: $(jq '.pods_status."reviews-v2"' data.json)
-            reviews-v3: $(jq '.pods_status."reviews-v3"' data.json)
+            details: $(jq '.pods_status."details73de2529"' data.json)
+            productpage: $(jq '.pods_status."productpageb6cd6107"' data.json)
+            ratings: $(jq '.pods_status."ratings8229a44f"' data.json)
+            reviews-v1: $(jq '.pods_status."reviews-v13837c681"' data.json)
+            reviews-v2: $(jq '.pods_status."reviews-v27200aff4"' data.json)
+            reviews-v3: $(jq '.pods_status."reviews-v35f86bb6a"' data.json)
           overall-status: $(jq '."overall-status"' data.json)
           ---" >  test.md
           mv test.md $filename.md
