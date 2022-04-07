@@ -18,9 +18,9 @@ require (
 	github.com/layer5io/meshkit v0.5.12
 	github.com/layer5io/service-mesh-performance v0.3.4
 	gopkg.in/yaml.v2 v2.4.0
-	istio.io/client-go v1.12.1
-	k8s.io/apimachinery v0.23.0-alpha.1
-	k8s.io/client-go v0.23.0-alpha.1
+	istio.io/client-go v1.13.2
+	k8s.io/apimachinery v0.23.1
+	k8s.io/client-go v0.23.1
 )
 
 require (
@@ -55,7 +55,7 @@ require (
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/go-errors/errors v1.0.1 // indirect
-	github.com/go-logr/logr v0.4.0 // indirect
+	github.com/go-logr/logr v1.2.0 // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
 	github.com/go-openapi/jsonreference v0.19.5 // indirect
 	github.com/go-openapi/swag v0.19.14 // indirect
@@ -138,7 +138,7 @@ require (
 	google.golang.org/api v0.44.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20210831024726-fe130286e0e2 // indirect
-	google.golang.org/grpc v1.40.0 // indirect
+	google.golang.org/grpc v1.42.0 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
 	gopkg.in/gorp.v1 v1.7.2 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
@@ -146,13 +146,13 @@ require (
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 	gorm.io/gorm v1.20.10 // indirect
 	helm.sh/helm/v3 v3.7.2 // indirect
-	istio.io/api v0.0.0-20211206163441-1a632586cbd4 // indirect
-	istio.io/gogo-genproto v0.0.0-20210113155706-4daf5697332f // indirect
-	k8s.io/api v0.23.0-alpha.1 // indirect
+	istio.io/api v0.0.0-20220304033655-c6e3d0f0d646 // indirect
+	istio.io/gogo-genproto v0.0.0-20211208193508-5ab4acc9eb1e // indirect
+	k8s.io/api v0.23.1 // indirect
 	k8s.io/apiextensions-apiserver v0.22.4 // indirect
 	k8s.io/apiserver v0.22.4 // indirect
 	k8s.io/component-base v0.23.0-alpha.1 // indirect
-	k8s.io/klog/v2 v2.10.0 // indirect
+	k8s.io/klog/v2 v2.30.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20211115234752-e816edb12b65 // indirect
 	k8s.io/kubectl v0.23.0-alpha.1 // indirect
 	k8s.io/utils v0.0.0-20210930125809-cb0fa318a74b // indirect
@@ -176,4 +176,5 @@ require (
 	go.opentelemetry.io/otel/sdk v1.3.0 // indirect
 	golang.org/x/crypto v0.0.0-20220112180741-5e0467b6c7ce // indirect
 	k8s.io/cli-runtime v0.23.0-alpha.1 // indirect
+	sigs.k8s.io/json v0.0.0-20211020170558-c049b76a60c6 // indirect
 )
