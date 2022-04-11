@@ -56,11 +56,10 @@ jobs:
         docker push ${{ secrets.IMAGE_NAME }}:stable-latest
         docker push ${{ secrets.IMAGE_NAME }}:stable-${GITHUB_REF/refs\/tags\//}
         docker push ${{ secrets.IMAGE_NAME }}:stable-${GITHUB_SHA::7}
-# SKIP STEP: FAILS BECAUSE README FILE SIZE IS TOO LARGE FOR DOCKER HUB
-    # - name: Docker Hub Description
-    #   if: github.event_name != 'pull_request' && startsWith(github.ref, 'refs/tags/') && success()
-    #   uses: peter-evans/dockerhub-description@v2.0.0
-    #   env:
-    #     DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-    #     DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-    #     DOCKERHUB_REPOSITORY: ${{ secrets.IMAGE_NAME }}
+    - name: Docker Hub Description
+      if: github.event_name != 'pull_request' && startsWith(github.ref, 'refs/tags/') && success()
+      uses: peter-evans/dockerhub-description@v2.0.0
+      env:
+        DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+        DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        DOCKERHUB_REPOSITORY: ${{ secrets.IMAGE_NAME }}
