@@ -1,14 +1,14 @@
 name: istio
 services:
   istioinstallation:
-    type: $(#use https://raw.githubusercontent.com/Revolyssup/service-mesh-patterns/import/samples/istioinstall.yaml)
+    type: $(#use https://raw.githubusercontent.com/service-mesh-patterns/service-mesh-patterns/master/samples/istioinstall.yaml)
     settings: 
         controlplaneNS: istio-system
         namespace: default
         istioVersion: 1.12.0
         profile: minimal
   bookinfo:
-    type: $(#use https://raw.githubusercontent.com/gr455/service-mesh-patterns/bookinfo-remove-k8s/samples/bookInfoPattern.yaml)
+    type: $(#use https://raw.githubusercontent.com/service-mesh-patterns/service-mesh-patterns/master/samples/bookInfoNoK8sPattern.yaml)
     settings: 
       namespace: default
     dependsOn:
