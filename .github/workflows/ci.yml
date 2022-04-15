@@ -5,6 +5,9 @@ on:
       - "*"
     tags:
       - "v*"
+    paths-ignore:
+      - 'docs/**'
+      - '.github/**'      
   pull_request:
     branches:
       - master
