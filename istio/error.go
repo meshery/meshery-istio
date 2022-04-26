@@ -48,9 +48,8 @@ var (
 	// during addon deployment process
 	ErrAddonFromTemplateCode = "1012"
 
-	// ErrAddonInvalidConfigCode represents the errors which are generated
-	// when an invalid addon operation is requested
-	ErrAddonInvalidConfigCode = "1013"
+	//ErrInvalidInstallationProfileCode implies error while invalid profile option is passed in pattern file
+	ErrInvalidInstallationProfileCode = "1013"
 
 	// ErrCreatingIstioClientCode represents the errors which are generated
 	// during creating istio client process
@@ -125,8 +124,6 @@ var (
 	// ErrLoadNamespaceCode implies error while finding namespace
 	ErrLoadNamespaceCode = "1032"
 
-	//ErrInvalidInstallationProfileCode implies error while invalid profile option is passed in pattern file
-	ErrInvalidInstallationProfileCode = "1033"
 	// ErrOpInvalid represents the errors which are generated
 	// when an invalid operation is requested
 	ErrOpInvalid = errors.New(ErrOpInvalidCode, errors.Alert, []string{"Invalid operation"}, []string{"Istio adapter recived an invalid operation from the meshey server"}, []string{"The operation is not supported by the adapter", "Invalid operation name"}, []string{"Check if the operation name is valid and supported by the adapter"})
