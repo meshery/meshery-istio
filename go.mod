@@ -19,7 +19,7 @@ require (
 	github.com/layer5io/service-mesh-performance v0.3.4
 	gopkg.in/yaml.v2 v2.4.0
 	istio.io/client-go v1.12.1
-	k8s.io/apimachinery v0.23.5
+	k8s.io/apimachinery v0.23.6
 	k8s.io/client-go v0.23.5
 )
 
