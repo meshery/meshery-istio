@@ -14,6 +14,7 @@ import (
 	"path"
 	"runtime"
 	"strings"
+	"sync"
 
 	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshery-adapter-library/status"
@@ -88,11 +89,7 @@ func (istio *Istio) applyHelmChart(del bool, version, namespace, dirName string,
 	if profile != "demo" && profile != "default" && profile != "minimal" {
 		return ErrInvalidInstallationProfile(profile) // This code will never be executed as json schema would have been validated beforehand
 	}
-	kClient := istio.MesheryKubeclient
-	if kClient == nil {
-		return ErrNilClient
-	}
-
+	var errs []error
 	istio.Log.Info("Installing using helm charts...")
 	var act mesherykube.HelmChartAction
 	if del {
@@ -100,53 +97,88 @@ func (istio *Istio) applyHelmChart(del bool, version, namespace, dirName string,
 	} else {
 		act = mesherykube.INSTALL
 	}
-	err := kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
-		LocalPath:       path.Join(downloadLocation, dirName, "manifests/charts/base"),
-		Namespace:       "istio-system",
-		Action:          act,
-		CreateNamespace: true,
-	})
-	if err != nil {
-		return ErrApplyHelmChart(err)
-	}
 
-	err = kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
-		LocalPath:       path.Join(downloadLocation, dirName, "manifests/charts/istio-control/istio-discovery"),
-		Namespace:       "istio-system",
-		Action:          act,
-		CreateNamespace: true,
-	})
-	if err != nil {
-		return ErrApplyHelmChart(err)
-	}
+	var wg sync.WaitGroup
+	for _, config := range istio.KubeConfigs {
+		wg.Add(1)
+		go func(config string, act mesherykube.HelmChartAction) {
+			defer wg.Done()
+			kClient, err := mesherykube.New([]byte(config))
+			if err != nil {
+				errs = append(errs, err)
+				return
+			}
+			err = kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
+				LocalPath:       path.Join(downloadLocation, dirName, "manifests/charts/base"),
+				Namespace:       "istio-system",
+				Action:          act,
+				CreateNamespace: true,
+			})
+			if err != nil {
+				errs = append(errs, err)
+				return
 
-	if profile == "minimal" {
+			}
+
+			err = kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
+				LocalPath:       path.Join(downloadLocation, dirName, "manifests/charts/istio-control/istio-discovery"),
+				Namespace:       "istio-system",
+				Action:          act,
+				CreateNamespace: true,
+			})
+			if err != nil {
+				errs = append(errs, err)
+				return
+
+			}
+
+			if profile == "minimal" {
+				return
+			}
+			err = kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
+				LocalPath:       path.Join(downloadLocation, dirName, "manifests/charts/gateways/istio-ingress"),
+				Namespace:       "istio-system",
+				Action:          act,
+				CreateNamespace: true,
+			})
+			if err != nil {
+				errs = append(errs, err)
+				return
+
+			}
+
+			if profile == "default" {
+				return
+			}
+			err = kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
+				LocalPath:       path.Join(downloadLocation, dirName, "manifests/charts/gateways/istio-egress"),
+				Namespace:       "istio-system",
+				Action:          act,
+				CreateNamespace: true,
+			})
+			if err != nil {
+				errs = append(errs, err)
+				return
+
+			}
+
+		}(config, act)
+	}
+	wg.Wait()
+	if len(errs) == 0 {
 		return nil
 	}
-	err = kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
-		LocalPath:       path.Join(downloadLocation, dirName, "manifests/charts/gateways/istio-ingress"),
-		Namespace:       "istio-system",
-		Action:          act,
-		CreateNamespace: true,
-	})
-	if err != nil {
-		return ErrApplyHelmChart(err)
+	return ErrApplyHelmChart(mergeErrors(errs))
+}
+func mergeErrs(errs ...error) (error error) {
+	var errstring string
+	for _, err := range errs {
+		if err.Error() != "" {
+			errstring = err.Error() + "\n"
+		}
 	}
-
-	if profile == "default" {
-		return nil
-	}
-	err = kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
-		LocalPath:       path.Join(downloadLocation, dirName, "manifests/charts/gateways/istio-egress"),
-		Namespace:       "istio-system",
-		Action:          act,
-		CreateNamespace: true,
-	})
-	if err != nil {
-		return ErrApplyHelmChart(err)
-	}
-
-	return nil
+	error = fmt.Errorf("%s", errstring)
+	return
 }
 
 // getIstioRelease gets the manifests for latest istio release.

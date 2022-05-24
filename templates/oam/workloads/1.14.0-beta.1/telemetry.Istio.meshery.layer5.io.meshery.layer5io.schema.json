@@ -1,5 +1,5 @@
 {
- "description": "Telemetry defines how the telemetry is generated for workloads within a mesh.",
+ "description": "Telemetry configuration for workloads. See more details at: https://istio.io/docs/reference/config/telemetry.html",
  "properties": {
   "accessLogging": {
    "description": "Optional.",
@@ -9,6 +9,30 @@
       "description": "Controls logging.",
       "nullable": true,
       "type": "boolean"
+     },
+     "filter": {
+      "description": "Optional.",
+      "properties": {
+       "expression": {
+        "description": "CEL expression for selecting when requests/connections should be logged.",
+        "type": "string"
+       }
+      },
+      "type": "object"
+     },
+     "match": {
+      "description": "Allows tailoring of logging behavior to specific conditions.",
+      "properties": {
+       "mode": {
+        "enum": [
+         "CLIENT_AND_SERVER",
+         "CLIENT",
+         "SERVER"
+        ],
+        "type": "string"
+       }
+      },
+      "type": "object"
      },
      "providers": {
       "description": "Optional.",
@@ -94,7 +118,6 @@
            "type": "string"
           },
           "mode": {
-           "description": "Controls which mode of metrics generation is selected: CLIENT and/or SERVER.",
            "enum": [
             "CLIENT_AND_SERVER",
             "CLIENT",
@@ -221,7 +244,6 @@
          "type": "object"
         },
         "header": {
-         "description": "RequestHeader adds the value of an header from the request to each span.",
          "properties": {
           "defaultValue": {
            "description": "Optional.",
@@ -255,6 +277,20 @@
       "nullable": true,
       "type": "boolean"
      },
+     "match": {
+      "description": "Allows tailoring of behavior to specific conditions.",
+      "properties": {
+       "mode": {
+        "enum": [
+         "CLIENT_AND_SERVER",
+         "CLIENT",
+         "SERVER"
+        ],
+        "type": "string"
+       }
+      },
+      "type": "object"
+     },
      "providers": {
       "description": "Optional.",
       "items": {
@@ -271,6 +307,10 @@
      "randomSamplingPercentage": {
       "nullable": true,
       "type": "number"
+     },
+     "useRequestIdForTraceSampling": {
+      "nullable": true,
+      "type": "boolean"
      }
     },
     "type": "object"

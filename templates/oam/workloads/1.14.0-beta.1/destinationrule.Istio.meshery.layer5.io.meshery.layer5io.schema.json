@@ -282,7 +282,7 @@
          "localityLbSetting": {
           "properties": {
            "distribute": {
-            "description": "Optional: only one of distribute or failover can be set.",
+            "description": "Optional: only one of distribute, failover or failoverPriority can be set.",
             "items": {
              "properties": {
               "from": {
@@ -307,7 +307,7 @@
             "type": "boolean"
            },
            "failover": {
-            "description": "Optional: only failover or distribute can be set.",
+            "description": "Optional: only one of distribute, failover or failoverPriority can be set.",
             "items": {
              "properties": {
               "from": {
@@ -321,17 +321,30 @@
              "type": "object"
             },
             "type": "array"
+           },
+           "failoverPriority": {
+            "description": "failoverPriority is an ordered list of labels used to sort endpoints to do priority based load balancing.",
+            "items": {
+             "type": "string"
+            },
+            "type": "array"
            }
           },
           "type": "object"
          },
          "simple": {
           "enum": [
-           "ROUND_ROBIN",
+           "UNSPECIFIED",
            "LEAST_CONN",
            "RANDOM",
-           "PASSTHROUGH"
+           "PASSTHROUGH",
+           "ROUND_ROBIN",
+           "LEAST_REQUEST"
           ],
+          "type": "string"
+         },
+         "warmupDurationSecs": {
+          "description": "Represents the warmup duration of Service.",
           "type": "string"
          }
         },
@@ -638,7 +651,7 @@
             "localityLbSetting": {
              "properties": {
               "distribute": {
-               "description": "Optional: only one of distribute or failover can be set.",
+               "description": "Optional: only one of distribute, failover or failoverPriority can be set.",
                "items": {
                 "properties": {
                  "from": {
@@ -663,7 +676,7 @@
                "type": "boolean"
               },
               "failover": {
-               "description": "Optional: only failover or distribute can be set.",
+               "description": "Optional: only one of distribute, failover or failoverPriority can be set.",
                "items": {
                 "properties": {
                  "from": {
@@ -677,17 +690,30 @@
                 "type": "object"
                },
                "type": "array"
+              },
+              "failoverPriority": {
+               "description": "failoverPriority is an ordered list of labels used to sort endpoints to do priority based load balancing.",
+               "items": {
+                "type": "string"
+               },
+               "type": "array"
               }
              },
              "type": "object"
             },
             "simple": {
              "enum": [
-              "ROUND_ROBIN",
+              "UNSPECIFIED",
               "LEAST_CONN",
               "RANDOM",
-              "PASSTHROUGH"
+              "PASSTHROUGH",
+              "ROUND_ROBIN",
+              "LEAST_REQUEST"
              ],
+             "type": "string"
+            },
+            "warmupDurationSecs": {
+             "description": "Represents the warmup duration of Service.",
              "type": "string"
             }
            },
@@ -757,6 +783,10 @@
             "credentialName": {
              "type": "string"
             },
+            "insecureSkipVerify": {
+             "nullable": true,
+             "type": "boolean"
+            },
             "mode": {
              "enum": [
               "DISABLE",
@@ -801,6 +831,10 @@
          "credentialName": {
           "type": "string"
          },
+         "insecureSkipVerify": {
+          "nullable": true,
+          "type": "boolean"
+         },
          "mode": {
           "enum": [
            "DISABLE",
@@ -823,6 +857,23 @@
            "type": "string"
           },
           "type": "array"
+         }
+        },
+        "type": "object"
+       },
+       "tunnel": {
+        "properties": {
+         "protocol": {
+          "description": "Specifies which protocol to use for tunneling the downstream connection.",
+          "type": "string"
+         },
+         "targetHost": {
+          "description": "Specifies a host to which the downstream connection is tunneled.",
+          "type": "string"
+         },
+         "targetPort": {
+          "description": "Specifies a port to which the downstream connection is tunneled.",
+          "type": "integer"
          }
         },
         "type": "object"
@@ -1091,7 +1142,7 @@
       "localityLbSetting": {
        "properties": {
         "distribute": {
-         "description": "Optional: only one of distribute or failover can be set.",
+         "description": "Optional: only one of distribute, failover or failoverPriority can be set.",
          "items": {
           "properties": {
            "from": {
@@ -1116,7 +1167,7 @@
          "type": "boolean"
         },
         "failover": {
-         "description": "Optional: only failover or distribute can be set.",
+         "description": "Optional: only one of distribute, failover or failoverPriority can be set.",
          "items": {
           "properties": {
            "from": {
@@ -1130,17 +1181,30 @@
           "type": "object"
          },
          "type": "array"
+        },
+        "failoverPriority": {
+         "description": "failoverPriority is an ordered list of labels used to sort endpoints to do priority based load balancing.",
+         "items": {
+          "type": "string"
+         },
+         "type": "array"
         }
        },
        "type": "object"
       },
       "simple": {
        "enum": [
-        "ROUND_ROBIN",
+        "UNSPECIFIED",
         "LEAST_CONN",
         "RANDOM",
-        "PASSTHROUGH"
+        "PASSTHROUGH",
+        "ROUND_ROBIN",
+        "LEAST_REQUEST"
        ],
+       "type": "string"
+      },
+      "warmupDurationSecs": {
+       "description": "Represents the warmup duration of Service.",
        "type": "string"
       }
      },
@@ -1447,7 +1511,7 @@
          "localityLbSetting": {
           "properties": {
            "distribute": {
-            "description": "Optional: only one of distribute or failover can be set.",
+            "description": "Optional: only one of distribute, failover or failoverPriority can be set.",
             "items": {
              "properties": {
               "from": {
@@ -1472,7 +1536,7 @@
             "type": "boolean"
            },
            "failover": {
-            "description": "Optional: only failover or distribute can be set.",
+            "description": "Optional: only one of distribute, failover or failoverPriority can be set.",
             "items": {
              "properties": {
               "from": {
@@ -1486,17 +1550,30 @@
              "type": "object"
             },
             "type": "array"
+           },
+           "failoverPriority": {
+            "description": "failoverPriority is an ordered list of labels used to sort endpoints to do priority based load balancing.",
+            "items": {
+             "type": "string"
+            },
+            "type": "array"
            }
           },
           "type": "object"
          },
          "simple": {
           "enum": [
-           "ROUND_ROBIN",
+           "UNSPECIFIED",
            "LEAST_CONN",
            "RANDOM",
-           "PASSTHROUGH"
+           "PASSTHROUGH",
+           "ROUND_ROBIN",
+           "LEAST_REQUEST"
           ],
+          "type": "string"
+         },
+         "warmupDurationSecs": {
+          "description": "Represents the warmup duration of Service.",
           "type": "string"
          }
         },
@@ -1566,6 +1643,10 @@
          "credentialName": {
           "type": "string"
          },
+         "insecureSkipVerify": {
+          "nullable": true,
+          "type": "boolean"
+         },
          "mode": {
           "enum": [
            "DISABLE",
@@ -1610,6 +1691,10 @@
       "credentialName": {
        "type": "string"
       },
+      "insecureSkipVerify": {
+       "nullable": true,
+       "type": "boolean"
+      },
       "mode": {
        "enum": [
         "DISABLE",
@@ -1633,6 +1718,34 @@
        },
        "type": "array"
       }
+     },
+     "type": "object"
+    },
+    "tunnel": {
+     "properties": {
+      "protocol": {
+       "description": "Specifies which protocol to use for tunneling the downstream connection.",
+       "type": "string"
+      },
+      "targetHost": {
+       "description": "Specifies a host to which the downstream connection is tunneled.",
+       "type": "string"
+      },
+      "targetPort": {
+       "description": "Specifies a port to which the downstream connection is tunneled.",
+       "type": "integer"
+      }
+     },
+     "type": "object"
+    }
+   },
+   "type": "object"
+  },
+  "workloadSelector": {
+   "properties": {
+    "matchLabels": {
+     "additionalProperties": {
+      "type": "string"
      },
      "type": "object"
     }

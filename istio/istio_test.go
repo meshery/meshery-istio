@@ -386,7 +386,7 @@ func TestIstio_ApplyOperation(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.fields.Adapter.ApplyOperation(tt.args.ctx, tt.args.opReq); (err != nil) != tt.wantErr {
+			if err := tt.fields.Adapter.ApplyOperation(tt.args.ctx, tt.args.opReq, &ch); (err != nil) != tt.wantErr {
 				t.Errorf("Istio.ApplyOperation() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -397,13 +397,22 @@ func TestIstio_ProcessOAM(t *testing.T) {
 	type fields struct {
 		Adapter adapter.Adapter
 	}
+	ch := make(chan interface{}, 10)
+	// fs := fields{
+	// 	Adapter: adapter.Adapter{
+	// 		Config:            getConfigHandler(t),
+	// 		Log:               getLoggerHandler(t),
+	// 		KubeconfigHandler: getKubeconfigHandler(t),
+	// 		Channel:           &ch,
+	// 	},
+	// }
 	type args struct {
 		ctx    context.Context
 		oamReq adapter.OAMRequest
 	}
 	tests := []struct {
 		name    string
-		fields  fields
+		fs      fields
 		args    args
 		want    string
 		wantErr bool
@@ -413,9 +422,9 @@ func TestIstio_ProcessOAM(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			istio := &Istio{
-				Adapter: tt.fields.Adapter,
+				Adapter: tt.fs.Adapter,
 			}
-			got, err := istio.ProcessOAM(tt.args.ctx, tt.args.oamReq)
+			got, err := istio.ProcessOAM(tt.args.ctx, tt.args.oamReq, &ch)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Istio.ProcessOAM() error = %v, wantErr %v", err, tt.wantErr)
 				return

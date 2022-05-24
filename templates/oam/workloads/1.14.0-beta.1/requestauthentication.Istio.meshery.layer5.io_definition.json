@@ -2,19 +2,19 @@
  "kind": "WorkloadDefinition",
  "apiVersion": "core.oam.dev/v1alpha1",
  "metadata": {
-  "name": "VirtualService.Istio",
+  "name": "RequestAuthentication.Istio",
   "creationTimestamp": null
  },
  "spec": {
   "definitionRef": {
-   "name": "virtualservice.Istio.meshery.layer5.io"
+   "name": "requestauthentication.Istio.meshery.layer5.io"
   },
   "metadata": {
    "@type": "pattern.meshery.io/mesh/workload",
-   "k8sAPIVersion": "networking.istio.io/v1alpha3",
-   "k8sKind": "VirtualService",
+   "k8sAPIVersion": "security.istio.io/v1beta1",
+   "k8sKind": "RequestAuthentication",
    "meshName": "ISTIO",
-   "meshVersion": "1.10.1"
+   "meshVersion": "1.14.0-beta.1"
   }
  }
 }
