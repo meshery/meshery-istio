@@ -38,6 +38,29 @@ jobs:
         with:
           go-version: 1.17
       - run: GOPROXY=https://proxy.golang.org,direct GOSUMDB=off GO111MODULE=on go get -u github.com/kisielk/errcheck; /home/runner/go/bin/errcheck -tags draft ./...
+  error_code_check:
+    name: Error code utility check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@master
+        with:
+          fetch-depth: 1
+      - name: Setup Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.17
+      - run: |
+            errWillHave="level=error"
+            GOPROXY=https://proxy.golang.org,direct GOSUMDB=off GO111MODULE=on go install github.com/layer5io/meshkit/cmd/errorutil;
+            err=$(/home/runner/go/bin/errorutil -d . update --skip-dirs meshery -i ./helpers -o ./helpers);
+            echo "ERR: $err";
+            if [[ $err == *"$errWillHave"* ]];
+            then
+              echo "$err";
+              return 1;
+            fi
+            
   static_check:
     name: Static check
     runs-on: ubuntu-latest

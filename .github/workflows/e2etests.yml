@@ -48,10 +48,11 @@ jobs:
 
   TestIstioForServicemeshInstall:
     needs: SetPatternfileForServicemeshInstall
-    uses: meshery/meshery/.github/workflows/testadapters.yaml@master
+    uses: meshery/meshery/.github/workflows/test_adapters.yaml@master
     with:
-      expected_pods: istiod,istio-egressgateway,istio-ingressgateway
-      expected_pods_namespaces: istio-system,istio-system,istio-system
+      expected_resources: istiod,istio-egressgateway,istio-ingressgateway
+      expected_resources_types: pod,pod,pod
+      expected_resources_namespaces: istio-system,istio-system,istio-system
       deployment_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-istio-deployment.yaml
       service_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-istio-service.yaml
       adapter_name: istio
@@ -160,10 +161,11 @@ jobs:
 
   TestIstioForServicemeshAndAddon:
     needs: SetPatternfileForServicemeshAndAddon
-    uses: meshery/meshery/.github/workflows/testadapters.yaml@master
+    uses: meshery/meshery/.github/workflows/test_adapters.yaml@master
     with:
-      expected_pods: istiod,istio-egressgateway,istio-ingressgateway,grafana,prometheus
-      expected_pods_namespaces: istio-system,istio-system,istio-system,istio-system,istio-system
+      expected_resources: istiod,istio-egressgateway,istio-ingressgateway,grafana,prometheus
+      expected_resources_types: pod,pod,pod,pod,pod
+      expected_resources_namespaces: istio-system,istio-system,istio-system,istio-system,istio-system
       deployment_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-istio-deployment.yaml
       service_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-istio-service.yaml
       adapter_name: istio
@@ -274,10 +276,11 @@ jobs:
 
   TestIstioForServicemeshAndSampleApp:
     needs: SetPatternfileForServicemeshAndSampleApp
-    uses: meshery/meshery/.github/workflows/testadapters.yaml@master
+    uses: meshery/meshery/.github/workflows/test_adapters.yaml@master
     with:
-      expected_pods: istiod,details,productpage,ratings,reviews-v1,reviews-v2,reviews-v3
-      expected_pods_namespaces: istio-system,default,default,default,default,default,default
+      expected_resources: istiod,details,productpage,ratings,reviews-v1,reviews-v2,reviews-v3
+      expected_resources_types: pod,pod,pod,pod,pod,pod,pod
+      expected_resources_namespaces: istio-system,default,default,default,default,default,default
       deployment_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-istio-deployment.yaml
       service_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-istio-service.yaml
       adapter_name: istio
@@ -336,13 +339,13 @@ jobs:
           service-mesh: istio
           service-mesh-version: $(jq '.metadata.service_mesh_version' data.json)
           tests:
-            istiod: $(jq '.pods_status."istiod"' data.json)
-            details: $(jq '.pods_status."details"' data.json)
-            productpage: $(jq '.pods_status."productpage"' data.json)
-            ratings: $(jq '.pods_status."ratings"' data.json)
-            reviews-v1: $(jq '.pods_status."reviews-v1"' data.json)
-            reviews-v2: $(jq '.pods_status."reviews-v2"' data.json)
-            reviews-v3: $(jq '.pods_status."reviews-v3"' data.json)
+            pod/istiod: $(jq '.resources_status."pod/istiod"' data.json)
+            pod/details: $(jq '.resources_status."pod/details"' data.json)
+            pod/productpage: $(jq '.resources_status."pod/productpage"' data.json)
+            pod/ratings: $(jq '.resources_status."pod/ratings"' data.json)
+            pod/reviews-v1: $(jq '.resources_status."pod/reviews-v1"' data.json)
+            pod/reviews-v2: $(jq '.resources_status."pod/reviews-v2"' data.json)
+            pod/reviews-v3: $(jq '.resources_status."pod/reviews-v3"' data.json)
           overall-status: $(jq '."overall-status"' data.json)
           ---" >  test.md
           mv test.md $filename.md
