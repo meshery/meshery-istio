@@ -1,0 +1,20 @@
+{
+ "kind": "WorkloadDefinition",
+ "apiVersion": "core.oam.dev/v1alpha1",
+ "metadata": {
+  "name": "RequestAuthentication.Istio",
+  "creationTimestamp": null
+ },
+ "spec": {
+  "definitionRef": {
+   "name": "requestauthentication.Istio.meshery.layer5.io"
+  },
+  "metadata": {
+   "@type": "pattern.meshery.io/mesh/workload",
+   "k8sAPIVersion": "security.istio.io/v1beta1",
+   "k8sKind": "RequestAuthentication",
+   "meshName": "ISTIO",
+   "meshVersion": "1.10.1"
+  }
+ }
+}
