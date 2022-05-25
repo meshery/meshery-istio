@@ -22,19 +22,19 @@ func TestIstio_installAddon(t *testing.T) {
 	ch := make(chan interface{}, 10)
 	fs := fields{
 		Adapter: adapter.Adapter{
-			Config:            getConfigHandler(t),
-			Log:               getLoggerHandler(t),
-			KubeconfigHandler: getKubeconfigHandler(t),
-			Channel:           &ch,
+			Config:  getConfigHandler(t),
+			Log:     getLoggerHandler(t),
+			Channel: &ch,
 		},
 	}
 
 	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		want    string
-		wantErr bool
+		name        string
+		fields      fields
+		args        args
+		want        string
+		kubeconfigs []string
+		wantErr     bool
 	}{
 		// TODO: Add test cases.
 		{
@@ -84,7 +84,7 @@ func TestIstio_installAddon(t *testing.T) {
 			istio := &Istio{
 				Adapter: tt.fields.Adapter,
 			}
-			got, err := istio.installAddon(tt.args.namespace, tt.args.del, tt.args.service, tt.args.patches, tt.args.templates)
+			got, err := istio.installAddon(tt.args.namespace, tt.args.del, tt.args.service, tt.args.patches, tt.args.templates, tt.kubeconfigs)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Istio.installAddon() error = %v, wantErr %v", err, tt.wantErr)
 				return

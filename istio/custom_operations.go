@@ -5,13 +5,10 @@ import (
 	"github.com/layer5io/meshery-adapter-library/status"
 )
 
-func (istio *Istio) applyCustomOperation(namespace string, manifest string, isDel bool) (string, error) {
+func (istio *Istio) applyCustomOperation(namespace string, manifest string, isDel bool, kubeconfigs []string) (string, error) {
 	st := status.Starting
-	if istio.KubeClient == nil {
-		return st, ErrNilClient
-	}
 
-	err := istio.applyManifest([]byte(manifest), isDel, namespace)
+	err := istio.applyManifest([]byte(manifest), isDel, namespace, kubeconfigs)
 	if err != nil {
 		return st, ErrCustomOperation(err)
 	}

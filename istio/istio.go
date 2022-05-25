@@ -24,16 +24,16 @@ type Istio struct {
 func New(c meshkitCfg.Handler, l logger.Handler, kc meshkitCfg.Handler) adapter.Handler {
 	return &Istio{
 		Adapter: adapter.Adapter{
-			Config:            c,
-			Log:               l,
-			KubeconfigHandler: kc,
+			Config: c,
+			Log:    l,
 		},
 	}
 }
 
 // ApplyOperation applies the operation on istio
 func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationRequest) error {
-	istio.KubeConfigs = opReq.K8sConfigs
+	kubeConfigs := opReq.K8sConfigs
+
 	operations := make(adapter.Operations)
 	err := istio.Config.GetObject(adapter.OperationsKey, &operations)
 	if err != nil {
@@ -50,7 +50,7 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 	case internalconfig.IstioOperation:
 		go func(hh *Istio, ee *adapter.Event) {
 			version := string(operations[opReq.OperationName].Versions[0])
-			stat, err := hh.installIstio(opReq.IsDeleteOperation, false, version, opReq.Namespace, "default")
+			stat, err := hh.installIstio(opReq.IsDeleteOperation, false, version, opReq.Namespace, "default", kubeConfigs)
 			if err != nil {
 				e.Summary = fmt.Sprintf("Error while %s Istio service mesh", stat)
 				e.Details = err.Error()
@@ -64,7 +64,7 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 	case common.BookInfoOperation, common.HTTPBinOperation, common.ImageHubOperation, common.EmojiVotoOperation:
 		go func(hh *Istio, ee *adapter.Event) {
 			appName := operations[opReq.OperationName].AdditionalProperties[common.ServiceName]
-			stat, err := hh.installSampleApp(opReq.Namespace, opReq.IsDeleteOperation, operations[opReq.OperationName].Templates)
+			stat, err := hh.installSampleApp(opReq.Namespace, opReq.IsDeleteOperation, operations[opReq.OperationName].Templates, kubeConfigs)
 			if err != nil {
 				e.Summary = fmt.Sprintf("Error while %s %s application", stat, appName)
 				e.Details = err.Error()
@@ -100,7 +100,7 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 		}(istio, e)
 	case internalconfig.DenyAllPolicyOperation, internalconfig.StrictMTLSPolicyOperation, internalconfig.MutualMTLSPolicyOperation, internalconfig.DisableMTLSPolicyOperation:
 		go func(hh *Istio, ee *adapter.Event) {
-			stat, err := hh.applyPolicy(opReq.Namespace, opReq.IsDeleteOperation, operations[opReq.OperationName].Templates)
+			stat, err := hh.applyPolicy(opReq.Namespace, opReq.IsDeleteOperation, operations[opReq.OperationName].Templates, kubeConfigs)
 			if err != nil {
 				e.Summary = fmt.Sprintf("Error while %s policy", stat)
 				e.Details = err.Error()
@@ -113,7 +113,7 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 		}(istio, e)
 	case common.CustomOperation:
 		go func(hh *Istio, ee *adapter.Event) {
-			stat, err := hh.applyCustomOperation(opReq.Namespace, opReq.CustomBody, opReq.IsDeleteOperation)
+			stat, err := hh.applyCustomOperation(opReq.Namespace, opReq.CustomBody, opReq.IsDeleteOperation, kubeConfigs)
 			if err != nil {
 				e.Summary = fmt.Sprintf("Error while %s custom operation", stat)
 				e.Details = err.Error()
@@ -126,7 +126,7 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 		}(istio, e)
 	case internalconfig.LabelNamespace:
 		go func(hh *Istio, ee *adapter.Event) {
-			err := hh.LoadNamespaceToMesh(opReq.Namespace, opReq.IsDeleteOperation)
+			err := hh.LoadNamespaceToMesh(opReq.Namespace, opReq.IsDeleteOperation, kubeConfigs)
 			operation := "enabled"
 			if opReq.IsDeleteOperation {
 				operation = "removed"
@@ -147,7 +147,7 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 			patches := make([]string, 0)
 			patches = append(patches, operations[opReq.OperationName].AdditionalProperties[internalconfig.ServicePatchFile])
 
-			_, err := hh.installAddon(opReq.Namespace, opReq.IsDeleteOperation, svcname, patches, operations[opReq.OperationName].Templates)
+			_, err := hh.installAddon(opReq.Namespace, opReq.IsDeleteOperation, svcname, patches, operations[opReq.OperationName].Templates, kubeConfigs)
 			operation := "install"
 			if opReq.IsDeleteOperation {
 				operation = "uninstall"
@@ -167,7 +167,7 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 		go func(hh *Istio, ee *adapter.Event) {
 			responseChan := make(chan *adapter.Event, 1)
 
-			go hh.RunVet(responseChan)
+			go hh.RunVet(responseChan, kubeConfigs)
 
 			for msg := range responseChan {
 				switch msg.EType {
@@ -186,7 +186,7 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 		go func(hh *Istio, ee *adapter.Event) {
 			appName := operations[opReq.OperationName].AdditionalProperties[common.ServiceName]
 			patchFile := operations[opReq.OperationName].AdditionalProperties[internalconfig.FilterPatchFile]
-			stat, err := hh.patchWithEnvoyFilter(opReq.Namespace, opReq.IsDeleteOperation, appName, operations[opReq.OperationName].Templates, patchFile)
+			stat, err := hh.patchWithEnvoyFilter(opReq.Namespace, opReq.IsDeleteOperation, appName, operations[opReq.OperationName].Templates, patchFile, kubeConfigs)
 			if err != nil {
 				e.Summary = fmt.Sprintf("Error while %s %s application", stat, appName)
 				e.Details = err.Error()
@@ -206,6 +206,7 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 
 // ProcessOAM will handles the grpc invocation for handling OAM objects
 func (istio *Istio) ProcessOAM(ctx context.Context, oamReq adapter.OAMRequest) (string, error) {
+	kubeconfigs := oamReq.K8sConfigs
 	var comps []v1alpha1.Component
 	for _, acomp := range oamReq.OamComps {
 		comp, err := oam.ParseApplicationComponent(acomp)
@@ -225,13 +226,13 @@ func (istio *Istio) ProcessOAM(ctx context.Context, oamReq adapter.OAMRequest) (
 	// If operation is delete then first HandleConfiguration and then handle the deployment
 	if oamReq.DeleteOp {
 		// Process configuration
-		msg2, err := istio.HandleApplicationConfiguration(config, oamReq.DeleteOp)
+		msg2, err := istio.HandleApplicationConfiguration(config, oamReq.DeleteOp, kubeconfigs)
 		if err != nil {
 			return msg2, ErrProcessOAM(err)
 		}
 
 		// Process components
-		msg1, err := istio.HandleComponents(comps, oamReq.DeleteOp)
+		msg1, err := istio.HandleComponents(comps, oamReq.DeleteOp, kubeconfigs)
 		if err != nil {
 			return msg1 + "\n" + msg2, ErrProcessOAM(err)
 		}
@@ -240,13 +241,13 @@ func (istio *Istio) ProcessOAM(ctx context.Context, oamReq adapter.OAMRequest) (
 	}
 
 	// Process components
-	msg1, err := istio.HandleComponents(comps, oamReq.DeleteOp)
+	msg1, err := istio.HandleComponents(comps, oamReq.DeleteOp, kubeconfigs)
 	if err != nil {
 		return msg1, ErrProcessOAM(err)
 	}
 
 	// Process configuration
-	msg2, err := istio.HandleApplicationConfiguration(config, oamReq.DeleteOp)
+	msg2, err := istio.HandleApplicationConfiguration(config, oamReq.DeleteOp, kubeconfigs)
 	if err != nil {
 		return msg1 + "\n" + msg2, ErrProcessOAM(err)
 	}

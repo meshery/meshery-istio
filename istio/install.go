@@ -33,7 +33,7 @@ var (
 
 // installs Istio using either helm charts or istioctl.
 // Priority given to helm charts unless useBin set to true
-func (istio *Istio) installIstio(del, useBin bool, version, namespace string, profile string) (string, error) {
+func (istio *Istio) installIstio(del, useBin bool, version, namespace string, profile string, kubeconfigs []string) (string, error) {
 	istio.Log.Debug(fmt.Sprintf("Requested install of version: %s", version))
 	istio.Log.Debug(fmt.Sprintf("Requested action is delete: %v", del))
 	istio.Log.Debug(fmt.Sprintf("Requested action is in namespace: %s", namespace))
@@ -66,7 +66,7 @@ func (istio *Istio) installIstio(del, useBin bool, version, namespace string, pr
 	}
 
 	// Install using Helm Chart and fallback to istioctl
-	err = istio.applyHelmChart(del, version, namespace, dirName, profile)
+	err = istio.applyHelmChart(del, version, namespace, dirName, profile, kubeconfigs)
 	if err != nil {
 		istio.Log.Error(err)
 		istio.Log.Info("Retrying to install using istioctl...")
@@ -85,7 +85,7 @@ func (istio *Istio) installIstio(del, useBin bool, version, namespace string, pr
 	return status.Installed, nil
 }
 
-func (istio *Istio) applyHelmChart(del bool, version, namespace, dirName string, profile string) error {
+func (istio *Istio) applyHelmChart(del bool, version, namespace, dirName string, profile string, kubeconfigs []string) error {
 	if profile != "demo" && profile != "default" && profile != "minimal" {
 		return ErrInvalidInstallationProfile(profile) // This code will never be executed as json schema would have been validated beforehand
 	}
@@ -99,7 +99,7 @@ func (istio *Istio) applyHelmChart(del bool, version, namespace, dirName string,
 	}
 
 	var wg sync.WaitGroup
-	for _, config := range istio.KubeConfigs {
+	for _, config := range kubeconfigs {
 		wg.Add(1)
 		go func(config string, act mesherykube.HelmChartAction) {
 			defer wg.Done()
@@ -292,9 +292,39 @@ func (istio *Istio) runIstioCtlCmd(version string, isDel bool, dirName string) e
 	return nil
 }
 
-func (istio *Istio) applyManifest(contents []byte, isDel bool, namespace string) error {
+func (istio *Istio) applyManifest(contents []byte, isDel bool, namespace string, kubeconfigs []string) error {
+	var wg sync.WaitGroup
+	var errs []error
+	for _, k8sconfig := range kubeconfigs {
+		wg.Add(1)
+		go func(k8sconfig string) {
+			defer wg.Done()
+			mclient, err := mesherykube.New([]byte(k8sconfig))
+			if err != nil {
+				errs = append(errs, err)
+				return
+			}
+			err = mclient.ApplyManifest(contents, mesherykube.ApplyOptions{
+				Namespace: namespace,
+				Update:    true,
+				Delete:    isDel,
+			})
+			if err != nil {
+				errs = append(errs, err)
+				return
+			}
+		}(k8sconfig)
+	}
+	wg.Wait()
+	if len(errs) == 0 {
+		return nil
+	}
+	return mergeErrors(errs)
+}
 
-	err := istio.MesheryKubeclient.ApplyManifest(contents, mesherykube.ApplyOptions{
+//For direct simpler use cases
+func (istio *Istio) applyManifestOnSingleCluster(contents []byte, isDel bool, namespace string, mclient *mesherykube.Client) error {
+	err := mclient.ApplyManifest(contents, mesherykube.ApplyOptions{
 		Namespace: namespace,
 		Update:    true,
 		Delete:    isDel,
@@ -302,7 +332,6 @@ func (istio *Istio) applyManifest(contents []byte, isDel bool, namespace string)
 	if err != nil {
 		return err
 	}
-
 	return nil
 }
 

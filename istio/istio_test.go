@@ -62,10 +62,9 @@ func TestIstio_ApplyOperation(t *testing.T) {
 	ch := make(chan interface{}, 10)
 	fs := fields{
 		Adapter: adapter.Adapter{
-			Config:            getConfigHandler(t),
-			Log:               getLoggerHandler(t),
-			KubeconfigHandler: getKubeconfigHandler(t),
-			Channel:           &ch,
+			Config:  getConfigHandler(t),
+			Log:     getLoggerHandler(t),
+			Channel: &ch,
 		},
 	}
 
