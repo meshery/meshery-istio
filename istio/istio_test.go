@@ -415,6 +415,7 @@ func TestIstio_ProcessOAM(t *testing.T) {
 		args    args
 		want    string
 		wantErr bool
+		hchan   *chan interface{}
 	}{
 		// TODO: Add test cases.
 	}
@@ -423,7 +424,7 @@ func TestIstio_ProcessOAM(t *testing.T) {
 			istio := &Istio{
 				Adapter: tt.fs.Adapter,
 			}
-			got, err := istio.ProcessOAM(tt.args.ctx, tt.args.oamReq)
+			got, err := istio.ProcessOAM(tt.args.ctx, tt.args.oamReq, tt.hchan)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Istio.ProcessOAM() error = %v, wantErr %v", err, tt.wantErr)
 				return
