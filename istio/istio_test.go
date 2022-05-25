@@ -397,7 +397,7 @@ func TestIstio_ProcessOAM(t *testing.T) {
 	type fields struct {
 		Adapter adapter.Adapter
 	}
-	ch := make(chan interface{}, 10)
+	// ch := make(chan interface{}, 10)
 	// fs := fields{
 	// 	Adapter: adapter.Adapter{
 	// 		Config:            getConfigHandler(t),
@@ -424,7 +424,7 @@ func TestIstio_ProcessOAM(t *testing.T) {
 			istio := &Istio{
 				Adapter: tt.fs.Adapter,
 			}
-			got, err := istio.ProcessOAM(tt.args.ctx, tt.args.oamReq, &ch)
+			got, err := istio.ProcessOAM(tt.args.ctx, tt.args.oamReq)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Istio.ProcessOAM() error = %v, wantErr %v", err, tt.wantErr)
 				return

@@ -32,9 +32,8 @@ func New(c meshkitCfg.Handler, l logger.Handler, kc meshkitCfg.Handler) adapter.
 }
 
 // ApplyOperation applies the operation on istio
-func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationRequest, hchan *chan interface{}) error {
+func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationRequest) error {
 	istio.KubeConfigs = opReq.K8sConfigs
-	istio.Channel = hchan
 	operations := make(adapter.Operations)
 	err := istio.Config.GetObject(adapter.OperationsKey, &operations)
 	if err != nil {
@@ -206,8 +205,7 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 }
 
 // ProcessOAM will handles the grpc invocation for handling OAM objects
-func (istio *Istio) ProcessOAM(ctx context.Context, oamReq adapter.OAMRequest, hchan *chan interface{}) (string, error) {
-	istio.Channel = hchan
+func (istio *Istio) ProcessOAM(ctx context.Context, oamReq adapter.OAMRequest) (string, error) {
 	var comps []v1alpha1.Component
 	for _, acomp := range oamReq.OamComps {
 		comp, err := oam.ParseApplicationComponent(acomp)
