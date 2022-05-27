@@ -358,3 +358,54 @@ jobs:
           commit_author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
           commit_options: '--signoff'
           commit_message: '[Docs] Test status of adapter'
+
+  SetPatternfileForBookinfoApp:
+    runs-on: ubuntu-latest
+    outputs:
+      sm_version: ${{ steps.gettag.outputs.release }}
+      adapter_version:  ${{ env.version }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+      - name: Get version of adapter
+        run: |
+            if [ ${{ github.event_name }} == "release" ];then
+                echo "version=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
+            else 
+                echo "version=edge" >> $GITHUB_ENV
+            fi
+      - name: Get latest release tag
+        id: gettag
+        uses: pozetroninc/github-action-get-latest-release@master
+        with:
+          repository: istio/istio
+          excludes: prerelease, draft, edge 
+      - name: Change service mesh version in patternfile
+        run: |
+           wget https://raw.githubusercontent.com/service-mesh-patterns/service-mesh-patterns/master/samples/minimalistiobookinfo.yaml
+           yq e -i '.services.istioinstallation.settings.istioVersion="${{ steps.gettag.outputs.release }}"' ./minimalistiobookinfo.yaml 
+           cat ./minimalistiobookinfo.yaml 
+      - name: Uploading file
+        uses: actions/upload-artifact@v2
+        with:
+          name: patternfile
+          path: ./.github/install/minimalistiobookinfo.yaml
+
+  TestIstioFWithBookinfoApp:
+    needs: SetPatternfileForBookinfoApp
+    uses: meshery/meshery/.github/workflows/test_adapters.yaml@master
+    with:
+      expected_resources: istiod,details,productpage,ratings,reviews-v1,reviews-v2,reviews-v3
+      expected_resources_types: pod,pod,pod,pod,pod,pod,pod
+      expected_resources_namespaces: istio-system,default,default,default,default,default,default
+      deployment_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-istio-deployment.yaml
+      service_url: https://raw.githubusercontent.com/meshery/meshery/master/install/deployment_yamls/k8s/meshery-istio-service.yaml
+      adapter_name: istio
+      patternfile_name: minimalistiobookinfo.yaml
+      provider: Local
+      k8s_version: v1.20.1
+      sm_version: ${{ needs.SetPatternfileForServicemeshAndSampleApp.outputs.sm_version }}
+      adapter_version:  ${{ needs.SetPatternfileForServicemeshAndSampleApp.outputs.adapter_version }}
+      output_filename: data.json
+    secrets:
+      token: ${{ secrets.PROVIDER_TOKEN }}
