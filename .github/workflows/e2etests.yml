@@ -7,8 +7,7 @@ on:
     tags:
       - "v*"
     paths-ignore:
-      - 'docs/**'
-      - '.github/**'      
+      - 'docs/**'   
   pull_request:
     branches:
       - "*"
@@ -111,9 +110,9 @@ jobs:
           service-mesh: istio
           service-mesh-version: $(jq '.metadata.service_mesh_version' data.json)
           tests:
-            istiod: $(jq '.pods_status."istiod"' data.json)
-            istio-egressgateway: $(jq '.pods_status."istio-egressgateway"' data.json)
-            istio-ingressgateway:  $(jq '.pods_status."istio-ingressgateway"' data.json)
+            pod/istiod: $(jq '.resources_status."pod/istiod"' data.json)
+            pod/istio-egressgateway: $(jq '.resources_status."pod/istio-egressgateway"' data.json)
+            pod/istio-ingressgateway:  $(jq '.resources_status."pod/istio-ingressgateway"' data.json)
           overall-status: $(jq '."overall-status"' data.json)
           ---" >  test.md
           mv test.md $filename.md
@@ -224,11 +223,11 @@ jobs:
           service-mesh: istio
           service-mesh-version: $(jq '.metadata.service_mesh_version' data.json)
           tests:
-            istiod: $(jq '.pods_status."istiod"' data.json)
-            istio-egressgateway: $(jq '.pods_status."istio-egressgateway"' data.json)
-            istio-ingressgateway:  $(jq '.pods_status."istio-ingressgateway"' data.json)
-            grafana-addon: $(jq '.pods_status."grafana"' data.json)
-            prometheus-addon: $(jq '.pods_status."prometheus"' data.json)
+            pod/istiod: $(jq '.resources_status."pod/istiod"' data.json)
+            pod/istio-egressgateway: $(jq '.resources_status."pod/istio-egressgateway"' data.json)
+            pod/istio-ingressgateway:  $(jq '.resources_status."pod/istio-ingressgateway"' data.json)
+            pod/grafana-addon: $(jq '.resources_status."pod/grafana"' data.json)
+            pod/prometheus-addon: $(jq '.resources_status."pod/prometheus"' data.json)
           overall-status: $(jq '."overall-status"' data.json)
           ---" >  test.md
           mv test.md $filename.md

@@ -3,6 +3,7 @@ package build
 import (
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/layer5io/meshery-adapter-library/adapter"
 
@@ -25,16 +26,19 @@ func NewConfig(version string) manifests.Config {
 		Name:        smp.ServiceMesh_Type_name[int32(smp.ServiceMesh_ISTIO)],
 		Type:        Component,
 		MeshVersion: version,
-		Filter: manifests.CrdFilter{
-			RootFilter:    []string{"$[?(@.kind==\"CustomResourceDefinition\")]"},
-			NameFilter:    []string{"$..[\"spec\"][\"names\"][\"kind\"]"},
-			VersionFilter: []string{"$[0]..spec.versions[0]"},
-			GroupFilter:   []string{"$[0]..spec"},
-			SpecFilter:    []string{"$[0]..openAPIV3Schema.properties.spec"},
-			ItrFilter:     []string{"$[?(@.spec.names.kind"},
-			ItrSpecFilter: []string{"$[?(@.spec.names.kind"},
-			VField:        "name",
-			GField:        "group",
+		CrdFilter: manifests.NewCueCrdFilter(manifests.ExtractorPaths{
+			NamePath:    "spec.names.kind",
+			IdPath:      "spec.names.kind",
+			VersionPath: "spec.versions[0].name",
+			GroupPath:   "spec.group",
+			SpecPath:    "spec.versions[0].schema.openAPIV3Schema.properties.spec"}, false),
+		ExtractCrds: func(manifest string) []string {
+			crds := strings.Split(manifest, "---")
+			// trim the spaces
+			for _, crd := range crds {
+				crd = strings.TrimSpace(crd)
+			}
+			return crds
 		},
 	}
 }
