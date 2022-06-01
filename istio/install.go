@@ -59,7 +59,7 @@ func (istio *Istio) installIstio(del, useBin bool, version, namespace string, pr
 	// Install using istioctl if explicitly stated
 	if useBin {
 		istio.Log.Info("Installing istio using istioctl...")
-		err = istio.runIstioCtlCmd(version, del, dirName)
+		err = istio.runIstioCtlCmd(version, del, dirName, kubeconfigs)
 		if err != nil {
 			return st, ErrInstallUsingIstioctl(err)
 		}
@@ -71,7 +71,7 @@ func (istio *Istio) installIstio(del, useBin bool, version, namespace string, pr
 		istio.Log.Error(err)
 		istio.Log.Info("Retrying to install using istioctl...")
 
-		err = istio.runIstioCtlCmd(version, del, dirName)
+		err = istio.runIstioCtlCmd(version, del, dirName, kubeconfigs)
 		if err != nil {
 			return st, ErrInstallUsingIstioctl(err)
 		}
@@ -262,34 +262,57 @@ func extractTar(res *http.Response) error {
 
 // Installs Istio using Istioctl
 // TODO: Figure out why this is not working in containers
-func (istio *Istio) runIstioCtlCmd(version string, isDel bool, dirName string) error {
+func (istio *Istio) runIstioCtlCmd(version string, isDel bool, dirName string, kubeconfigs []string) error {
 	var (
 		out bytes.Buffer
 		er  bytes.Buffer
 	)
+	var wg sync.WaitGroup
+	var errs []error
+	for _, config := range kubeconfigs {
+		wg.Add(1)
+		go func(config string, isDel bool) {
+			defer wg.Done()
+			kClient, err := mesherykube.New([]byte(config))
+			if err != nil {
+				errs = append(errs, err)
+				return
+			}
+			kContext, err := kClient.GetCurrentContext()
+			if err != nil {
+				errs = append(errs, err)
+				return
+			}
+			istio.Log.Info("Installing using istioctl...")
 
-	istio.Log.Info("Installing using istioctl...")
+			Executable, err := istio.getExecutable(version, dirName)
+			if err != nil {
+				errs = append(errs, err)
+				return
+			}
+			execCmd := []string{"install", "--set", "profile=demo", "-y", "--context", kContext}
+			if isDel {
+				execCmd = []string{"x", "uninstall", "--purge", "-y", "--context", kContext}
+			}
 
-	Executable, err := istio.getExecutable(version, dirName)
-	if err != nil {
-		return ErrRunIstioCtlCmd(err, err.Error())
+			// We need a variable executable here hence using nosec
+			// #nosec
+			command := exec.Command(Executable, execCmd...)
+			command.Stdout = &out
+			command.Stderr = &er
+			err = command.Run()
+			if err != nil {
+				errs = append(errs, err)
+				return
+			}
+		}(config, isDel)
 	}
-	execCmd := []string{"install", "--set", "profile=demo", "-y"}
-	if isDel {
-		execCmd = []string{"x", "uninstall", "--purge", "-y"}
+	wg.Wait()
+	if len(errs) == 0 {
+		return nil
 	}
 
-	// We need a variable executable here hence using nosec
-	// #nosec
-	command := exec.Command(Executable, execCmd...)
-	command.Stdout = &out
-	command.Stderr = &er
-	err = command.Run()
-	if err != nil {
-		return ErrRunIstioCtlCmd(err, er.String())
-	}
-
-	return nil
+	return ErrRunIstioCtlCmd(mergeErrors(errs), mergeErrors(errs).Error())
 }
 
 func (istio *Istio) applyManifest(contents []byte, isDel bool, namespace string, kubeconfigs []string) error {
