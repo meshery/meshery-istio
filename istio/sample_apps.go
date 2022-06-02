@@ -46,6 +46,7 @@ func (istio *Istio) patchWithEnvoyFilter(namespace string, del bool, app string,
 	for _, k8sconfig := range kubeconfigs {
 		wg.Add(1)
 		go func(k8sconfig string) {
+			defer wg.Done()
 			mclient, err := mesherykube.New([]byte(k8sconfig))
 			if err != nil {
 				errs = append(errs, err)
