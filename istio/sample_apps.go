@@ -42,6 +42,7 @@ func (istio *Istio) patchWithEnvoyFilter(namespace string, del bool, app string,
 		return st, ErrEnvoyFilter(err)
 	}
 	var wg sync.WaitGroup
+	var errMx sync.Mutex
 	var errs []error
 	for _, k8sconfig := range kubeconfigs {
 		wg.Add(1)
@@ -49,23 +50,33 @@ func (istio *Istio) patchWithEnvoyFilter(namespace string, del bool, app string,
 			defer wg.Done()
 			mclient, err := mesherykube.New([]byte(k8sconfig))
 			if err != nil {
+				errMx.Lock()
 				errs = append(errs, err)
+				errMx.Unlock()
 				return
 			}
 			_, err = mclient.KubeClient.AppsV1().Deployments(namespace).Patch(context.TODO(), app, types.MergePatchType, []byte(jsonContents), metav1.PatchOptions{})
 			if err != nil {
+				errMx.Lock()
 				errs = append(errs, err)
+				errMx.Unlock()
 				return
 			}
 
 			for _, template := range templates {
 				contents, err := utils.ReadFileSource(string(template))
 				if err != nil {
+					errMx.Lock()
+					errs = append(errs, err)
+					errMx.Unlock()
+					continue
 				}
 
 				err = istio.applyManifestOnSingleCluster([]byte(contents), del, namespace, mclient)
 				if err != nil {
+					errMx.Lock()
 					errs = append(errs, err)
+					errMx.Unlock()
 					return
 				}
 			}
@@ -102,6 +113,7 @@ func (istio *Istio) applyPolicy(namespace string, del bool, templates []adapter.
 // LoadToMesh is used to mark deployment for automatic sidecar injection (or not)
 func (istio *Istio) LoadToMesh(namespace string, service string, remove bool, kubeconfigs []string) error {
 	var wg sync.WaitGroup
+	var errMx sync.Mutex
 	var errs []error
 	for _, k8sconfig := range kubeconfigs {
 		wg.Add(1)
@@ -109,13 +121,17 @@ func (istio *Istio) LoadToMesh(namespace string, service string, remove bool, ku
 			defer wg.Done()
 			kclient, err := mesherykube.New([]byte(k8sconfig))
 			if err != nil {
+				errMx.Lock()
 				errs = append(errs, err)
+				errMx.Unlock()
 				return
 			}
 
 			deploy, err := kclient.KubeClient.AppsV1().Deployments(namespace).Get(context.TODO(), service, metav1.GetOptions{})
 			if err != nil {
+				errMx.Lock()
 				errs = append(errs, err)
+				errMx.Unlock()
 				return
 			}
 
@@ -130,7 +146,9 @@ func (istio *Istio) LoadToMesh(namespace string, service string, remove bool, ku
 
 			_, err = kclient.KubeClient.AppsV1().Deployments(namespace).Update(context.TODO(), deploy, metav1.UpdateOptions{})
 			if err != nil {
+				errMx.Lock()
 				errs = append(errs, err)
+				errMx.Unlock()
 				return
 			}
 
@@ -147,6 +165,7 @@ func (istio *Istio) LoadToMesh(namespace string, service string, remove bool, ku
 // LoadNamespaceToMesh is used to mark namespaces for automatic sidecar injection (or not)
 func (istio *Istio) LoadNamespaceToMesh(namespace string, remove bool, kubeconfigs []string) error {
 	var wg sync.WaitGroup
+	var errMx sync.Mutex
 	var errs []error
 	for _, k8sconfig := range kubeconfigs {
 		wg.Add(1)
@@ -154,7 +173,9 @@ func (istio *Istio) LoadNamespaceToMesh(namespace string, remove bool, kubeconfi
 			defer wg.Done()
 			kclient, err := mesherykube.New([]byte(k8sconfig))
 			if err != nil {
+				errMx.Lock()
 				errs = append(errs, err)
+				errMx.Unlock()
 				// return ErrLoadNamespace(err, namespace)
 				return
 			}
@@ -172,7 +193,9 @@ func (istio *Istio) LoadNamespaceToMesh(namespace string, remove bool, kubeconfi
 
 			_, err = kclient.KubeClient.CoreV1().Namespaces().Update(context.TODO(), ns, metav1.UpdateOptions{})
 			if err != nil {
+				errMx.Lock()
 				errs = append(errs, err)
+				errMx.Unlock()
 				// return ErrLoadNamespace(err, namespace)
 				return
 			}

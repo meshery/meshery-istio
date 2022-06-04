@@ -29,6 +29,7 @@ func (istio *Istio) installAddon(namespace string, del bool, service string, pat
 	istio.Log.Debug(fmt.Sprintf("Overidden namespace: %s", namespace))
 	namespace = "istio-system"
 	var wg sync.WaitGroup
+	var errMx sync.Mutex
 	var errs []error
 	for _, k8sconfig := range kubeconfigs {
 		wg.Add(1)
@@ -36,7 +37,9 @@ func (istio *Istio) installAddon(namespace string, del bool, service string, pat
 			defer wg.Done()
 			mclient, err := mesherykube.New([]byte(k8sconfig))
 			if err != nil {
+				errMx.Lock()
 				errs = append(errs, err)
+				errMx.Unlock()
 				return
 			}
 			for _, template := range templates {
@@ -56,19 +59,25 @@ func (istio *Istio) installAddon(namespace string, del bool, service string, pat
 				if !del {
 					_, err := url.ParseRequestURI(patch)
 					if err != nil {
+						errMx.Lock()
 						errs = append(errs, err)
+						errMx.Unlock()
 						return
 					}
 
 					content, err := utils.ReadFileSource(patch)
 					if err != nil {
+						errMx.Lock()
 						errs = append(errs, err)
+						errMx.Unlock()
 						return
 					}
 
 					_, err = mclient.KubeClient.CoreV1().Services(namespace).Patch(context.TODO(), service, types.MergePatchType, []byte(content), metav1.PatchOptions{})
 					if err != nil {
+						errMx.Lock()
 						errs = append(errs, err)
+						errMx.Unlock()
 						return
 					}
 				}

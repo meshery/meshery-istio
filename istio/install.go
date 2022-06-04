@@ -99,13 +99,16 @@ func (istio *Istio) applyHelmChart(del bool, version, namespace, dirName string,
 	}
 
 	var wg sync.WaitGroup
+	var errMx sync.Mutex
 	for _, config := range kubeconfigs {
 		wg.Add(1)
 		go func(config string, act mesherykube.HelmChartAction) {
 			defer wg.Done()
 			kClient, err := mesherykube.New([]byte(config))
 			if err != nil {
+				errMx.Lock()
 				errs = append(errs, err)
+				errMx.Unlock()
 				return
 			}
 			err = kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
@@ -115,7 +118,9 @@ func (istio *Istio) applyHelmChart(del bool, version, namespace, dirName string,
 				CreateNamespace: true,
 			})
 			if err != nil {
+				errMx.Lock()
 				errs = append(errs, err)
+				errMx.Unlock()
 				return
 
 			}
@@ -127,7 +132,9 @@ func (istio *Istio) applyHelmChart(del bool, version, namespace, dirName string,
 				CreateNamespace: true,
 			})
 			if err != nil {
+				errMx.Lock()
 				errs = append(errs, err)
+				errMx.Unlock()
 				return
 
 			}
@@ -142,7 +149,9 @@ func (istio *Istio) applyHelmChart(del bool, version, namespace, dirName string,
 				CreateNamespace: true,
 			})
 			if err != nil {
+				errMx.Lock()
 				errs = append(errs, err)
+				errMx.Unlock()
 				return
 
 			}
@@ -157,7 +166,9 @@ func (istio *Istio) applyHelmChart(del bool, version, namespace, dirName string,
 				CreateNamespace: true,
 			})
 			if err != nil {
+				errMx.Lock()
 				errs = append(errs, err)
+				errMx.Unlock()
 				return
 
 			}
@@ -268,6 +279,7 @@ func (istio *Istio) runIstioCtlCmd(version string, isDel bool, dirName string, k
 		er  bytes.Buffer
 	)
 	var wg sync.WaitGroup
+	var errMx sync.Mutex
 	var errs []error
 	for _, config := range kubeconfigs {
 		wg.Add(1)
@@ -275,19 +287,25 @@ func (istio *Istio) runIstioCtlCmd(version string, isDel bool, dirName string, k
 			defer wg.Done()
 			kClient, err := mesherykube.New([]byte(config))
 			if err != nil {
+				errMx.Lock()
 				errs = append(errs, err)
+				errMx.Unlock()
 				return
 			}
 			kContext, err := kClient.GetCurrentContext()
 			if err != nil {
+				errMx.Lock()
 				errs = append(errs, err)
+				errMx.Unlock()
 				return
 			}
 			istio.Log.Info("Installing using istioctl...")
 
 			Executable, err := istio.getExecutable(version, dirName)
 			if err != nil {
+				errMx.Lock()
 				errs = append(errs, err)
+				errMx.Unlock()
 				return
 			}
 			execCmd := []string{"install", "--set", "profile=demo", "-y", "--context", kContext}
@@ -302,7 +320,9 @@ func (istio *Istio) runIstioCtlCmd(version string, isDel bool, dirName string, k
 			command.Stderr = &er
 			err = command.Run()
 			if err != nil {
+				errMx.Lock()
 				errs = append(errs, err)
+				errMx.Unlock()
 				return
 			}
 		}(config, isDel)
@@ -318,13 +338,16 @@ func (istio *Istio) runIstioCtlCmd(version string, isDel bool, dirName string, k
 func (istio *Istio) applyManifest(contents []byte, isDel bool, namespace string, kubeconfigs []string) error {
 	var wg sync.WaitGroup
 	var errs []error
+	var errMx sync.Mutex
 	for _, k8sconfig := range kubeconfigs {
 		wg.Add(1)
 		go func(k8sconfig string) {
 			defer wg.Done()
 			mclient, err := mesherykube.New([]byte(k8sconfig))
 			if err != nil {
+				errMx.Lock()
 				errs = append(errs, err)
+				errMx.Unlock()
 				return
 			}
 			err = mclient.ApplyManifest(contents, mesherykube.ApplyOptions{
@@ -333,7 +356,9 @@ func (istio *Istio) applyManifest(contents []byte, isDel bool, namespace string,
 				Delete:    isDel,
 			})
 			if err != nil {
+				errMx.Lock()
 				errs = append(errs, err)
+				errMx.Unlock()
 				return
 			}
 		}(k8sconfig)
