@@ -181,16 +181,6 @@ func (istio *Istio) applyHelmChart(del bool, version, namespace, dirName string,
 	}
 	return ErrApplyHelmChart(mergeErrors(errs))
 }
-func mergeErrs(errs ...error) (error error) {
-	var errstring string
-	for _, err := range errs {
-		if err.Error() != "" {
-			errstring = err.Error() + "\n"
-		}
-	}
-	error = fmt.Errorf("%s", errstring)
-	return
-}
 
 // getIstioRelease gets the manifests for latest istio release.
 // It first checks if the artifacts exist in OS's temp dir. If they don't,

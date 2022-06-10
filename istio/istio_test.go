@@ -457,8 +457,3 @@ func getLoggerHandler(t *testing.T) logger.Handler {
 	})
 	return log
 }
-
-func getKubeconfigHandler(t *testing.T) adapterconfig.Handler {
-	h, _ := internalconfig.NewKubeconfigBuilder(configprovider.ViperKey)
-	return h
-}

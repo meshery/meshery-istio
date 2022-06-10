@@ -48,6 +48,9 @@ func (istio *Istio) installAddon(namespace string, del bool, service string, pat
 				// Referring to: https://github.com/kiali/kiali/issues/3112
 				if err != nil && !strings.Contains(err.Error(), "no matches for kind \"MonitoringDashboard\" in version \"monitoring.kiali.io/v1alpha1\"") {
 					if !strings.Contains(err.Error(), "clusterIP") {
+						errMx.Lock()
+						errs = append(errs, err)
+						errMx.Unlock()
 					}
 				}
 			}

@@ -181,7 +181,13 @@ func (istio *Istio) LoadNamespaceToMesh(namespace string, remove bool, kubeconfi
 			}
 
 			ns, err := kclient.KubeClient.CoreV1().Namespaces().Get(context.TODO(), namespace, metav1.GetOptions{})
-
+			if err != nil {
+				errMx.Lock()
+				errs = append(errs, err)
+				errMx.Unlock()
+				// return ErrLoadNamespace(err, namespace)
+				return
+			}
 			if ns.ObjectMeta.Labels == nil {
 				ns.ObjectMeta.Labels = map[string]string{}
 			}
