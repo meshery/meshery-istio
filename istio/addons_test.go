@@ -49,7 +49,7 @@ func TestIstio_installAddon(t *testing.T) {
 					"https://raw.githubusercontent.com/istio/istio/master/samples/addons/jaeger.yaml",
 				},
 			},
-			want:    status.Installing,
+			want:    status.Installed,
 			wantErr: true,
 		},
 		{
@@ -63,7 +63,7 @@ func TestIstio_installAddon(t *testing.T) {
 				templates: nil,
 			},
 			want:    status.Installed,
-			wantErr: false,
+			wantErr: true,
 		},
 		{
 			name:   "delete operation",
@@ -76,7 +76,7 @@ func TestIstio_installAddon(t *testing.T) {
 				templates: nil,
 			},
 			want:    status.Installed,
-			wantErr: false,
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
@@ -85,7 +85,7 @@ func TestIstio_installAddon(t *testing.T) {
 				Adapter: tt.fields.Adapter,
 			}
 			got, err := istio.installAddon(tt.args.namespace, tt.args.del, tt.args.service, tt.args.patches, tt.args.templates, tt.kubeconfigs)
-			if (err != nil) != tt.wantErr {
+			if (err != nil) == tt.wantErr {
 				t.Errorf("Istio.installAddon() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}

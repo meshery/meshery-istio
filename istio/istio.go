@@ -12,7 +12,9 @@ import (
 	"github.com/layer5io/meshery-istio/istio/oam"
 	meshkitCfg "github.com/layer5io/meshkit/config"
 	"github.com/layer5io/meshkit/logger"
+	"github.com/layer5io/meshkit/models"
 	"github.com/layer5io/meshkit/models/oam/core/v1alpha1"
+	"gopkg.in/yaml.v2"
 )
 
 // Istio represents the istio adapter and embeds adapter.Adapter
@@ -24,18 +26,23 @@ type Istio struct {
 func New(c meshkitCfg.Handler, l logger.Handler, kc meshkitCfg.Handler) adapter.Handler {
 	return &Istio{
 		Adapter: adapter.Adapter{
-			Config: c,
-			Log:    l,
+			Config:            c,
+			Log:               l,
+			KubeconfigHandler: kc,
 		},
 	}
 }
 
 // ApplyOperation applies the operation on istio
 func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationRequest, hchan *chan interface{}) error {
+	err := istio.CreateKubeconfigs(opReq.K8sConfigs)
+	if err != nil {
+		return err
+	}
 	kubeConfigs := opReq.K8sConfigs
 	istio.SetChannel(hchan)
 	operations := make(adapter.Operations)
-	err := istio.Config.GetObject(adapter.OperationsKey, &operations)
+	err = istio.Config.GetObject(adapter.OperationsKey, &operations)
 	if err != nil {
 		return err
 	}
@@ -204,9 +211,58 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 	return nil
 }
 
+//CreateKubeconfigs creates and writes passed kubeconfig onto the filesystem
+func (istio *Istio) CreateKubeconfigs(kubeconfigs []string) error {
+	var errs = make([]error, 0)
+	for _, kubeconfig := range kubeconfigs {
+		kconfig := models.Kubeconfig{}
+		err := yaml.Unmarshal([]byte(kubeconfig), &kconfig)
+		if err != nil {
+			errs = append(errs, err)
+			continue
+		}
+
+		// To have control over what exactly to take in on kubeconfig
+		istio.KubeconfigHandler.SetKey("kind", kconfig.Kind)
+		istio.KubeconfigHandler.SetKey("apiVersion", kconfig.APIVersion)
+		istio.KubeconfigHandler.SetKey("current-context", kconfig.CurrentContext)
+		err = istio.KubeconfigHandler.SetObject("preferences", kconfig.Preferences)
+		if err != nil {
+			errs = append(errs, err)
+			continue
+		}
+
+		err = istio.KubeconfigHandler.SetObject("clusters", kconfig.Clusters)
+		if err != nil {
+			errs = append(errs, err)
+			continue
+		}
+
+		err = istio.KubeconfigHandler.SetObject("users", kconfig.Users)
+		if err != nil {
+			errs = append(errs, err)
+			continue
+		}
+
+		err = istio.KubeconfigHandler.SetObject("contexts", kconfig.Contexts)
+		if err != nil {
+			errs = append(errs, err)
+			continue
+		}
+	}
+	if len(errs) == 0 {
+		return nil
+	}
+	return mergeErrors(errs)
+}
+
 // ProcessOAM will handles the grpc invocation for handling OAM objects
 func (istio *Istio) ProcessOAM(ctx context.Context, oamReq adapter.OAMRequest, hchan *chan interface{}) (string, error) {
 	istio.SetChannel(hchan)
+	err := istio.CreateKubeconfigs(oamReq.K8sConfigs)
+	if err != nil {
+		return "", err
+	}
 	kubeconfigs := oamReq.K8sConfigs
 	var comps []v1alpha1.Component
 	for _, acomp := range oamReq.OamComps {
