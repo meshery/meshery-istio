@@ -2,16 +2,18 @@ package istio
 
 import (
 	"context"
+	"sync"
 
 	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshery-adapter-library/status"
 	"github.com/layer5io/meshkit/utils"
+	mesherykube "github.com/layer5io/meshkit/utils/kubernetes"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 )
 
-func (istio *Istio) installSampleApp(namespace string, del bool, templates []adapter.Template) (string, error) {
+func (istio *Istio) installSampleApp(namespace string, del bool, templates []adapter.Template, kubeconfigs []string) (string, error) {
 	st := status.Installing
 
 	if del {
@@ -19,7 +21,7 @@ func (istio *Istio) installSampleApp(namespace string, del bool, templates []ada
 	}
 
 	for _, template := range templates {
-		err := istio.applyManifest([]byte(template.String()), del, namespace)
+		err := istio.applyManifest([]byte(template.String()), del, namespace, kubeconfigs)
 		if err != nil {
 			return st, ErrSampleApp(err)
 		}
@@ -28,7 +30,7 @@ func (istio *Istio) installSampleApp(namespace string, del bool, templates []ada
 	return status.Installed, nil
 }
 
-func (istio *Istio) patchWithEnvoyFilter(namespace string, del bool, app string, templates []adapter.Template, patchObject string) (string, error) {
+func (istio *Istio) patchWithEnvoyFilter(namespace string, del bool, app string, templates []adapter.Template, patchObject string, kubeconfigs []string) (string, error) {
 	st := status.Deploying
 
 	if del {
@@ -39,27 +41,55 @@ func (istio *Istio) patchWithEnvoyFilter(namespace string, del bool, app string,
 	if err != nil {
 		return st, ErrEnvoyFilter(err)
 	}
+	var wg sync.WaitGroup
+	var errMx sync.Mutex
+	var errs []error
+	for _, k8sconfig := range kubeconfigs {
+		wg.Add(1)
+		go func(k8sconfig string) {
+			defer wg.Done()
+			mclient, err := mesherykube.New([]byte(k8sconfig))
+			if err != nil {
+				errMx.Lock()
+				errs = append(errs, err)
+				errMx.Unlock()
+				return
+			}
+			_, err = mclient.KubeClient.AppsV1().Deployments(namespace).Patch(context.TODO(), app, types.MergePatchType, []byte(jsonContents), metav1.PatchOptions{})
+			if err != nil {
+				errMx.Lock()
+				errs = append(errs, err)
+				errMx.Unlock()
+				return
+			}
 
-	_, err = istio.KubeClient.AppsV1().Deployments(namespace).Patch(context.TODO(), app, types.MergePatchType, []byte(jsonContents), metav1.PatchOptions{})
-	if err != nil {
-		return st, ErrEnvoyFilter(err)
+			for _, template := range templates {
+				contents, err := utils.ReadFileSource(string(template))
+				if err != nil {
+					errMx.Lock()
+					errs = append(errs, err)
+					errMx.Unlock()
+					continue
+				}
+
+				err = istio.applyManifestOnSingleCluster([]byte(contents), del, namespace, mclient)
+				if err != nil {
+					errMx.Lock()
+					errs = append(errs, err)
+					errMx.Unlock()
+					return
+				}
+			}
+		}(k8sconfig)
 	}
-
-	for _, template := range templates {
-		contents, err := utils.ReadFileSource(string(template))
-		if err != nil {
-			return st, ErrEnvoyFilter(err)
-		}
-
-		err = istio.applyManifest([]byte(contents), del, namespace)
-		if err != nil {
-			return st, ErrEnvoyFilter(err)
-		}
+	wg.Wait()
+	if len(errs) == 0 {
+		return status.Deployed, nil
 	}
+	return st, ErrEnvoyFilter(mergeErrors(errs))
 
-	return status.Deployed, nil
 }
-func (istio *Istio) applyPolicy(namespace string, del bool, templates []adapter.Template) (string, error) {
+func (istio *Istio) applyPolicy(namespace string, del bool, templates []adapter.Template, kubeconfigs []string) (string, error) {
 	st := status.Deploying
 
 	if del {
@@ -72,7 +102,7 @@ func (istio *Istio) applyPolicy(namespace string, del bool, templates []adapter.
 			return st, ErrApplyPolicy(err)
 		}
 
-		err = istio.applyManifest([]byte(contents), del, namespace)
+		err = istio.applyManifest([]byte(contents), del, namespace, kubeconfigs)
 		if err != nil {
 			return st, ErrApplyPolicy(err)
 		}
@@ -81,66 +111,105 @@ func (istio *Istio) applyPolicy(namespace string, del bool, templates []adapter.
 }
 
 // LoadToMesh is used to mark deployment for automatic sidecar injection (or not)
-func (istio *Istio) LoadToMesh(namespace string, service string, remove bool) error {
-	deploy, err := istio.KubeClient.AppsV1().Deployments(namespace).Get(context.TODO(), service, metav1.GetOptions{})
-	if err != nil {
-		return err
-	}
+func (istio *Istio) LoadToMesh(namespace string, service string, remove bool, kubeconfigs []string) error {
+	var wg sync.WaitGroup
+	var errMx sync.Mutex
+	var errs []error
+	for _, k8sconfig := range kubeconfigs {
+		wg.Add(1)
+		go func(k8sconfig string) {
+			defer wg.Done()
+			kclient, err := mesherykube.New([]byte(k8sconfig))
+			if err != nil {
+				errMx.Lock()
+				errs = append(errs, err)
+				errMx.Unlock()
+				return
+			}
 
-	if deploy.ObjectMeta.Labels == nil {
-		deploy.ObjectMeta.Labels = map[string]string{}
-	}
-	deploy.ObjectMeta.Labels["istio-injection"] = "enabled"
+			deploy, err := kclient.KubeClient.AppsV1().Deployments(namespace).Get(context.TODO(), service, metav1.GetOptions{})
+			if err != nil {
+				errMx.Lock()
+				errs = append(errs, err)
+				errMx.Unlock()
+				return
+			}
 
-	if remove {
-		delete(deploy.ObjectMeta.Labels, "istio-injection")
-	}
+			if deploy.ObjectMeta.Labels == nil {
+				deploy.ObjectMeta.Labels = map[string]string{}
+			}
+			deploy.ObjectMeta.Labels["istio-injection"] = "enabled"
 
-	_, err = istio.KubeClient.AppsV1().Deployments(namespace).Update(context.TODO(), deploy, metav1.UpdateOptions{})
-	if err != nil {
-		return err
-	}
+			if remove {
+				delete(deploy.ObjectMeta.Labels, "istio-injection")
+			}
 
-	return nil
+			_, err = kclient.KubeClient.AppsV1().Deployments(namespace).Update(context.TODO(), deploy, metav1.UpdateOptions{})
+			if err != nil {
+				errMx.Lock()
+				errs = append(errs, err)
+				errMx.Unlock()
+				return
+			}
+
+		}(k8sconfig)
+	}
+	wg.Wait()
+	if len(errs) == 0 {
+		return nil
+	}
+	return mergeErrors(errs)
+
 }
 
 // LoadNamespaceToMesh is used to mark namespaces for automatic sidecar injection (or not)
-func (istio *Istio) LoadNamespaceToMesh(namespace string, remove bool) error {
-	if istio.KubeClient == nil {
-		return ErrNilClient
-	}
+func (istio *Istio) LoadNamespaceToMesh(namespace string, remove bool, kubeconfigs []string) error {
+	var wg sync.WaitGroup
+	var errMx sync.Mutex
+	var errs []error
+	for _, k8sconfig := range kubeconfigs {
+		wg.Add(1)
+		go func(k8sconfig string) {
+			defer wg.Done()
+			kclient, err := mesherykube.New([]byte(k8sconfig))
+			if err != nil {
+				errMx.Lock()
+				errs = append(errs, err)
+				errMx.Unlock()
+				// return ErrLoadNamespace(err, namespace)
+				return
+			}
 
-	ns, err := istio.KubeClient.CoreV1().Namespaces().Get(context.TODO(), namespace, metav1.GetOptions{})
-	if err != nil {
-		return ErrLoadNamespace(err, namespace)
-	}
+			ns, err := kclient.KubeClient.CoreV1().Namespaces().Get(context.TODO(), namespace, metav1.GetOptions{})
+			if err != nil {
+				errMx.Lock()
+				errs = append(errs, err)
+				errMx.Unlock()
+				// return ErrLoadNamespace(err, namespace)
+				return
+			}
+			if ns.ObjectMeta.Labels == nil {
+				ns.ObjectMeta.Labels = map[string]string{}
+			}
+			ns.ObjectMeta.Labels["istio-injection"] = "enabled"
 
-	if ns.ObjectMeta.Labels == nil {
-		ns.ObjectMeta.Labels = map[string]string{}
-	}
-	ns.ObjectMeta.Labels["istio-injection"] = "enabled"
+			if remove {
+				delete(ns.ObjectMeta.Labels, "istio-injection")
+			}
 
-	if remove {
-		delete(ns.ObjectMeta.Labels, "istio-injection")
+			_, err = kclient.KubeClient.CoreV1().Namespaces().Update(context.TODO(), ns, metav1.UpdateOptions{})
+			if err != nil {
+				errMx.Lock()
+				errs = append(errs, err)
+				errMx.Unlock()
+				// return ErrLoadNamespace(err, namespace)
+				return
+			}
+		}(k8sconfig)
 	}
-
-	// How to use meshkit errors which are logged using meshkit logger
-	//
-	// The LoadNamespaceToMesh() function is called in istio/istio.go and the
-	// error returned by this is logged through the meshkit logger
-	//
-	// The below function returns Go's built-in error type but we can't
-	// log that using meshkit logger.
-	//
-	// Thus, the error returned in the line below should be wrapped into a meshkit
-	// error first and then returned.
-	_, err = istio.KubeClient.CoreV1().Namespaces().Update(context.TODO(), ns, metav1.UpdateOptions{})
-	if err != nil {
-		// Don't do this ❌
-		// return err
-
-		// Do this ✔
-		return ErrLoadNamespace(err, namespace)
+	wg.Wait()
+	if len(errs) == 0 {
+		return nil
 	}
-	return nil
+	return ErrLoadNamespace(mergeErrors(errs), namespace)
 }

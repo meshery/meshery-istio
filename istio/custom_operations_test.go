@@ -21,18 +21,18 @@ func TestIstio_applyCustomOperation(t *testing.T) {
 	ch := make(chan interface{}, 10)
 	fs := fields{
 		Adapter: adapter.Adapter{
-			Config:            getConfigHandler(t),
-			Log:               getLoggerHandler(t),
-			KubeconfigHandler: getKubeconfigHandler(t),
-			Channel:           &ch,
+			Config:  getConfigHandler(t),
+			Log:     getLoggerHandler(t),
+			Channel: &ch,
 		},
 	}
 	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		want    string
-		wantErr bool
+		name        string
+		fields      fields
+		args        args
+		kubeconfigs []string
+		want        string
+		wantErr     bool
 	}{
 		// TODO: Add test cases.
 		{
@@ -52,7 +52,7 @@ func TestIstio_applyCustomOperation(t *testing.T) {
 			istio := &Istio{
 				Adapter: tt.fields.Adapter,
 			}
-			got, err := istio.applyCustomOperation(tt.args.namespace, tt.args.manifest, tt.args.isDel)
+			got, err := istio.applyCustomOperation(tt.args.namespace, tt.args.manifest, tt.args.isDel, tt.kubeconfigs)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Istio.applyCustomOperation() error = %v, wantErr %v", err, tt.wantErr)
 				return
