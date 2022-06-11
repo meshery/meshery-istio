@@ -43,7 +43,7 @@ func TestIstio_applyCustomOperation(t *testing.T) {
 				manifest:  "",
 				isDel:     false,
 			},
-			want:    status.Starting,
+			want:    status.Completed,
 			wantErr: true,
 		},
 	}
@@ -53,7 +53,7 @@ func TestIstio_applyCustomOperation(t *testing.T) {
 				Adapter: tt.fields.Adapter,
 			}
 			got, err := istio.applyCustomOperation(tt.args.namespace, tt.args.manifest, tt.args.isDel, tt.kubeconfigs)
-			if (err != nil) != tt.wantErr {
+			if (err != nil) == tt.wantErr {
 				t.Errorf("Istio.applyCustomOperation() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
