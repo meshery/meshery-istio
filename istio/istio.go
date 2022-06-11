@@ -208,6 +208,7 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 	return nil
 }
 
+//CreateKubeconfigs creates and writes passed kubeconfig onto the filesystem
 func (istio *Istio) CreateKubeconfigs(kubeconfigs []string) error {
 	var errs = make([]error, 0)
 	for _, kubeconfig := range kubeconfigs {
