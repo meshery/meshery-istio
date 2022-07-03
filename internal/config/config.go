@@ -86,8 +86,6 @@ var (
 		configprovider.FileType: "yaml",
 		configprovider.FileName: "kubeconfig",
 	}
-
-	Operations = getOperations(common.Operations)
 )
 
 // New creates a new config instance
@@ -119,7 +117,7 @@ func New(provider string) (h config.Handler, err error) {
 	}
 
 	// Setup Operations Config
-	if err := h.SetObject(adapter.OperationsKey, Operations); err != nil {
+	if err := h.SetObject(adapter.OperationsKey, GetOperations(common.Operations, "master")); err != nil {
 		return nil, err
 	}
 
