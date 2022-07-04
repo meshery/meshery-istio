@@ -9,9 +9,6 @@ import (
 )
 
 func TestIstio_applyCustomOperation(t *testing.T) {
-	type fields struct {
-		Adapter *adapter.Adapter
-	}
 	type args struct {
 		namespace string
 		manifest  string
@@ -19,16 +16,9 @@ func TestIstio_applyCustomOperation(t *testing.T) {
 	}
 
 	ch := make(chan interface{}, 10)
-	fs := fields{
-		Adapter: &adapter.Adapter{
-			Config:  getConfigHandler(t),
-			Log:     getLoggerHandler(t),
-			Channel: &ch,
-		},
-	}
+
 	tests := []struct {
 		name        string
-		fields      *fields
 		args        args
 		kubeconfigs []string
 		want        string
@@ -36,8 +26,7 @@ func TestIstio_applyCustomOperation(t *testing.T) {
 	}{
 		// TODO: Add test cases.
 		{
-			name:   "no manifest or empty manifest",
-			fields: &fs,
+			name: "no manifest or empty manifest",
 			args: args{
 				namespace: "default",
 				manifest:  "",
@@ -50,7 +39,11 @@ func TestIstio_applyCustomOperation(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			istio := &Istio{
-				Adapter: *(tt.fields).Adapter,
+				Adapter: adapter.Adapter{
+					Config:  getConfigHandler(t),
+					Log:     getLoggerHandler(t),
+					Channel: &ch,
+				},
 			}
 			got, err := istio.applyCustomOperation(tt.args.namespace, tt.args.manifest, tt.args.isDel, tt.kubeconfigs)
 			if (err != nil) == tt.wantErr {

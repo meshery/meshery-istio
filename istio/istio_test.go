@@ -51,26 +51,17 @@ func TestNew(t *testing.T) {
 }
 
 func TestIstio_ApplyOperation(t *testing.T) {
-	type fields struct {
-		Adapter adapter.Adapter
-	}
+
 	type args struct {
 		ctx   context.Context
 		opReq adapter.OperationRequest
 	}
 
 	ch := make(chan interface{}, 10)
-	fs := fields{
-		Adapter: adapter.Adapter{
-			Config:  getConfigHandler(t),
-			Log:     getLoggerHandler(t),
-			Channel: &ch,
-		},
-	}
 
 	tests := []struct {
-		name    string
-		fields  *fields
+		name string
+
 		args    args
 		wantErr bool
 	}{
@@ -96,8 +87,7 @@ func TestIstio_ApplyOperation(t *testing.T) {
 		//},
 		// Tests for stale operation
 		{
-			name:   "Stale operation",
-			fields: &fs,
+			name: "Stale operation",
 			args: args{
 				ctx: context.TODO(),
 				opReq: adapter.OperationRequest{
@@ -111,8 +101,7 @@ func TestIstio_ApplyOperation(t *testing.T) {
 		},
 		// Tests for istio operation
 		{
-			name:   "Istio operation",
-			fields: &fs,
+			name: "Istio operation",
 			args: args{
 				ctx: context.TODO(),
 				opReq: adapter.OperationRequest{
@@ -126,8 +115,7 @@ func TestIstio_ApplyOperation(t *testing.T) {
 		},
 		// Tests for sample apps operation
 		{
-			name:   "BookInfo operation",
-			fields: &fs,
+			name: "BookInfo operation",
 			args: args{
 				ctx: context.TODO(),
 				opReq: adapter.OperationRequest{
@@ -140,8 +128,7 @@ func TestIstio_ApplyOperation(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:   "HTTPBin operation",
-			fields: &fs,
+			name: "HTTPBin operation",
 			args: args{
 				ctx: context.TODO(),
 				opReq: adapter.OperationRequest{
@@ -154,8 +141,7 @@ func TestIstio_ApplyOperation(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:   "ImageHub operation",
-			fields: &fs,
+			name: "ImageHub operation",
 			args: args{
 				ctx: context.TODO(),
 				opReq: adapter.OperationRequest{
@@ -168,8 +154,7 @@ func TestIstio_ApplyOperation(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:   "EmojiVoto operation",
-			fields: &fs,
+			name: "EmojiVoto operation",
 			args: args{
 				ctx: context.TODO(),
 				opReq: adapter.OperationRequest{
@@ -183,8 +168,7 @@ func TestIstio_ApplyOperation(t *testing.T) {
 		},
 		// Tests for validate operation
 		{
-			name:   "SMI operation",
-			fields: &fs,
+			name: "SMI operation",
 			args: args{
 				ctx: context.TODO(),
 				opReq: adapter.OperationRequest{
@@ -212,8 +196,7 @@ func TestIstio_ApplyOperation(t *testing.T) {
 		//},
 		// Tests for configure operation
 		{
-			name:   "Deny All Policy operation",
-			fields: &fs,
+			name: "Deny All Policy operation",
 			args: args{
 				ctx: context.TODO(),
 				opReq: adapter.OperationRequest{
@@ -226,8 +209,7 @@ func TestIstio_ApplyOperation(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:   "Strict MTLS Policy operation",
-			fields: &fs,
+			name: "Strict MTLS Policy operation",
 			args: args{
 				ctx: context.TODO(),
 				opReq: adapter.OperationRequest{
@@ -240,8 +222,7 @@ func TestIstio_ApplyOperation(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:   "Mutual MTLS Policy operation",
-			fields: &fs,
+			name: "Mutual MTLS Policy operation",
 			args: args{
 				ctx: context.TODO(),
 				opReq: adapter.OperationRequest{
@@ -254,8 +235,7 @@ func TestIstio_ApplyOperation(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:   "Disable MTLS Policy operation",
-			fields: &fs,
+			name: "Disable MTLS Policy operation",
 			args: args{
 				ctx: context.TODO(),
 				opReq: adapter.OperationRequest{
@@ -268,8 +248,7 @@ func TestIstio_ApplyOperation(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:   "Label Namespace operation",
-			fields: &fs,
+			name: "Label Namespace operation",
 			args: args{
 				ctx: context.TODO(),
 				opReq: adapter.OperationRequest{
@@ -282,8 +261,7 @@ func TestIstio_ApplyOperation(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:   "Envoy Filter operation",
-			fields: &fs,
+			name: "Envoy Filter operation",
 			args: args{
 				ctx: context.TODO(),
 				opReq: adapter.OperationRequest{
@@ -297,8 +275,7 @@ func TestIstio_ApplyOperation(t *testing.T) {
 		},
 		// Tests for custom operation
 		{
-			name:   "Custom operation",
-			fields: &fs,
+			name: "Custom operation",
 			args: args{
 				ctx: context.TODO(),
 				opReq: adapter.OperationRequest{
@@ -312,8 +289,7 @@ func TestIstio_ApplyOperation(t *testing.T) {
 		},
 		// Tests for addon operation
 		{
-			name:   "Prometheus Addon operation",
-			fields: &fs,
+			name: "Prometheus Addon operation",
 			args: args{
 				ctx: context.TODO(),
 				opReq: adapter.OperationRequest{
@@ -326,8 +302,7 @@ func TestIstio_ApplyOperation(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:   "Grafana Addon operation",
-			fields: &fs,
+			name: "Grafana Addon operation",
 			args: args{
 				ctx: context.TODO(),
 				opReq: adapter.OperationRequest{
@@ -340,8 +315,7 @@ func TestIstio_ApplyOperation(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:   "Kiali Addon operation",
-			fields: &fs,
+			name: "Kiali Addon operation",
 			args: args{
 				ctx: context.TODO(),
 				opReq: adapter.OperationRequest{
@@ -354,8 +328,7 @@ func TestIstio_ApplyOperation(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:   "Jaeger Addon operation",
-			fields: &fs,
+			name: "Jaeger Addon operation",
 			args: args{
 				ctx: context.TODO(),
 				opReq: adapter.OperationRequest{
@@ -368,8 +341,7 @@ func TestIstio_ApplyOperation(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:   "Zipkin Addon operation",
-			fields: &fs,
+			name: "Zipkin Addon operation",
 			args: args{
 				ctx: context.TODO(),
 				opReq: adapter.OperationRequest{
@@ -384,8 +356,13 @@ func TestIstio_ApplyOperation(t *testing.T) {
 		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
+		a := adapter.Adapter{
+			Config:  getConfigHandler(t),
+			Log:     getLoggerHandler(t),
+			Channel: &ch,
+		}
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.fields.Adapter.ApplyOperation(tt.args.ctx, tt.args.opReq, &ch); (err != nil) != tt.wantErr {
+			if err := a.ApplyOperation(tt.args.ctx, tt.args.opReq, &ch); (err != nil) != tt.wantErr {
 				t.Errorf("Istio.ApplyOperation() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -393,26 +370,15 @@ func TestIstio_ApplyOperation(t *testing.T) {
 }
 
 func TestIstio_ProcessOAM(t *testing.T) {
-	type fields struct {
-		Adapter *adapter.Adapter
-	}
 
-	// ch := make(chan interface{}, 10)
-	// fs := fields{
-	// 	Adapter: adapter.Adapter{
-	// 		Config:            getConfigHandler(t),
-	// 		Log:               getLoggerHandler(t),
-	// 		KubeconfigHandler: getKubeconfigHandler(t),
-	// 		Channel:           &ch,
-	// 	},
-	// }
+	ch := make(chan interface{}, 10)
+
 	type args struct {
 		ctx    context.Context
 		oamReq adapter.OAMRequest
 	}
 	tests := []struct {
 		name    string
-		fs      fields
 		args    args
 		want    string
 		wantErr bool
@@ -423,7 +389,11 @@ func TestIstio_ProcessOAM(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			istio := &Istio{
-				Adapter: *(tt.fs).Adapter,
+				Adapter: adapter.Adapter{
+					Config:  getConfigHandler(t),
+					Log:     getLoggerHandler(t),
+					Channel: &ch,
+				},
 			}
 			got, err := istio.ProcessOAM(tt.args.ctx, tt.args.oamReq, tt.hchan)
 			if (err != nil) != tt.wantErr {
