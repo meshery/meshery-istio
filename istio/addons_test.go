@@ -30,7 +30,7 @@ func TestIstio_installAddon(t *testing.T) {
 
 	tests := []struct {
 		name        string
-		fields      fields
+		fields      *fields
 		args        args
 		want        string
 		kubeconfigs []string
@@ -39,7 +39,7 @@ func TestIstio_installAddon(t *testing.T) {
 		// TODO: Add test cases.
 		{
 			name:   "no patches",
-			fields: fs,
+			fields: &fs,
 			args: args{
 				namespace: "default",
 				del:       false,
@@ -54,7 +54,7 @@ func TestIstio_installAddon(t *testing.T) {
 		},
 		{
 			name:   "no templates",
-			fields: fs,
+			fields: &fs,
 			args: args{
 				namespace: "default",
 				del:       false,
@@ -67,7 +67,7 @@ func TestIstio_installAddon(t *testing.T) {
 		},
 		{
 			name:   "delete operation",
-			fields: fs,
+			fields: &fs,
 			args: args{
 				namespace: "default",
 				del:       true,

@@ -28,7 +28,7 @@ func TestIstio_applyCustomOperation(t *testing.T) {
 	}
 	tests := []struct {
 		name        string
-		fields      fields
+		fields      *fields
 		args        args
 		kubeconfigs []string
 		want        string
@@ -37,7 +37,7 @@ func TestIstio_applyCustomOperation(t *testing.T) {
 		// TODO: Add test cases.
 		{
 			name:   "no manifest or empty manifest",
-			fields: fs,
+			fields: &fs,
 			args: args{
 				namespace: "default",
 				manifest:  "",
