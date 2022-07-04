@@ -70,7 +70,7 @@ func TestIstio_ApplyOperation(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		fields  fields
+		fields  *fields
 		args    args
 		wantErr bool
 	}{
@@ -97,7 +97,7 @@ func TestIstio_ApplyOperation(t *testing.T) {
 		// Tests for stale operation
 		{
 			name:   "Stale operation",
-			fields: fs,
+			fields: &fs,
 			args: args{
 				ctx: context.TODO(),
 				opReq: adapter.OperationRequest{
@@ -112,7 +112,7 @@ func TestIstio_ApplyOperation(t *testing.T) {
 		// Tests for istio operation
 		{
 			name:   "Istio operation",
-			fields: fs,
+			fields: &fs,
 			args: args{
 				ctx: context.TODO(),
 				opReq: adapter.OperationRequest{
@@ -127,7 +127,7 @@ func TestIstio_ApplyOperation(t *testing.T) {
 		// Tests for sample apps operation
 		{
 			name:   "BookInfo operation",
-			fields: fs,
+			fields: &fs,
 			args: args{
 				ctx: context.TODO(),
 				opReq: adapter.OperationRequest{
@@ -141,7 +141,7 @@ func TestIstio_ApplyOperation(t *testing.T) {
 		},
 		{
 			name:   "HTTPBin operation",
-			fields: fs,
+			fields: &fs,
 			args: args{
 				ctx: context.TODO(),
 				opReq: adapter.OperationRequest{
@@ -155,7 +155,7 @@ func TestIstio_ApplyOperation(t *testing.T) {
 		},
 		{
 			name:   "ImageHub operation",
-			fields: fs,
+			fields: &fs,
 			args: args{
 				ctx: context.TODO(),
 				opReq: adapter.OperationRequest{
@@ -169,7 +169,7 @@ func TestIstio_ApplyOperation(t *testing.T) {
 		},
 		{
 			name:   "EmojiVoto operation",
-			fields: fs,
+			fields: &fs,
 			args: args{
 				ctx: context.TODO(),
 				opReq: adapter.OperationRequest{
@@ -184,7 +184,7 @@ func TestIstio_ApplyOperation(t *testing.T) {
 		// Tests for validate operation
 		{
 			name:   "SMI operation",
-			fields: fs,
+			fields: &fs,
 			args: args{
 				ctx: context.TODO(),
 				opReq: adapter.OperationRequest{
@@ -213,7 +213,7 @@ func TestIstio_ApplyOperation(t *testing.T) {
 		// Tests for configure operation
 		{
 			name:   "Deny All Policy operation",
-			fields: fs,
+			fields: &fs,
 			args: args{
 				ctx: context.TODO(),
 				opReq: adapter.OperationRequest{
@@ -227,7 +227,7 @@ func TestIstio_ApplyOperation(t *testing.T) {
 		},
 		{
 			name:   "Strict MTLS Policy operation",
-			fields: fs,
+			fields: &fs,
 			args: args{
 				ctx: context.TODO(),
 				opReq: adapter.OperationRequest{
@@ -241,7 +241,7 @@ func TestIstio_ApplyOperation(t *testing.T) {
 		},
 		{
 			name:   "Mutual MTLS Policy operation",
-			fields: fs,
+			fields: &fs,
 			args: args{
 				ctx: context.TODO(),
 				opReq: adapter.OperationRequest{
@@ -255,7 +255,7 @@ func TestIstio_ApplyOperation(t *testing.T) {
 		},
 		{
 			name:   "Disable MTLS Policy operation",
-			fields: fs,
+			fields: &fs,
 			args: args{
 				ctx: context.TODO(),
 				opReq: adapter.OperationRequest{
@@ -269,7 +269,7 @@ func TestIstio_ApplyOperation(t *testing.T) {
 		},
 		{
 			name:   "Label Namespace operation",
-			fields: fs,
+			fields: &fs,
 			args: args{
 				ctx: context.TODO(),
 				opReq: adapter.OperationRequest{
@@ -283,7 +283,7 @@ func TestIstio_ApplyOperation(t *testing.T) {
 		},
 		{
 			name:   "Envoy Filter operation",
-			fields: fs,
+			fields: &fs,
 			args: args{
 				ctx: context.TODO(),
 				opReq: adapter.OperationRequest{
@@ -298,7 +298,7 @@ func TestIstio_ApplyOperation(t *testing.T) {
 		// Tests for custom operation
 		{
 			name:   "Custom operation",
-			fields: fs,
+			fields: &fs,
 			args: args{
 				ctx: context.TODO(),
 				opReq: adapter.OperationRequest{
@@ -313,7 +313,7 @@ func TestIstio_ApplyOperation(t *testing.T) {
 		// Tests for addon operation
 		{
 			name:   "Prometheus Addon operation",
-			fields: fs,
+			fields: &fs,
 			args: args{
 				ctx: context.TODO(),
 				opReq: adapter.OperationRequest{
@@ -327,7 +327,7 @@ func TestIstio_ApplyOperation(t *testing.T) {
 		},
 		{
 			name:   "Grafana Addon operation",
-			fields: fs,
+			fields: &fs,
 			args: args{
 				ctx: context.TODO(),
 				opReq: adapter.OperationRequest{
@@ -341,7 +341,7 @@ func TestIstio_ApplyOperation(t *testing.T) {
 		},
 		{
 			name:   "Kiali Addon operation",
-			fields: fs,
+			fields: &fs,
 			args: args{
 				ctx: context.TODO(),
 				opReq: adapter.OperationRequest{
@@ -355,7 +355,7 @@ func TestIstio_ApplyOperation(t *testing.T) {
 		},
 		{
 			name:   "Jaeger Addon operation",
-			fields: fs,
+			fields: &fs,
 			args: args{
 				ctx: context.TODO(),
 				opReq: adapter.OperationRequest{
@@ -369,7 +369,7 @@ func TestIstio_ApplyOperation(t *testing.T) {
 		},
 		{
 			name:   "Zipkin Addon operation",
-			fields: fs,
+			fields: &fs,
 			args: args{
 				ctx: context.TODO(),
 				opReq: adapter.OperationRequest{
