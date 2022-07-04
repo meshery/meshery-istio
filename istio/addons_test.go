@@ -9,7 +9,7 @@ import (
 
 func TestIstio_installAddon(t *testing.T) {
 	type fields struct {
-		Adapter adapter.Adapter
+		Adapter *adapter.Adapter
 	}
 	type args struct {
 		namespace string
@@ -21,7 +21,7 @@ func TestIstio_installAddon(t *testing.T) {
 
 	ch := make(chan interface{}, 10)
 	fs := fields{
-		Adapter: adapter.Adapter{
+		Adapter: &adapter.Adapter{
 			Config:  getConfigHandler(t),
 			Log:     getLoggerHandler(t),
 			Channel: &ch,
@@ -82,7 +82,7 @@ func TestIstio_installAddon(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			istio := &Istio{
-				Adapter: tt.fields.Adapter,
+				Adapter: *(tt.fields).Adapter,
 			}
 			got, err := istio.installAddon(tt.args.namespace, tt.args.del, tt.args.service, tt.args.patches, tt.args.templates, tt.kubeconfigs)
 			if (err != nil) == tt.wantErr {

@@ -10,7 +10,7 @@ import (
 
 func TestIstio_applyCustomOperation(t *testing.T) {
 	type fields struct {
-		Adapter adapter.Adapter
+		Adapter *adapter.Adapter
 	}
 	type args struct {
 		namespace string
@@ -20,7 +20,7 @@ func TestIstio_applyCustomOperation(t *testing.T) {
 
 	ch := make(chan interface{}, 10)
 	fs := fields{
-		Adapter: adapter.Adapter{
+		Adapter: &adapter.Adapter{
 			Config:  getConfigHandler(t),
 			Log:     getLoggerHandler(t),
 			Channel: &ch,
@@ -50,7 +50,7 @@ func TestIstio_applyCustomOperation(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			istio := &Istio{
-				Adapter: tt.fields.Adapter,
+				Adapter: *(tt.fields).Adapter,
 			}
 			got, err := istio.applyCustomOperation(tt.args.namespace, tt.args.manifest, tt.args.isDel, tt.kubeconfigs)
 			if (err != nil) == tt.wantErr {

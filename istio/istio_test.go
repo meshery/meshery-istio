@@ -394,8 +394,9 @@ func TestIstio_ApplyOperation(t *testing.T) {
 
 func TestIstio_ProcessOAM(t *testing.T) {
 	type fields struct {
-		Adapter adapter.Adapter
+		Adapter *adapter.Adapter
 	}
+
 	// ch := make(chan interface{}, 10)
 	// fs := fields{
 	// 	Adapter: adapter.Adapter{
@@ -422,7 +423,7 @@ func TestIstio_ProcessOAM(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			istio := &Istio{
-				Adapter: tt.fs.Adapter,
+				Adapter: *(tt.fs).Adapter,
 			}
 			got, err := istio.ProcessOAM(tt.args.ctx, tt.args.oamReq, tt.hchan)
 			if (err != nil) != tt.wantErr {
