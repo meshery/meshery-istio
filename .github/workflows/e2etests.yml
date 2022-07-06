@@ -273,7 +273,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: patternfile
-          path: ./ookInfoPattern.yaml 
+          path: ./bookInfoPattern.yaml 
 
   TestIstioForServicemeshAndSampleApp:
     needs: SetPatternfileForServicemeshAndSampleApp
