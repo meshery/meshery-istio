@@ -266,6 +266,8 @@ jobs:
       - name: Change service mesh version in patternfile
         run: |
            wget https://raw.githubusercontent.com/service-mesh-patterns/service-mesh-patterns/master/samples/bookInfoPattern.yaml 
+           pwd
+           ls -la
            cat ./.github/install/bookInfoPattern.yaml
       - name: Uploading file
         uses: actions/upload-artifact@v2
