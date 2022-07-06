@@ -268,12 +268,12 @@ jobs:
            wget https://raw.githubusercontent.com/service-mesh-patterns/service-mesh-patterns/master/samples/bookInfoPattern.yaml 
            pwd
            ls -la
-           cat ./.github/install/bookInfoPattern.yaml
+           cat ./bookInfoPattern.yaml
       - name: Uploading file
         uses: actions/upload-artifact@v2
         with:
           name: patternfile
-          path: ./.github/install/bookInfoPattern.yaml 
+          path: ./ookInfoPattern.yaml 
 
   TestIstioForServicemeshAndSampleApp:
     needs: SetPatternfileForServicemeshAndSampleApp
