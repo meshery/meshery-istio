@@ -8,9 +8,6 @@ import (
 )
 
 func TestIstio_installAddon(t *testing.T) {
-	type fields struct {
-		Adapter adapter.Adapter
-	}
 	type args struct {
 		namespace string
 		del       bool
@@ -20,26 +17,17 @@ func TestIstio_installAddon(t *testing.T) {
 	}
 
 	ch := make(chan interface{}, 10)
-	fs := fields{
-		Adapter: adapter.Adapter{
-			Config:            getConfigHandler(t),
-			Log:               getLoggerHandler(t),
-			KubeconfigHandler: getKubeconfigHandler(t),
-			Channel:           &ch,
-		},
-	}
 
 	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		want    string
-		wantErr bool
+		name        string
+		args        args
+		want        string
+		kubeconfigs []string
+		wantErr     bool
 	}{
 		// TODO: Add test cases.
 		{
-			name:   "no patches",
-			fields: fs,
+			name: "no patches",
 			args: args{
 				namespace: "default",
 				del:       false,
@@ -49,12 +37,11 @@ func TestIstio_installAddon(t *testing.T) {
 					"https://raw.githubusercontent.com/istio/istio/master/samples/addons/jaeger.yaml",
 				},
 			},
-			want:    status.Installing,
+			want:    status.Installed,
 			wantErr: true,
 		},
 		{
-			name:   "no templates",
-			fields: fs,
+			name: "no templates",
 			args: args{
 				namespace: "default",
 				del:       false,
@@ -63,11 +50,10 @@ func TestIstio_installAddon(t *testing.T) {
 				templates: nil,
 			},
 			want:    status.Installed,
-			wantErr: false,
+			wantErr: true,
 		},
 		{
-			name:   "delete operation",
-			fields: fs,
+			name: "delete operation",
 			args: args{
 				namespace: "default",
 				del:       true,
@@ -76,16 +62,20 @@ func TestIstio_installAddon(t *testing.T) {
 				templates: nil,
 			},
 			want:    status.Installed,
-			wantErr: false,
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			istio := &Istio{
-				Adapter: tt.fields.Adapter,
+				Adapter: adapter.Adapter{
+					Config:  getConfigHandler(t),
+					Log:     getLoggerHandler(t),
+					Channel: &ch,
+				},
 			}
-			got, err := istio.installAddon(tt.args.namespace, tt.args.del, tt.args.service, tt.args.patches, tt.args.templates)
-			if (err != nil) != tt.wantErr {
+			got, err := istio.installAddon(tt.args.namespace, tt.args.del, tt.args.service, tt.args.patches, tt.args.templates, tt.kubeconfigs)
+			if (err != nil) == tt.wantErr {
 				t.Errorf("Istio.installAddon() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}

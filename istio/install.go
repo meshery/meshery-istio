@@ -14,6 +14,7 @@ import (
 	"path"
 	"runtime"
 	"strings"
+	"sync"
 
 	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshery-adapter-library/status"
@@ -32,7 +33,7 @@ var (
 
 // installs Istio using either helm charts or istioctl.
 // Priority given to helm charts unless useBin set to true
-func (istio *Istio) installIstio(del, useBin bool, version, namespace string, profile string) (string, error) {
+func (istio *Istio) installIstio(del, useBin bool, version, namespace string, profile string, kubeconfigs []string) (string, error) {
 	istio.Log.Debug(fmt.Sprintf("Requested install of version: %s", version))
 	istio.Log.Debug(fmt.Sprintf("Requested action is delete: %v", del))
 	istio.Log.Debug(fmt.Sprintf("Requested action is in namespace: %s", namespace))
@@ -58,19 +59,19 @@ func (istio *Istio) installIstio(del, useBin bool, version, namespace string, pr
 	// Install using istioctl if explicitly stated
 	if useBin {
 		istio.Log.Info("Installing istio using istioctl...")
-		err = istio.runIstioCtlCmd(version, del, dirName)
+		err = istio.runIstioCtlCmd(version, del, dirName, kubeconfigs)
 		if err != nil {
 			return st, ErrInstallUsingIstioctl(err)
 		}
 	}
 
 	// Install using Helm Chart and fallback to istioctl
-	err = istio.applyHelmChart(del, version, namespace, dirName, profile)
+	err = istio.applyHelmChart(del, version, namespace, dirName, profile, kubeconfigs)
 	if err != nil {
 		istio.Log.Error(err)
 		istio.Log.Info("Retrying to install using istioctl...")
 
-		err = istio.runIstioCtlCmd(version, del, dirName)
+		err = istio.runIstioCtlCmd(version, del, dirName, kubeconfigs)
 		if err != nil {
 			return st, ErrInstallUsingIstioctl(err)
 		}
@@ -84,15 +85,11 @@ func (istio *Istio) installIstio(del, useBin bool, version, namespace string, pr
 	return status.Installed, nil
 }
 
-func (istio *Istio) applyHelmChart(del bool, version, namespace, dirName string, profile string) error {
+func (istio *Istio) applyHelmChart(del bool, version, namespace, dirName string, profile string, kubeconfigs []string) error {
 	if profile != "demo" && profile != "default" && profile != "minimal" {
 		return ErrInvalidInstallationProfile(profile) // This code will never be executed as json schema would have been validated beforehand
 	}
-	kClient := istio.MesheryKubeclient
-	if kClient == nil {
-		return ErrNilClient
-	}
-
+	var errs []error
 	istio.Log.Info("Installing using helm charts...")
 	var act mesherykube.HelmChartAction
 	if del {
@@ -100,53 +97,89 @@ func (istio *Istio) applyHelmChart(del bool, version, namespace, dirName string,
 	} else {
 		act = mesherykube.INSTALL
 	}
-	err := kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
-		LocalPath:       path.Join(downloadLocation, dirName, "manifests/charts/base"),
-		Namespace:       "istio-system",
-		Action:          act,
-		CreateNamespace: true,
-	})
-	if err != nil {
-		return ErrApplyHelmChart(err)
-	}
 
-	err = kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
-		LocalPath:       path.Join(downloadLocation, dirName, "manifests/charts/istio-control/istio-discovery"),
-		Namespace:       "istio-system",
-		Action:          act,
-		CreateNamespace: true,
-	})
-	if err != nil {
-		return ErrApplyHelmChart(err)
-	}
+	var wg sync.WaitGroup
+	var errMx sync.Mutex
+	for _, config := range kubeconfigs {
+		wg.Add(1)
+		go func(config string, act mesherykube.HelmChartAction) {
+			defer wg.Done()
+			kClient, err := mesherykube.New([]byte(config))
+			if err != nil {
+				errMx.Lock()
+				errs = append(errs, err)
+				errMx.Unlock()
+				return
+			}
+			err = kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
+				LocalPath:       path.Join(downloadLocation, dirName, "manifests/charts/base"),
+				Namespace:       "istio-system",
+				Action:          act,
+				CreateNamespace: true,
+			})
+			if err != nil {
+				errMx.Lock()
+				errs = append(errs, err)
+				errMx.Unlock()
+				return
 
-	if profile == "minimal" {
+			}
+
+			err = kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
+				LocalPath:       path.Join(downloadLocation, dirName, "manifests/charts/istio-control/istio-discovery"),
+				Namespace:       "istio-system",
+				Action:          act,
+				CreateNamespace: true,
+			})
+			if err != nil {
+				errMx.Lock()
+				errs = append(errs, err)
+				errMx.Unlock()
+				return
+
+			}
+
+			if profile == "minimal" {
+				return
+			}
+			err = kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
+				LocalPath:       path.Join(downloadLocation, dirName, "manifests/charts/gateways/istio-ingress"),
+				Namespace:       "istio-system",
+				Action:          act,
+				CreateNamespace: true,
+			})
+			if err != nil {
+				errMx.Lock()
+				errs = append(errs, err)
+				errMx.Unlock()
+				return
+
+			}
+
+			if profile == "default" {
+				return
+			}
+			err = kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
+				LocalPath:       path.Join(downloadLocation, dirName, "manifests/charts/gateways/istio-egress"),
+				Namespace:       "istio-system",
+				Action:          act,
+				CreateNamespace: true,
+			})
+			if err != nil {
+				errMx.Lock()
+				errs = append(errs, err)
+				errMx.Unlock()
+				return
+
+			}
+
+		}(config, act)
+	}
+	wg.Wait()
+	if len(errs) == 0 {
 		return nil
 	}
-	err = kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
-		LocalPath:       path.Join(downloadLocation, dirName, "manifests/charts/gateways/istio-ingress"),
-		Namespace:       "istio-system",
-		Action:          act,
-		CreateNamespace: true,
-	})
-	if err != nil {
-		return ErrApplyHelmChart(err)
-	}
-
-	if profile == "default" {
-		return nil
-	}
-	err = kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
-		LocalPath:       path.Join(downloadLocation, dirName, "manifests/charts/gateways/istio-egress"),
-		Namespace:       "istio-system",
-		Action:          act,
-		CreateNamespace: true,
-	})
-	if err != nil {
-		return ErrApplyHelmChart(err)
-	}
-
-	return nil
+	return ErrApplyHelmChart(mergeErrors(errs))
 }
 
 // getIstioRelease gets the manifests for latest istio release.
@@ -230,39 +263,106 @@ func extractTar(res *http.Response) error {
 
 // Installs Istio using Istioctl
 // TODO: Figure out why this is not working in containers
-func (istio *Istio) runIstioCtlCmd(version string, isDel bool, dirName string) error {
+func (istio *Istio) runIstioCtlCmd(version string, isDel bool, dirName string, kubeconfigs []string) error {
 	var (
 		out bytes.Buffer
 		er  bytes.Buffer
 	)
+	var wg sync.WaitGroup
+	var errMx sync.Mutex
+	var errs []error
+	for _, config := range kubeconfigs {
+		wg.Add(1)
+		go func(config string, isDel bool) {
+			defer wg.Done()
+			kClient, err := mesherykube.New([]byte(config))
+			if err != nil {
+				errMx.Lock()
+				errs = append(errs, err)
+				errMx.Unlock()
+				return
+			}
+			kContext, err := kClient.GetCurrentContext()
+			if err != nil {
+				errMx.Lock()
+				errs = append(errs, err)
+				errMx.Unlock()
+				return
+			}
+			istio.Log.Info("Installing using istioctl...")
 
-	istio.Log.Info("Installing using istioctl...")
+			Executable, err := istio.getExecutable(version, dirName)
+			if err != nil {
+				errMx.Lock()
+				errs = append(errs, err)
+				errMx.Unlock()
+				return
+			}
+			execCmd := []string{"install", "--set", "profile=demo", "-y", "--context", kContext}
+			if isDel {
+				execCmd = []string{"x", "uninstall", "--purge", "-y", "--context", kContext}
+			}
 
-	Executable, err := istio.getExecutable(version, dirName)
-	if err != nil {
-		return ErrRunIstioCtlCmd(err, err.Error())
+			// We need a variable executable here hence using nosec
+			// #nosec
+			command := exec.Command(Executable, execCmd...)
+			command.Stdout = &out
+			command.Stderr = &er
+			err = command.Run()
+			if err != nil {
+				errMx.Lock()
+				errs = append(errs, err)
+				errMx.Unlock()
+				return
+			}
+		}(config, isDel)
 	}
-	execCmd := []string{"install", "--set", "profile=demo", "-y"}
-	if isDel {
-		execCmd = []string{"x", "uninstall", "--purge", "-y"}
+	wg.Wait()
+	if len(errs) == 0 {
+		return nil
 	}
 
-	// We need a variable executable here hence using nosec
-	// #nosec
-	command := exec.Command(Executable, execCmd...)
-	command.Stdout = &out
-	command.Stderr = &er
-	err = command.Run()
-	if err != nil {
-		return ErrRunIstioCtlCmd(err, er.String())
-	}
-
-	return nil
+	return ErrRunIstioCtlCmd(mergeErrors(errs), mergeErrors(errs).Error())
 }
 
-func (istio *Istio) applyManifest(contents []byte, isDel bool, namespace string) error {
+func (istio *Istio) applyManifest(contents []byte, isDel bool, namespace string, kubeconfigs []string) error {
+	var wg sync.WaitGroup
+	var errs []error
+	var errMx sync.Mutex
+	for _, k8sconfig := range kubeconfigs {
+		wg.Add(1)
+		go func(k8sconfig string) {
+			defer wg.Done()
+			mclient, err := mesherykube.New([]byte(k8sconfig))
+			if err != nil {
+				errMx.Lock()
+				errs = append(errs, err)
+				errMx.Unlock()
+				return
+			}
+			err = mclient.ApplyManifest(contents, mesherykube.ApplyOptions{
+				Namespace: namespace,
+				Update:    true,
+				Delete:    isDel,
+			})
+			if err != nil {
+				errMx.Lock()
+				errs = append(errs, err)
+				errMx.Unlock()
+				return
+			}
+		}(k8sconfig)
+	}
+	wg.Wait()
+	if len(errs) == 0 {
+		return nil
+	}
+	return mergeErrors(errs)
+}
 
-	err := istio.MesheryKubeclient.ApplyManifest(contents, mesherykube.ApplyOptions{
+//For direct simpler use cases
+func (istio *Istio) applyManifestOnSingleCluster(contents []byte, isDel bool, namespace string, mclient *mesherykube.Client) error {
+	err := mclient.ApplyManifest(contents, mesherykube.ApplyOptions{
 		Namespace: namespace,
 		Update:    true,
 		Delete:    isDel,
@@ -270,7 +370,6 @@ func (istio *Istio) applyManifest(contents []byte, isDel bool, namespace string)
 	if err != nil {
 		return err
 	}
-
 	return nil
 }
 
