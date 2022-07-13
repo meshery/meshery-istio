@@ -77,7 +77,7 @@ func GetOperations(dev adapter.Operations, version string) adapter.Operations {
 		Type:        int32(meshes.OpCategory_CONFIGURE),
 		Description: "Add-on: Jaeger",
 		Templates: []adapter.Template{
-			adapter.Template(fmt.Sprintf("https://raw.githubusercontent.com/istio/istio/%s/samples/addons/prometheus.yaml", version)),
+			adapter.Template(fmt.Sprintf("https://raw.githubusercontent.com/istio/istio/%s/samples/addons/jaeger.yaml", version)),
 		},
 		AdditionalProperties: map[string]string{
 			ServiceName:      "jaeger-collector",
