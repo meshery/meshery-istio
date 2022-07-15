@@ -117,7 +117,9 @@ func handleComponentIstioMesh(istio *Istio, comp v1alpha1.Component, isDel bool,
 	// we are sure that the version of istio would be present
 	// because the configuration is already validated against the schema
 	version := comp.Spec.Version
-	fmt.Println("recieved version: ", version)
+	if version == "" {
+		return "", fmt.Errorf("pass valid version inside service for Istio installation")
+	}
 	//TODO: When no version is passed in service, use the latest istio version
 	profile := comp.Spec.Settings["profile"].(string)
 	return istio.installIstio(isDel, false, version, comp.Namespace, profile, kubeconfigs)
