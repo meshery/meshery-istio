@@ -19,6 +19,7 @@ include build/Makefile.show-help.mk
 # Environment Setup
 #-----------------------------------------------------------------------------
 BUILDER=buildx-multi-arch
+ADAPTER=istio
 
 v ?= 1.17.8 # Default go version to be used
 
@@ -44,15 +45,15 @@ proto:
 
 ## Build Adapter container image with "edge-latest" tag
 docker:
-	DOCKER_BUILDKIT=1 docker build -t layer5/meshery-istio:edge-latest .
+	DOCKER_BUILDKIT=1 docker build -t layer5/meshery-$(ADAPTER):$(RELEASE_CHANNEL)-latest .
 
 ## Run Adapter container with "edge-latest" tag
 docker-run:
-	(docker rm -f meshery-istio) || true
-	docker run --name meshery-istio -d \
+	(docker rm -f meshery-$(ADAPTER)) || true
+	docker run --name meshery-$(ADAPTER) -d \
 	-p 10000:10000 \
 	-e DEBUG=true \
-	layer5/meshery-istio:edge-latest
+	layer5/$(ADAPTER):$(RELEASE_CHANNEL)-latest
 
 ## Build and run Adapter locally
 run:
