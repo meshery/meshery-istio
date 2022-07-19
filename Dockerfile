@@ -1,5 +1,6 @@
 FROM --platform=$BUILDPLATFORM golang:1.17-alpine as builder
 ARG BUILDPLATFORM
+ARG TARGETPLATFORM
 
 ARG VERSION
 ARG GIT_COMMITSHA
@@ -16,7 +17,7 @@ COPY internal/ internal/
 COPY istio/ istio/
 # Build
 COPY build/ build/
-RUN GOPROXY=direct,https://proxy.golang.org CGO_ENABLED=0 GOOS=linux GOARCH=${TARGETPLATFORM} GO111MODULE=on go build -ldflags="-w -s -X main.version=$VERSION -X main.gitsha=$GIT_COMMITSHA" -a -o meshery-istio main.go
+RUN GOARCH=`echo $BUILDPLATFORM | cut -d / -f 2` GOPROXY=direct,https://proxy.golang.org CGO_ENABLED=0 GOOS=linux  GO111MODULE=on go build -ldflags="-w -s -X main.version=$VERSION -X main.gitsha=$GIT_COMMITSHA" -a -o meshery-istio main.go
 
 FROM --platform=$BUILDPLATFORM alpine:3.15 as jsonschema-util
 RUN apk add --no-cache curl
