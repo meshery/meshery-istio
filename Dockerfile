@@ -1,8 +1,8 @@
-FROM golang:1.17 as builder
+FROM --platform=$BUILDPLATFORM golang:1.17-alpine as builder
+ARG BUILDPLATFORM
 
 ARG VERSION
 ARG GIT_COMMITSHA
-ARG TARGETARCH
 WORKDIR /build
 # Copy the Go Modules manifests
 COPY go.mod go.mod
@@ -16,9 +16,9 @@ COPY internal/ internal/
 COPY istio/ istio/
 # Build
 COPY build/ build/
-RUN GOPROXY=direct,https://proxy.golang.org CGO_ENABLED=0 GOOS=linux GOARCH=${TARGETARCH} GO111MODULE=on go build -ldflags="-w -s -X main.version=$VERSION -X main.gitsha=$GIT_COMMITSHA" -a -o meshery-istio main.go
+RUN GOPROXY=direct,https://proxy.golang.org CGO_ENABLED=0 GOOS=linux GOARCH=${TARGETPLATFORM} GO111MODULE=on go build -ldflags="-w -s -X main.version=$VERSION -X main.gitsha=$GIT_COMMITSHA" -a -o meshery-istio main.go
 
-FROM alpine:3.15 as jsonschema-util
+FROM --platform=$BUILDPLATFORM alpine:3.15 as jsonschema-util
 RUN apk add --no-cache curl
 WORKDIR /
 RUN UTIL_VERSION=$(curl -L -s https://api.github.com/repos/layer5io/kubeopenapi-jsonschema/releases/latest | \
@@ -29,7 +29,7 @@ RUN UTIL_VERSION=$(curl -L -s https://api.github.com/repos/layer5io/kubeopenapi-
 
 # Use distroless as minimal base image to package the manager binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
-FROM gcr.io/distroless/nodejs:16
+FROM --platform=$BUILDPLATFORM gcr.io/distroless/nodejs:16
 ENV DISTRO="debian"
 ENV SERVICE_ADDR="meshery-istio"
 ENV MESHERY_SERVER="http://meshery:9081"
