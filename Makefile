@@ -53,7 +53,7 @@ docker-run:
 	docker run --name meshery-$(ADAPTER) -d \
 	-p 10000:10000 \
 	-e DEBUG=true \
-	layer5/$(ADAPTER):$(RELEASE_CHANNEL)-latest
+	layer5/meshery-$(ADAPTER):$(RELEASE_CHANNEL)-latest
 
 ## Build and run Adapter locally
 run:
