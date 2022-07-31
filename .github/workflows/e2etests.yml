@@ -151,6 +151,8 @@ jobs:
       - name: Change service mesh version in patternfile
         run: | 
            yq e -i '.services.istio.version="${{ steps.gettag.outputs.release }}"' ./.github/install/deploywithaddons.yaml 
+           yq e -i '.services.grafana.version="${{ steps.gettag.outputs.release }}"' ./.github/install/deploywithaddons.yaml 
+           yq e -i '.services.prometheus.version="${{ steps.gettag.outputs.release }}"' ./.github/install/deploywithaddons.yaml 
            cat ./.github/install/deploywithaddons.yaml
       - name: Uploading file
         uses: actions/upload-artifact@v2

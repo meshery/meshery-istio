@@ -3,10 +3,10 @@ services:
   istioinstallation:
     type: $(#use https://raw.githubusercontent.com/service-mesh-patterns/service-mesh-patterns/master/samples/istioinstall.yaml)
     settings: 
-        controlplaneNS: istio-system
-        namespace: default
-        istioVersion: 1.12.0
-        profile: minimal
+      controlplaneNS: istio-system
+      namespace: default
+      istioVersion: 1.14.0
+      profile: minimal
   bookinfo:
     type: $(#use https://raw.githubusercontent.com/service-mesh-patterns/service-mesh-patterns/master/samples/bookInfoNoK8sPattern.yaml)
     settings: 

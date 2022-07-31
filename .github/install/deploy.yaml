@@ -1,5 +1,4 @@
 name: IstioSM
-version: 1.0.1
 services:
   istio:
     type: IstioMesh
