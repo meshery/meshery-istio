@@ -1,9 +1,8 @@
 name: IstioSM
-version: 1.0.1
 services:
   istio:
     type: IstioMesh
     namespace: istio-system
+    version: #will be filled dynamically in workflow
     settings:
-      version: #will be filled dynamically in workflow
       profile: demo

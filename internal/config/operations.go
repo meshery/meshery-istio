@@ -1,6 +1,8 @@
 package config
 
 import (
+	"fmt"
+
 	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshery-adapter-library/common"
 	"github.com/layer5io/meshery-adapter-library/meshes"
@@ -11,7 +13,7 @@ var (
 	ServiceName = "service_name"
 )
 
-func getOperations(dev adapter.Operations) adapter.Operations {
+func GetOperations(dev adapter.Operations, version string) adapter.Operations {
 	var adapterVersions []adapter.Version
 	versions, _ := utils.GetLatestReleaseTagsSorted("istio", "istio")
 	for _, v := range versions {
@@ -39,7 +41,7 @@ func getOperations(dev adapter.Operations) adapter.Operations {
 		Type:        int32(meshes.OpCategory_CONFIGURE),
 		Description: "Add-on: Prometheus",
 		Templates: []adapter.Template{
-			"https://raw.githubusercontent.com/istio/istio/master/samples/addons/prometheus.yaml",
+			adapter.Template(fmt.Sprintf("https://raw.githubusercontent.com/istio/istio/%s/samples/addons/prometheus.yaml", version)),
 		},
 		AdditionalProperties: map[string]string{
 			ServiceName:      "prometheus",
@@ -51,7 +53,7 @@ func getOperations(dev adapter.Operations) adapter.Operations {
 		Type:        int32(meshes.OpCategory_CONFIGURE),
 		Description: "Add-on: Grafana",
 		Templates: []adapter.Template{
-			"https://raw.githubusercontent.com/istio/istio/master/samples/addons/grafana.yaml",
+			adapter.Template(fmt.Sprintf("https://raw.githubusercontent.com/istio/istio/%s/samples/addons/grafana.yaml", version)),
 		},
 		AdditionalProperties: map[string]string{
 			ServiceName:      "grafana",
@@ -63,7 +65,7 @@ func getOperations(dev adapter.Operations) adapter.Operations {
 		Type:        int32(meshes.OpCategory_CONFIGURE),
 		Description: "Add-on: Kiali",
 		Templates: []adapter.Template{
-			"https://raw.githubusercontent.com/istio/istio/master/samples/addons/kiali.yaml",
+			adapter.Template(fmt.Sprintf("https://raw.githubusercontent.com/istio/istio/%s/samples/addons/kiali.yaml", version)),
 		},
 		AdditionalProperties: map[string]string{
 			ServiceName:      "kiali",
@@ -75,7 +77,7 @@ func getOperations(dev adapter.Operations) adapter.Operations {
 		Type:        int32(meshes.OpCategory_CONFIGURE),
 		Description: "Add-on: Jaeger",
 		Templates: []adapter.Template{
-			"https://raw.githubusercontent.com/istio/istio/master/samples/addons/jaeger.yaml",
+			adapter.Template(fmt.Sprintf("https://raw.githubusercontent.com/istio/istio/%s/samples/addons/jaeger.yaml", version)),
 		},
 		AdditionalProperties: map[string]string{
 			ServiceName:      "jaeger-collector",
@@ -87,7 +89,7 @@ func getOperations(dev adapter.Operations) adapter.Operations {
 		Type:        int32(meshes.OpCategory_CONFIGURE),
 		Description: "Add-on: Zipkin",
 		Templates: []adapter.Template{
-			"https://raw.githubusercontent.com/istio/istio/master/samples/addons/extras/zipkin.yaml",
+			adapter.Template(fmt.Sprintf("https://raw.githubusercontent.com/istio/istio/%s/samples/addons/extras/zipkin.yaml", version)),
 		},
 		AdditionalProperties: map[string]string{
 			ServiceName:      "zipkin",

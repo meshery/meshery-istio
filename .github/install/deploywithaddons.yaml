@@ -1,11 +1,10 @@
 name: IstioSM
-version: 1.0.1
 services:
   istio:
     type: IstioMesh
     namespace: istio-system
+    version: #will be filled dynamically in workflow
     settings:
-      version: #will be filled dynamically in workflow
       profile: demo
     traits:
       automaticSidecarInjection:
@@ -13,6 +12,7 @@ services:
           - default
   grafana:
     type: GrafanaIstioAddon
+    version: #will be filled dynamically in workflow
     namespace: istio-system
     dependsOn:
       - istio
@@ -20,6 +20,7 @@ services:
 
   prometheus:
     type: PrometheusIstioAddon
+    version: #will be filled dynamically in workflow
     namespace: istio-system
     dependsOn:
       - istio

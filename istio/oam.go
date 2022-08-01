@@ -20,8 +20,6 @@ func (istio *Istio) HandleComponents(comps []v1alpha1.Component, isDel bool, kub
 
 	compFuncMap := map[string]CompHandler{
 		"IstioMesh":            handleComponentIstioMesh,
-		"VirtualService":       handleComponentVirtualService,
-		"EnvoyFilterIstio":     handleComponentEnvoyFilter,
 		"GrafanaIstioAddon":    handleComponentIstioAddon,
 		"PrometheusIstioAddon": handleComponentIstioAddon,
 		"ZipkinIstioAddon":     handleComponentIstioAddon,
@@ -95,7 +93,7 @@ func handleMTLS(istio *Istio, namespaces []string, policy string, isDel bool, ku
 	for _, ns := range namespaces {
 		policyName := fmt.Sprintf("%s-mtls-policy-operation", policy)
 
-		if _, err := istio.applyPolicy(ns, isDel, config.Operations[policyName].Templates, kubeconfigs); err != nil {
+		if _, err := istio.applyPolicy(ns, isDel, config.GetOperations(common.Operations, "master")[policyName].Templates, kubeconfigs); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -118,17 +116,13 @@ func handleComponentIstioMesh(istio *Istio, comp v1alpha1.Component, isDel bool,
 	// Get the istio version from the settings
 	// we are sure that the version of istio would be present
 	// because the configuration is already validated against the schema
-	version := comp.Spec.Settings["version"].(string)
+	version := comp.Spec.Version
+	if version == "" {
+		return "", fmt.Errorf("pass valid version inside service for Istio installation")
+	}
+	//TODO: When no version is passed in service, use the latest istio version
 	profile := comp.Spec.Settings["profile"].(string)
 	return istio.installIstio(isDel, false, version, comp.Namespace, profile, kubeconfigs)
-}
-
-func handleComponentVirtualService(istio *Istio, comp v1alpha1.Component, isDel bool, kubeconfigs []string) (string, error) {
-	return handleIstioCoreComponent(istio, comp, isDel, "networking.istio.io/v1beta1", "VirtualService", kubeconfigs)
-}
-
-func handleComponentEnvoyFilter(istio *Istio, comp v1alpha1.Component, isDel bool, kubeconfigs []string) (string, error) {
-	return handleIstioCoreComponent(istio, comp, isDel, "networking.istio.io/v1alpha3", "EnvoyFilter", kubeconfigs)
 }
 
 func handleIstioCoreComponent(
@@ -194,18 +188,18 @@ func handleComponentIstioAddon(istio *Istio, comp v1alpha1.Component, isDel bool
 	default:
 		return "", nil
 	}
-
+	version := comp.Spec.Version
 	// Get the service
-	svc := config.Operations[addonName].AdditionalProperties[common.ServiceName]
+	svc := config.GetOperations(common.Operations, version)[addonName].AdditionalProperties[common.ServiceName]
 
 	// Get the patches
 	patches := make([]string, 0)
-	patches = append(patches, config.Operations[addonName].AdditionalProperties[config.ServicePatchFile])
-	patches = append(patches, config.Operations[addonName].AdditionalProperties[config.CPPatchFile])
-	patches = append(patches, config.Operations[addonName].AdditionalProperties[config.ControlPatchFile])
+	patches = append(patches, config.GetOperations(common.Operations, version)[addonName].AdditionalProperties[config.ServicePatchFile])
+	patches = append(patches, config.GetOperations(common.Operations, version)[addonName].AdditionalProperties[config.CPPatchFile])
+	patches = append(patches, config.GetOperations(common.Operations, version)[addonName].AdditionalProperties[config.ControlPatchFile])
 
 	// Get the templates
-	templates := config.Operations[addonName].Templates
+	templates := config.GetOperations(common.Operations, version)[addonName].Templates
 
 	_, err := istio.installAddon(comp.Namespace, isDel, svc, patches, templates, kubeconfigs)
 

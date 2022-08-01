@@ -1,0 +1,16 @@
+{
+    "apiVersion": "core.oam.dev/v1alpha1",
+    "kind": "WorkloadDefinition",
+    "metadata": {
+        "name": "GrafanaIstioAddon"
+    },
+    "spec": {
+        "definitionRef": {
+            "name": "grafanaistioaddon.meshery.layer5.io"
+        },
+        "metadata": {
+            "@type": "pattern.meshery.io/core",
+            "version":"1.14.1"
+          }
+    }
+}

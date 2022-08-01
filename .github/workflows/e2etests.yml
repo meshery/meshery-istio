@@ -37,7 +37,7 @@ jobs:
           excludes: prerelease, draft, edge 
       - name: Change service mesh version in patternfile
         run: | 
-           yq e -i '.services.istio.settings.version="${{ steps.gettag.outputs.release }}"' ./.github/install/deploy.yaml 
+           yq e -i '.services.istio.version="${{ steps.gettag.outputs.release }}"' ./.github/install/deploy.yaml 
            cat ./.github/install/deploy.yaml
       - name: Uploading file
         uses: actions/upload-artifact@v2
@@ -150,7 +150,9 @@ jobs:
           excludes: prerelease, draft, edge 
       - name: Change service mesh version in patternfile
         run: | 
-           yq e -i '.services.istio.settings.version="${{ steps.gettag.outputs.release }}"' ./.github/install/deploywithaddons.yaml 
+           yq e -i '.services.istio.version="${{ steps.gettag.outputs.release }}"' ./.github/install/deploywithaddons.yaml 
+           yq e -i '.services.grafana.version="${{ steps.gettag.outputs.release }}"' ./.github/install/deploywithaddons.yaml 
+           yq e -i '.services.prometheus.version="${{ steps.gettag.outputs.release }}"' ./.github/install/deploywithaddons.yaml 
            cat ./.github/install/deploywithaddons.yaml
       - name: Uploading file
         uses: actions/upload-artifact@v2

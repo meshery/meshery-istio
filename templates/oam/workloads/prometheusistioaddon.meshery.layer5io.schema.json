@@ -1,7 +1,0 @@
-{
-    "$id": "http://meshery.layer5.io/definition/Workload/PrometheusIstioAddon",
-    "$schema": "http://json-schema.org/draft-07/schema",
-    "title": "PrometheusIstioAddon",
-    "type": "object",
-    "properties": {}
-}
