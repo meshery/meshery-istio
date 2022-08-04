@@ -14,6 +14,7 @@ assignees: ''
 ---
 
 #### [Contributor Guides](https://docs.meshery.io/project/contributing) and Resources
+- 📝 [Meshery Adapters Spreadsheet](https://docs.google.com/spreadsheets/d/1rGGpSXC68iDJzNRU-qZIRQsZUwkt1qLFg7JCs4pfvbU/edit?usp=sharing)
 - 📚 [Instructions for contributing to documentation](https://docs.meshery.io/project/contributing/contributing-docs)
    - Meshery documentation [site](https://docs.meshery.io/) and [source](https://github.com/meshery/meshery/tree/master/docs)
 - 🛠 [Meshery Build & Release Strategy](https://docs.meshery.io/project/build-and-release)

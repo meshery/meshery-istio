@@ -19,5 +19,6 @@ assignees: ''
 
 ---
 #### Contributor [Guides](https://docs.meshery.io/project/contributing) and Resources
+- 📝 [Meshery Adapters Spreadsheet](https://docs.google.com/spreadsheets/d/1rGGpSXC68iDJzNRU-qZIRQsZUwkt1qLFg7JCs4pfvbU/edit?usp=sharing)
 - 🛠 [Meshery Build & Release Strategy](https://docs.meshery.io/project/build-and-release)
 - 🙋🏾🙋🏼 Questions: [Layer5 Discussion Forum](https://discuss.layer5.io) and [Layer5 Community Slack](http://slack.layer5.io)
