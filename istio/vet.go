@@ -18,6 +18,8 @@ import (
 	"github.com/aspenmesh/istio-vet/pkg/vetter/serviceportprefix"
 	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshery-adapter-library/meshes"
+	"github.com/layer5io/meshkit/errors"
+	internalconfig "github.com/layer5io/meshery-istio/internal/config"
 	mesherykube "github.com/layer5io/meshkit/utils/kubernetes"
 	istioinformer "istio.io/client-go/pkg/informers/externalversions"
 	"k8s.io/client-go/informers"
@@ -47,18 +49,30 @@ func (istio *Istio) RunVet(ch chan<- *adapter.Event, kubeconfigs []string) {
 			defer wg.Done()
 			mclient, err := mesherykube.New([]byte(k8sconfig))
 			if err != nil {
-				e := &adapter.Event{}
+				e := &adapter.Event{
+					Component : internalconfig.ServerConfig["type"],
+					ComponentName: internalconfig.ServerConfig["name"],
+				}
 				e.EType = int32(meshes.EventType_ERROR)
 				e.Details = ErrCreatingIstioClient(err).Error()
 				e.Summary = "Unable to create k8s client"
+				e.ErrorCode = errors.GetCode(err)
+				e.ProbableCause = errors.GetCause(err)
+				e.SuggestedRemediation = errors.GetRemedy(err)
 				ch <- e
 			}
 			istioClient, err := istioclient.New(&mclient.RestConfig)
 			if err != nil {
-				e := &adapter.Event{}
+				e := &adapter.Event{
+					Component : internalconfig.ServerConfig["type"],
+					ComponentName: internalconfig.ServerConfig["name"],
+				}
 				e.EType = int32(meshes.EventType_ERROR)
 				e.Details = ErrCreatingIstioClient(err).Error()
 				e.Summary = "Unable to create istio client"
+				e.ErrorCode = errors.GetCode(err)
+				e.ProbableCause = errors.GetCause(err)
+				e.SuggestedRemediation = errors.GetRemedy(err)
 				ch <- e
 			}
 
@@ -86,20 +100,32 @@ func (istio *Istio) RunVet(ch chan<- *adapter.Event, kubeconfigs []string) {
 				return kubeInformerFactory.WaitForCacheSync(stopCh)
 			})
 			if timedout {
-				e := &adapter.Event{}
+				e := &adapter.Event{
+					Component : internalconfig.ServerConfig["type"],
+					ComponentName: internalconfig.ServerConfig["name"],
+				}
 				e.EType = int32(meshes.EventType_ERROR)
 				e.Details = ErrIstioVetSync(fmt.Errorf("istio service mesh was either not found or is not deployed")).Error()
 				e.Summary = "Failed to sync: Request timed out"
+				e.ErrorCode = errors.GetCode(err)
+				e.ProbableCause = errors.GetCause(err)
+				e.SuggestedRemediation = errors.GetRemedy(err)
 				ch <- e
 				close(stopCh)
 				return
 			}
 			for inf, ok := range oks {
 				if !ok {
-					e := &adapter.Event{}
+					e := &adapter.Event{
+						Component : internalconfig.ServerConfig["type"],
+						ComponentName: internalconfig.ServerConfig["name"],
+					}
 					e.EType = int32(meshes.EventType_ERROR)
 					e.Details = ErrIstioVetSync(fmt.Errorf("%s", inf)).Error()
 					e.Summary = "Failed to sync"
+					e.ErrorCode = errors.GetCode(err)
+					e.ProbableCause = errors.GetCause(err)
+					e.SuggestedRemediation = errors.GetRemedy(err)
 					ch <- e
 					return
 				}
@@ -110,20 +136,32 @@ func (istio *Istio) RunVet(ch chan<- *adapter.Event, kubeconfigs []string) {
 				return istioInformerFactory.WaitForCacheSync(stopCh)
 			})
 			if timedout {
-				e := &adapter.Event{}
+				e := &adapter.Event{
+					Component : internalconfig.ServerConfig["type"],
+					ComponentName: internalconfig.ServerConfig["name"],
+				}
 				e.EType = int32(meshes.EventType_ERROR)
 				e.Details = ErrIstioVetSync(fmt.Errorf("istio service mesh was either not found or is not deployed")).Error()
 				e.Summary = "Failed to sync: Request timed out"
+				e.ErrorCode = errors.GetCode(err)
+				e.ProbableCause = errors.GetCause(err)
+				e.SuggestedRemediation = errors.GetRemedy(err)
 				ch <- e
 				close(stopCh)
 				return
 			}
 			for inf, ok := range oks {
 				if !ok {
-					e := &adapter.Event{}
+					e := &adapter.Event{
+						Component : internalconfig.ServerConfig["type"],
+						ComponentName: internalconfig.ServerConfig["name"],
+					}
 					e.EType = int32(meshes.EventType_ERROR)
 					e.Details = ErrIstioVetSync(fmt.Errorf("%s", inf)).Error()
 					e.Summary = "Failed to sync"
+					e.ErrorCode = errors.GetCode(err)
+					e.ProbableCause = errors.GetCause(err)
+					e.SuggestedRemediation = errors.GetRemedy(err)
 					ch <- e
 					return
 				}

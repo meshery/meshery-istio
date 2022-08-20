@@ -11,6 +11,7 @@ import (
 	internalconfig "github.com/layer5io/meshery-istio/internal/config"
 	"github.com/layer5io/meshery-istio/istio/oam"
 	meshkitCfg "github.com/layer5io/meshkit/config"
+	"github.com/layer5io/meshkit/errors"
 	"github.com/layer5io/meshkit/logger"
 	"github.com/layer5io/meshkit/models"
 	"github.com/layer5io/meshkit/models/oam/core/v1alpha1"
@@ -51,6 +52,8 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 		Operationid: opReq.OperationID,
 		Summary:     status.Deploying,
 		Details:     "Operation is not supported",
+		Component:   internalconfig.ServerConfig["type"],
+		ComponentName: internalconfig.ServerConfig["name"],
 	}
 
 	switch opReq.OperationName {
@@ -59,9 +62,12 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 			version := string(operations[opReq.OperationName].Versions[0])
 			stat, err := hh.installIstio(opReq.IsDeleteOperation, false, version, opReq.Namespace, "default", kubeConfigs)
 			if err != nil {
-				e.Summary = fmt.Sprintf("Error while %s Istio service mesh", stat)
-				e.Details = err.Error()
-				hh.StreamErr(e, err)
+				ee.Summary = fmt.Sprintf("Error while %s Istio service mesh", stat)
+				ee.Details = err.Error()
+				ee.ErrorCode = errors.GetCode(err)
+				ee.ProbableCause = errors.GetCause(err)
+				ee.SuggestedRemediation = errors.GetRemedy(err)
+				hh.StreamErr(ee, err)
 				return
 			}
 			ee.Summary = fmt.Sprintf("Istio service mesh %s successfully", stat)
@@ -73,9 +79,12 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 			appName := operations[opReq.OperationName].AdditionalProperties[common.ServiceName]
 			stat, err := hh.installSampleApp(opReq.Namespace, opReq.IsDeleteOperation, operations[opReq.OperationName].Templates, kubeConfigs)
 			if err != nil {
-				e.Summary = fmt.Sprintf("Error while %s %s application", stat, appName)
-				e.Details = err.Error()
-				hh.StreamErr(e, err)
+				ee.Summary = fmt.Sprintf("Error while %s %s application", stat, appName)
+				ee.Details = err.Error()
+				ee.ErrorCode = errors.GetCode(err)
+				ee.ProbableCause = errors.GetCause(err)
+				ee.SuggestedRemediation = errors.GetRemedy(err)
+				hh.StreamErr(ee, err)
 				return
 			}
 			ee.Summary = fmt.Sprintf("%s application %s successfully", appName, stat)
@@ -96,9 +105,12 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 				Annotations: make(map[string]string),
 			})
 			if err != nil {
-				e.Summary = fmt.Sprintf("Error while %s %s test", status.Running, name)
-				e.Details = err.Error()
-				hh.StreamErr(e, err)
+				ee.Summary = fmt.Sprintf("Error while %s %s test", status.Running, name)
+				ee.Details = err.Error()
+				ee.ErrorCode = errors.GetCode(err)
+				ee.ProbableCause = errors.GetCause(err)
+				ee.SuggestedRemediation = errors.GetRemedy(err)
+				hh.StreamErr(ee, err)
 				return
 			}
 			ee.Summary = fmt.Sprintf("%s test %s successfully", name, status.Completed)
@@ -109,9 +121,12 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 		go func(hh *Istio, ee *adapter.Event) {
 			stat, err := hh.applyPolicy(opReq.Namespace, opReq.IsDeleteOperation, operations[opReq.OperationName].Templates, kubeConfigs)
 			if err != nil {
-				e.Summary = fmt.Sprintf("Error while %s policy", stat)
-				e.Details = err.Error()
-				hh.StreamErr(e, err)
+				ee.Summary = fmt.Sprintf("Error while %s policy", stat)
+				ee.Details = err.Error()
+				ee.ErrorCode = errors.GetCode(err)
+				ee.ProbableCause = errors.GetCause(err)
+				ee.SuggestedRemediation = errors.GetRemedy(err)
+				hh.StreamErr(ee, err)
 				return
 			}
 			ee.Summary = fmt.Sprintf("Policy %s successfully", status.Deployed)
@@ -122,9 +137,12 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 		go func(hh *Istio, ee *adapter.Event) {
 			stat, err := hh.applyCustomOperation(opReq.Namespace, opReq.CustomBody, opReq.IsDeleteOperation, kubeConfigs)
 			if err != nil {
-				e.Summary = fmt.Sprintf("Error while %s custom operation", stat)
-				e.Details = err.Error()
-				hh.StreamErr(e, err)
+				ee.Summary = fmt.Sprintf("Error while %s custom operation", stat)
+				ee.Details = err.Error()
+				ee.ErrorCode = errors.GetCode(err)
+				ee.ProbableCause = errors.GetCause(err)
+				ee.SuggestedRemediation = errors.GetRemedy(err)
+				hh.StreamErr(ee, err)
 				return
 			}
 			ee.Summary = fmt.Sprintf("Manifest %s successfully", status.Deployed)
@@ -139,9 +157,12 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 				operation = "removed"
 			}
 			if err != nil {
-				e.Summary = fmt.Sprintf("Error while labelling %s", opReq.Namespace)
-				e.Details = err.Error()
-				hh.StreamErr(e, err)
+				ee.Summary = fmt.Sprintf("Error while labelling %s", opReq.Namespace)
+				ee.Details = err.Error()
+				ee.ErrorCode = errors.GetCode(err)
+				ee.ProbableCause = errors.GetCause(err)
+				ee.SuggestedRemediation = errors.GetRemedy(err)
+				hh.StreamErr(ee, err)
 				return
 			}
 			ee.Summary = fmt.Sprintf("Label updated on %s namespace", opReq.Namespace)
@@ -161,9 +182,12 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 			}
 
 			if err != nil {
-				e.Summary = fmt.Sprintf("Error while %sing %s", operation, opReq.OperationName)
-				e.Details = err.Error()
-				hh.StreamErr(e, err)
+				ee.Summary = fmt.Sprintf("Error while %sing %s", operation, opReq.OperationName)
+				ee.Details = err.Error()
+				ee.ErrorCode = errors.GetCode(err)
+				ee.ProbableCause = errors.GetCause(err)
+				ee.SuggestedRemediation = errors.GetRemedy(err)
+				hh.StreamErr(ee, err)
 				return
 			}
 			ee.Summary = fmt.Sprintf("Succesfully %sed %s", operation, opReq.OperationName)
@@ -195,9 +219,12 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 			patchFile := operations[opReq.OperationName].AdditionalProperties[internalconfig.FilterPatchFile]
 			stat, err := hh.patchWithEnvoyFilter(opReq.Namespace, opReq.IsDeleteOperation, appName, operations[opReq.OperationName].Templates, patchFile, kubeConfigs)
 			if err != nil {
-				e.Summary = fmt.Sprintf("Error while %s %s application", stat, appName)
-				e.Details = err.Error()
-				hh.StreamErr(e, err)
+				ee.Summary = fmt.Sprintf("Error while %s %s application", stat, appName)
+				ee.Details = err.Error()
+				ee.ErrorCode = errors.GetCode(err)
+				ee.ProbableCause = errors.GetCause(err)
+				ee.SuggestedRemediation = errors.GetRemedy(err)
+				hh.StreamErr(ee, err)
 				return
 			}
 			ee.Summary = fmt.Sprintf("%s application %s successfully", appName, stat)
