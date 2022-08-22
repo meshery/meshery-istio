@@ -16,8 +16,6 @@ func TestIstio_installAddon(t *testing.T) {
 		templates []adapter.Template
 	}
 
-	ch := make(chan interface{}, 10)
-
 	tests := []struct {
 		name        string
 		args        args
@@ -69,9 +67,8 @@ func TestIstio_installAddon(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			istio := &Istio{
 				Adapter: adapter.Adapter{
-					Config:  getConfigHandler(t),
-					Log:     getLoggerHandler(t),
-					Channel: &ch,
+					Config: getConfigHandler(t),
+					Log:    getLoggerHandler(t),
 				},
 			}
 			got, err := istio.installAddon(tt.args.namespace, tt.args.del, tt.args.service, tt.args.patches, tt.args.templates, tt.kubeconfigs)

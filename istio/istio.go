@@ -14,6 +14,7 @@ import (
 	"github.com/layer5io/meshkit/logger"
 	"github.com/layer5io/meshkit/models"
 	"github.com/layer5io/meshkit/models/oam/core/v1alpha1"
+	"github.com/layer5io/meshkit/utils/events"
 	"gopkg.in/yaml.v2"
 )
 
@@ -23,24 +24,24 @@ type Istio struct {
 }
 
 // New initializes istio handler.
-func New(c meshkitCfg.Handler, l logger.Handler, kc meshkitCfg.Handler) adapter.Handler {
+func New(c meshkitCfg.Handler, l logger.Handler, kc meshkitCfg.Handler, ev *events.EventBuffer) adapter.Handler {
 	return &Istio{
 		Adapter: adapter.Adapter{
 			Config:            c,
 			Log:               l,
 			KubeconfigHandler: kc,
+			EventsBuffer:      ev,
 		},
 	}
 }
 
 // ApplyOperation applies the operation on istio
-func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationRequest, hchan *chan interface{}) error {
+func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationRequest) error {
 	err := istio.CreateKubeconfigs(opReq.K8sConfigs)
 	if err != nil {
 		return err
 	}
 	kubeConfigs := opReq.K8sConfigs
-	istio.SetChannel(hchan)
 	operations := make(adapter.Operations)
 	err = istio.Config.GetObject(adapter.OperationsKey, &operations)
 	if err != nil {
@@ -52,7 +53,7 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 		Summary:     status.Deploying,
 		Details:     "Operation is not supported",
 	}
-
+	fmt.Println("id is", opReq.OperationID)
 	switch opReq.OperationName {
 	case internalconfig.IstioOperation:
 		go func(hh *Istio, ee *adapter.Event) {
@@ -257,8 +258,7 @@ func (istio *Istio) CreateKubeconfigs(kubeconfigs []string) error {
 }
 
 // ProcessOAM will handles the grpc invocation for handling OAM objects
-func (istio *Istio) ProcessOAM(ctx context.Context, oamReq adapter.OAMRequest, hchan *chan interface{}) (string, error) {
-	istio.SetChannel(hchan)
+func (istio *Istio) ProcessOAM(ctx context.Context, oamReq adapter.OAMRequest) (string, error) {
 	err := istio.CreateKubeconfigs(oamReq.K8sConfigs)
 	if err != nil {
 		return "", err

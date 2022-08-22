@@ -18,6 +18,7 @@ func TestNew(t *testing.T) {
 		c  adapterconfig.Handler
 		l  logger.Handler
 		kc adapterconfig.Handler
+		ch *chan interface{}
 	}
 
 	type test struct {
@@ -33,6 +34,7 @@ func TestNew(t *testing.T) {
 				c:  nil,
 				l:  nil,
 				kc: nil,
+				ch: nil,
 			},
 			want: &Istio{
 				Adapter: adapter.Adapter{},
@@ -43,7 +45,7 @@ func TestNew(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := New(tt.args.c, tt.args.l, tt.args.kc); !reflect.DeepEqual(got, tt.want) {
+			if got := New(tt.args.c, tt.args.l, tt.args.kc, nil); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("New() = %+v\n, want %+v\n", got, tt.want)
 			}
 		})
@@ -357,9 +359,8 @@ func TestIstio_ApplyOperation(t *testing.T) {
 	}
 	for _, tt := range tests {
 		a := adapter.Adapter{
-			Config:  getConfigHandler(t),
-			Log:     getLoggerHandler(t),
-			Channel: &ch,
+			Config: getConfigHandler(t),
+			Log:    getLoggerHandler(t),
 		}
 		t.Run(tt.name, func(t *testing.T) {
 			if err := a.ApplyOperation(tt.args.ctx, tt.args.opReq, &ch); (err != nil) != tt.wantErr {
@@ -370,8 +371,6 @@ func TestIstio_ApplyOperation(t *testing.T) {
 }
 
 func TestIstio_ProcessOAM(t *testing.T) {
-
-	ch := make(chan interface{}, 10)
 
 	type args struct {
 		ctx    context.Context
@@ -390,12 +389,11 @@ func TestIstio_ProcessOAM(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			istio := &Istio{
 				Adapter: adapter.Adapter{
-					Config:  getConfigHandler(t),
-					Log:     getLoggerHandler(t),
-					Channel: &ch,
+					Config: getConfigHandler(t),
+					Log:    getLoggerHandler(t),
 				},
 			}
-			got, err := istio.ProcessOAM(tt.args.ctx, tt.args.oamReq, tt.hchan)
+			got, err := istio.ProcessOAM(tt.args.ctx, tt.args.oamReq)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Istio.ProcessOAM() error = %v, wantErr %v", err, tt.wantErr)
 				return

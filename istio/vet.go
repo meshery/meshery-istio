@@ -179,7 +179,7 @@ func (istio *Istio) RunVet(ch chan<- *adapter.Event, kubeconfigs []string) {
 func (istio *Istio) StreamWarn(e *adapter.Event, err error) {
 	istio.Log.Warn(err)
 	e.EType = int32(meshes.EventType_WARN)
-	*istio.Channel <- e
+	istio.EventsBuffer.Enqueue(e)
 }
 
 // completeBefore executes the callback function but if the callback function
