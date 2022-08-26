@@ -17,6 +17,8 @@ import (
 	"github.com/aspenmesh/istio-vet/pkg/vetter/serviceassociation"
 	"github.com/aspenmesh/istio-vet/pkg/vetter/serviceportprefix"
 	"github.com/layer5io/meshery-adapter-library/meshes"
+	internalconfig "github.com/layer5io/meshery-istio/internal/config"
+	"github.com/layer5io/meshkit/errors"
 	mesherykube "github.com/layer5io/meshkit/utils/kubernetes"
 	istioinformer "istio.io/client-go/pkg/informers/externalversions"
 	"k8s.io/client-go/informers"
@@ -46,18 +48,30 @@ func (istio *Istio) RunVet(ch chan<- *meshes.EventsResponse, kubeconfigs []strin
 			defer wg.Done()
 			mclient, err := mesherykube.New([]byte(k8sconfig))
 			if err != nil {
-				e := &meshes.EventsResponse{}
+				e := &meshes.EventsResponse{
+					Component:     internalconfig.ServerConfig["type"],
+					ComponentName: internalconfig.ServerConfig["name"],
+				}
 				e.EventType = meshes.EventType_ERROR
 				e.Details = ErrCreatingIstioClient(err).Error()
 				e.Summary = "Unable to create k8s client"
+				e.ErrorCode = errors.GetCode(err)
+				e.ProbableCause = errors.GetCause(err)
+				e.SuggestedRemediation = errors.GetRemedy(err)
 				ch <- e
 			}
 			istioClient, err := istioclient.New(&mclient.RestConfig)
 			if err != nil {
-				e := &meshes.EventsResponse{}
+				e := &meshes.EventsResponse{
+					Component:     internalconfig.ServerConfig["type"],
+					ComponentName: internalconfig.ServerConfig["name"],
+				}
 				e.EventType = meshes.EventType_ERROR
 				e.Details = ErrCreatingIstioClient(err).Error()
 				e.Summary = "Unable to create istio client"
+				e.ErrorCode = errors.GetCode(err)
+				e.ProbableCause = errors.GetCause(err)
+				e.SuggestedRemediation = errors.GetRemedy(err)
 				ch <- e
 			}
 
@@ -85,20 +99,32 @@ func (istio *Istio) RunVet(ch chan<- *meshes.EventsResponse, kubeconfigs []strin
 				return kubeInformerFactory.WaitForCacheSync(stopCh)
 			})
 			if timedout {
-				e := &meshes.EventsResponse{}
+				e := &meshes.EventsResponse{
+					Component:     internalconfig.ServerConfig["type"],
+					ComponentName: internalconfig.ServerConfig["name"],
+				}
 				e.EventType = meshes.EventType_ERROR
 				e.Details = ErrIstioVetSync(fmt.Errorf("istio service mesh was either not found or is not deployed")).Error()
 				e.Summary = "Failed to sync: Request timed out"
+				e.ErrorCode = errors.GetCode(err)
+				e.ProbableCause = errors.GetCause(err)
+				e.SuggestedRemediation = errors.GetRemedy(err)
 				ch <- e
 				close(stopCh)
 				return
 			}
 			for inf, ok := range oks {
 				if !ok {
-					e := &meshes.EventsResponse{}
+					e := &meshes.EventsResponse{
+						Component:     internalconfig.ServerConfig["type"],
+						ComponentName: internalconfig.ServerConfig["name"],
+					}
 					e.EventType = meshes.EventType_ERROR
 					e.Details = ErrIstioVetSync(fmt.Errorf("%s", inf)).Error()
 					e.Summary = "Failed to sync"
+					e.ErrorCode = errors.GetCode(err)
+					e.ProbableCause = errors.GetCause(err)
+					e.SuggestedRemediation = errors.GetRemedy(err)
 					ch <- e
 					return
 				}
@@ -109,20 +135,32 @@ func (istio *Istio) RunVet(ch chan<- *meshes.EventsResponse, kubeconfigs []strin
 				return istioInformerFactory.WaitForCacheSync(stopCh)
 			})
 			if timedout {
-				e := &meshes.EventsResponse{}
+				e := &meshes.EventsResponse{
+					Component:     internalconfig.ServerConfig["type"],
+					ComponentName: internalconfig.ServerConfig["name"],
+				}
 				e.EventType = meshes.EventType_ERROR
 				e.Details = ErrIstioVetSync(fmt.Errorf("istio service mesh was either not found or is not deployed")).Error()
 				e.Summary = "Failed to sync: Request timed out"
+				e.ErrorCode = errors.GetCode(err)
+				e.ProbableCause = errors.GetCause(err)
+				e.SuggestedRemediation = errors.GetRemedy(err)
 				ch <- e
 				close(stopCh)
 				return
 			}
 			for inf, ok := range oks {
 				if !ok {
-					e := &meshes.EventsResponse{}
+					e := &meshes.EventsResponse{
+						Component:     internalconfig.ServerConfig["type"],
+						ComponentName: internalconfig.ServerConfig["name"],
+					}
 					e.EventType = meshes.EventType_ERROR
 					e.Details = ErrIstioVetSync(fmt.Errorf("%s", inf)).Error()
 					e.Summary = "Failed to sync"
+					e.ErrorCode = errors.GetCode(err)
+					e.ProbableCause = errors.GetCause(err)
+					e.SuggestedRemediation = errors.GetRemedy(err)
 					ch <- e
 					return
 				}
@@ -178,7 +216,7 @@ func (istio *Istio) RunVet(ch chan<- *meshes.EventsResponse, kubeconfigs []strin
 func (istio *Istio) StreamWarn(e *meshes.EventsResponse, err error) {
 	istio.Log.Warn(err)
 	e.EventType = meshes.EventType_WARN
-	istio.EventsBuffer.Publish(e)
+	istio.EventStreamer.Publish(e)
 }
 
 // completeBefore executes the callback function but if the callback function

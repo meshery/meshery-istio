@@ -4,8 +4,12 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/google/uuid"
 	"github.com/layer5io/meshery-adapter-library/common"
+	"github.com/layer5io/meshery-adapter-library/meshes"
 	"github.com/layer5io/meshery-istio/internal/config"
+	internalconfig "github.com/layer5io/meshery-istio/internal/config"
+	"github.com/layer5io/meshkit/errors"
 	"github.com/layer5io/meshkit/models/oam/core/v1alpha1"
 	"gopkg.in/yaml.v2"
 )
@@ -25,26 +29,52 @@ func (istio *Istio) HandleComponents(comps []v1alpha1.Component, isDel bool, kub
 		"ZipkinIstioAddon":     handleComponentIstioAddon,
 		"JaegerIstioAddon":     handleComponentIstioAddon,
 	}
-
+	stat1 := "deploying"
+	stat2 := "deployed"
+	if isDel {
+		stat1 = "removing"
+		stat2 = "removed"
+	}
 	for _, comp := range comps {
+		ee := &meshes.EventsResponse{
+			OperationId:   uuid.New().String(),
+			Component:     internalconfig.ServerConfig["type"],
+			ComponentName: internalconfig.ServerConfig["name"],
+		}
 		fnc, ok := compFuncMap[comp.Spec.Type]
 		if !ok {
 			msg, err := handleIstioCoreComponent(istio, comp, isDel, "", "", kubeconfigs)
 			if err != nil {
+				ee.Summary = fmt.Sprintf("Error while %s %s", stat1, comp.Spec.Type)
+				ee.Details = err.Error()
+				ee.ErrorCode = errors.GetCode(err)
+				ee.ProbableCause = errors.GetCause(err)
+				ee.SuggestedRemediation = errors.GetRemedy(err)
+				istio.StreamErr(ee, err)
 				errs = append(errs, err)
 				continue
 			}
-
+			ee.Summary = fmt.Sprintf("%s application %s successfully", comp.Spec.Type, stat2)
+			ee.Details = fmt.Sprintf("The %s application is now %s.", comp.Spec.Type, stat2)
+			istio.StreamInfo(ee)
 			msgs = append(msgs, msg)
 			continue
 		}
 
 		msg, err := fnc(istio, comp, isDel, kubeconfigs)
 		if err != nil {
+			ee.Summary = fmt.Sprintf("Error while %s %s", stat1, comp.Spec.Type)
+			ee.Details = err.Error()
+			ee.ErrorCode = errors.GetCode(err)
+			ee.ProbableCause = errors.GetCause(err)
+			ee.SuggestedRemediation = errors.GetRemedy(err)
+			istio.StreamErr(ee, err)
 			errs = append(errs, err)
 			continue
 		}
-
+		ee.Summary = fmt.Sprintf("%s application %s successfully", comp.Spec.Type, stat2)
+		ee.Details = fmt.Sprintf("The %s application is now %s.", comp.Spec.Type, stat2)
+		istio.StreamInfo(ee)
 		msgs = append(msgs, msg)
 	}
 

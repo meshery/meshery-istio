@@ -6,7 +6,7 @@ replace (
 	// github.com/googleapis/gnostic/openapiv2 => github.com/google/gnostic/openapiv2 v0.5.5
 	//github.com/docker/docker => github.com/moby/moby v17.12.0-ce-rc1.0.20200618181300-9dc6525e6118+incompatible
 	github.com/kudobuilder/kuttl => github.com/layer5io/kuttl v0.4.1-0.20200723152044-916f10574334
-	github.com/layer5io/meshery-adapter-library v0.5.8 => ../meshery-adapter-library
+	github.com/layer5io/meshery-adapter-library v0.5.9 => ../meshery-adapter-library
 	github.com/spf13/afero => github.com/spf13/afero v1.5.1 // Until viper bug is resolved #1161
 	go.opentelemetry.io/otel v1.3.0 => go.opentelemetry.io/otel v0.11.0
 	go.opentelemetry.io/otel/sdk v1.3.0 => go.opentelemetry.io/otel/sdk v0.11.0
@@ -16,7 +16,7 @@ replace (
 
 require (
 	github.com/aspenmesh/istio-vet v0.0.0-20200806222806-9c8e9a962b9f
-	github.com/layer5io/meshery-adapter-library v0.5.8
+	github.com/layer5io/meshery-adapter-library v0.5.9
 	github.com/layer5io/meshkit v0.5.37
 	github.com/layer5io/service-mesh-performance v0.3.4
 	gopkg.in/yaml.v2 v2.4.0
