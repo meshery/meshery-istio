@@ -24,7 +24,7 @@ type Istio struct {
 }
 
 // New initializes istio handler.
-func New(c meshkitCfg.Handler, l logger.Handler, kc meshkitCfg.Handler, ev *events.EventBuffer) adapter.Handler {
+func New(c meshkitCfg.Handler, l logger.Handler, kc meshkitCfg.Handler, ev *events.EventStreamer) adapter.Handler {
 	return &Istio{
 		Adapter: adapter.Adapter{
 			Config:            c,
@@ -48,18 +48,18 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 		return err
 	}
 
-	e := &adapter.Event{
-		Operationid: opReq.OperationID,
+	e := &meshes.EventsResponse{
+		OperationId: opReq.OperationID,
 		Summary:     status.Deploying,
 		Details:     "Operation is not supported",
+		Component:   "Istio",
 	}
-	fmt.Println("id is", opReq.OperationID)
 	switch opReq.OperationName {
 	case internalconfig.IstioOperation:
-		go func(hh *Istio, ee *adapter.Event) {
+		go func(hh *Istio, ee *meshes.EventsResponse) {
 			version := string(operations[opReq.OperationName].Versions[0])
 			stat, err := hh.installIstio(opReq.IsDeleteOperation, false, version, opReq.Namespace, "default", kubeConfigs)
-			if err != nil {
+			if err != nil { //Make sure that this is a meshkit error
 				e.Summary = fmt.Sprintf("Error while %s Istio service mesh", stat)
 				e.Details = err.Error()
 				hh.StreamErr(e, err)
@@ -70,7 +70,7 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 			hh.StreamInfo(e)
 		}(istio, e)
 	case common.BookInfoOperation, common.HTTPBinOperation, common.ImageHubOperation, common.EmojiVotoOperation:
-		go func(hh *Istio, ee *adapter.Event) {
+		go func(hh *Istio, ee *meshes.EventsResponse) {
 			appName := operations[opReq.OperationName].AdditionalProperties[common.ServiceName]
 			stat, err := hh.installSampleApp(opReq.Namespace, opReq.IsDeleteOperation, operations[opReq.OperationName].Templates, kubeConfigs)
 			if err != nil {
@@ -84,11 +84,11 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 			hh.StreamInfo(e)
 		}(istio, e)
 	case common.SmiConformanceOperation:
-		go func(hh *Istio, ee *adapter.Event) {
+		go func(hh *Istio, ee *meshes.EventsResponse) {
 			name := operations[opReq.OperationName].Description
 			_, err := hh.RunSMITest(adapter.SMITestOptions{
 				Ctx:         context.TODO(),
-				OperationID: ee.Operationid,
+				OperationID: ee.OperationId,
 				Labels: map[string]string{
 					"istio-injection": "enabled",
 				},
@@ -107,7 +107,7 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 			hh.StreamInfo(e)
 		}(istio, e)
 	case internalconfig.DenyAllPolicyOperation, internalconfig.StrictMTLSPolicyOperation, internalconfig.MutualMTLSPolicyOperation, internalconfig.DisableMTLSPolicyOperation:
-		go func(hh *Istio, ee *adapter.Event) {
+		go func(hh *Istio, ee *meshes.EventsResponse) {
 			stat, err := hh.applyPolicy(opReq.Namespace, opReq.IsDeleteOperation, operations[opReq.OperationName].Templates, kubeConfigs)
 			if err != nil {
 				e.Summary = fmt.Sprintf("Error while %s policy", stat)
@@ -120,7 +120,7 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 			hh.StreamInfo(e)
 		}(istio, e)
 	case common.CustomOperation:
-		go func(hh *Istio, ee *adapter.Event) {
+		go func(hh *Istio, ee *meshes.EventsResponse) {
 			stat, err := hh.applyCustomOperation(opReq.Namespace, opReq.CustomBody, opReq.IsDeleteOperation, kubeConfigs)
 			if err != nil {
 				e.Summary = fmt.Sprintf("Error while %s custom operation", stat)
@@ -133,7 +133,7 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 			hh.StreamInfo(e)
 		}(istio, e)
 	case internalconfig.LabelNamespace:
-		go func(hh *Istio, ee *adapter.Event) {
+		go func(hh *Istio, ee *meshes.EventsResponse) {
 			err := hh.LoadNamespaceToMesh(opReq.Namespace, opReq.IsDeleteOperation, kubeConfigs)
 			operation := "enabled"
 			if opReq.IsDeleteOperation {
@@ -150,7 +150,7 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 			hh.StreamInfo(e)
 		}(istio, e)
 	case internalconfig.PrometheusAddon, internalconfig.GrafanaAddon, internalconfig.KialiAddon, internalconfig.JaegerAddon, internalconfig.ZipkinAddon:
-		go func(hh *Istio, ee *adapter.Event) {
+		go func(hh *Istio, ee *meshes.EventsResponse) {
 			svcname := operations[opReq.OperationName].AdditionalProperties[common.ServiceName]
 			patches := make([]string, 0)
 			patches = append(patches, operations[opReq.OperationName].AdditionalProperties[internalconfig.ServicePatchFile])
@@ -172,16 +172,16 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 			hh.StreamInfo(e)
 		}(istio, e)
 	case internalconfig.IstioVetOperation:
-		go func(hh *Istio, ee *adapter.Event) {
-			responseChan := make(chan *adapter.Event, 1)
+		go func(hh *Istio, ee *meshes.EventsResponse) {
+			responseChan := make(chan *meshes.EventsResponse, 1)
 
 			go hh.RunVet(responseChan, kubeConfigs)
 
 			for msg := range responseChan {
-				switch msg.EType {
-				case int32(meshes.EventType_ERROR):
+				switch msg.EventType {
+				case meshes.EventType_ERROR:
 					istio.StreamErr(msg, ErrIstioVet(fmt.Errorf(msg.Details)))
-				case int32(meshes.EventType_WARN):
+				case meshes.EventType_WARN:
 					istio.StreamWarn(msg, ErrIstioVet(fmt.Errorf(msg.Details)))
 				default:
 					istio.StreamInfo(msg)
@@ -191,7 +191,7 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 			istio.Log.Info("Done")
 		}(istio, e)
 	case internalconfig.EnvoyFilterOperation:
-		go func(hh *Istio, ee *adapter.Event) {
+		go func(hh *Istio, ee *meshes.EventsResponse) {
 			appName := operations[opReq.OperationName].AdditionalProperties[common.ServiceName]
 			patchFile := operations[opReq.OperationName].AdditionalProperties[internalconfig.FilterPatchFile]
 			stat, err := hh.patchWithEnvoyFilter(opReq.Namespace, opReq.IsDeleteOperation, appName, operations[opReq.OperationName].Templates, patchFile, kubeConfigs)

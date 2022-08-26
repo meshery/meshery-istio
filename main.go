@@ -98,14 +98,14 @@ func main() {
 	//      log.Err("Tracing Init Failed", err.Error())
 	//      os.Exit(1)
 	// }
-	ev := events.NewEventBuffer(10)
+	ev := events.NewEventStreamer()
 	// Initialize Handler intance
 	handler := istio.New(cfg, log, kubeconfigHandler, ev)
 	handler = adapter.AddLogger(log, handler)
 
 	service.Handler = handler
 
-	service.EventBuffer = ev
+	service.EventStreamer = ev
 	service.StartedAt = time.Now()
 	service.Version = version
 	service.GitSHA = gitsha
