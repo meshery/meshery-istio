@@ -54,8 +54,8 @@ func (istio *Istio) HandleComponents(comps []v1alpha1.Component, isDel bool, kub
 				errs = append(errs, err)
 				continue
 			}
-			ee.Summary = fmt.Sprintf("%s application %s successfully", comp.Spec.Type, stat2)
-			ee.Details = fmt.Sprintf("The %s application is now %s.", comp.Spec.Type, stat2)
+			ee.Summary = fmt.Sprintf("%s %s successfully", comp.Spec.Type, stat2)
+			ee.Details = fmt.Sprintf("The %s is now %s.", comp.Spec.Type, stat2)
 			istio.StreamInfo(ee)
 			msgs = append(msgs, msg)
 			continue
@@ -72,8 +72,8 @@ func (istio *Istio) HandleComponents(comps []v1alpha1.Component, isDel bool, kub
 			errs = append(errs, err)
 			continue
 		}
-		ee.Summary = fmt.Sprintf("%s application %s successfully", comp.Spec.Type, stat2)
-		ee.Details = fmt.Sprintf("The %s application is now %s.", comp.Spec.Type, stat2)
+		ee.Summary = fmt.Sprintf("%s %s %s successfully", comp.Name, comp.Spec.Type, stat2)
+		ee.Details = fmt.Sprintf("The %s %s is now %s.", comp.Name, comp.Spec.Type, stat2)
 		istio.StreamInfo(ee)
 		msgs = append(msgs, msg)
 	}
