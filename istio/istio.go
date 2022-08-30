@@ -72,7 +72,7 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 			}
 			ee.Summary = fmt.Sprintf("Istio service mesh %s successfully", stat)
 			ee.Details = fmt.Sprintf("The Istio service mesh is now %s.", stat)
-			hh.StreamInfo(e)
+			hh.StreamInfo(ee)
 		}(istio, e)
 	case common.BookInfoOperation, common.HTTPBinOperation, common.ImageHubOperation, common.EmojiVotoOperation:
 		go func(hh *Istio, ee *meshes.EventsResponse) {
@@ -89,7 +89,7 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 			}
 			ee.Summary = fmt.Sprintf("%s application %s successfully", appName, stat)
 			ee.Details = fmt.Sprintf("The %s application is now %s.", appName, stat)
-			hh.StreamInfo(e)
+			hh.StreamInfo(ee)
 		}(istio, e)
 	case common.SmiConformanceOperation:
 		go func(hh *Istio, ee *meshes.EventsResponse) {
@@ -115,7 +115,7 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 			}
 			ee.Summary = fmt.Sprintf("%s test %s successfully", name, status.Completed)
 			ee.Details = ""
-			hh.StreamInfo(e)
+			hh.StreamInfo(ee)
 		}(istio, e)
 	case internalconfig.DenyAllPolicyOperation, internalconfig.StrictMTLSPolicyOperation, internalconfig.MutualMTLSPolicyOperation, internalconfig.DisableMTLSPolicyOperation:
 		go func(hh *Istio, ee *meshes.EventsResponse) {
@@ -131,7 +131,7 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 			}
 			ee.Summary = fmt.Sprintf("Policy %s successfully", status.Deployed)
 			ee.Details = ""
-			hh.StreamInfo(e)
+			hh.StreamInfo(ee)
 		}(istio, e)
 	case common.CustomOperation:
 		go func(hh *Istio, ee *meshes.EventsResponse) {
@@ -147,7 +147,7 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 			}
 			ee.Summary = fmt.Sprintf("Manifest %s successfully", status.Deployed)
 			ee.Details = ""
-			hh.StreamInfo(e)
+			hh.StreamInfo(ee)
 		}(istio, e)
 	case internalconfig.LabelNamespace:
 		go func(hh *Istio, ee *meshes.EventsResponse) {
@@ -167,7 +167,7 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 			}
 			ee.Summary = fmt.Sprintf("Label updated on %s namespace", opReq.Namespace)
 			ee.Details = fmt.Sprintf("ISTIO-INJECTION label %s on %s namespace", operation, opReq.Namespace)
-			hh.StreamInfo(e)
+			hh.StreamInfo(ee)
 		}(istio, e)
 	case internalconfig.PrometheusAddon, internalconfig.GrafanaAddon, internalconfig.KialiAddon, internalconfig.JaegerAddon, internalconfig.ZipkinAddon:
 		go func(hh *Istio, ee *meshes.EventsResponse) {
@@ -192,7 +192,7 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 			}
 			ee.Summary = fmt.Sprintf("Succesfully %sed %s", operation, opReq.OperationName)
 			ee.Details = fmt.Sprintf("Succesfully %sed %s from the %s namespace", operation, opReq.OperationName, opReq.Namespace)
-			hh.StreamInfo(e)
+			hh.StreamInfo(ee)
 		}(istio, e)
 	case internalconfig.IstioVetOperation:
 		go func(hh *Istio, ee *meshes.EventsResponse) {
@@ -224,12 +224,12 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 				ee.ErrorCode = errors.GetCode(err)
 				ee.ProbableCause = errors.GetCause(err)
 				ee.SuggestedRemediation = errors.GetRemedy(err)
-				hh.StreamErr(e, err)
+				hh.StreamErr(ee, err)
 				return
 			}
 			ee.Summary = fmt.Sprintf("%s application %s successfully", appName, stat)
 			ee.Details = fmt.Sprintf("The %s application is now %s.", appName, stat)
-			hh.StreamInfo(e)
+			hh.StreamInfo(ee)
 		}(istio, e)
 	default:
 		istio.StreamErr(e, ErrOpInvalid)
