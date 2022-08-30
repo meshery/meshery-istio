@@ -67,7 +67,7 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 				ee.ErrorCode = errors.GetCode(err)
 				ee.ProbableCause = errors.GetCause(err)
 				ee.SuggestedRemediation = errors.GetRemedy(err)
-				hh.StreamErr(e, err)
+				hh.StreamErr(ee, err)
 				return
 			}
 			ee.Summary = fmt.Sprintf("Istio service mesh %s successfully", stat)
@@ -84,7 +84,7 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 				ee.ErrorCode = errors.GetCode(err)
 				ee.ProbableCause = errors.GetCause(err)
 				ee.SuggestedRemediation = errors.GetRemedy(err)
-				hh.StreamErr(e, err)
+				hh.StreamErr(ee, err)
 				return
 			}
 			ee.Summary = fmt.Sprintf("%s application %s successfully", appName, stat)
@@ -110,7 +110,7 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 				ee.ErrorCode = errors.GetCode(err)
 				ee.ProbableCause = errors.GetCause(err)
 				ee.SuggestedRemediation = errors.GetRemedy(err)
-				hh.StreamErr(e, err)
+				hh.StreamErr(ee, err)
 				return
 			}
 			ee.Summary = fmt.Sprintf("%s test %s successfully", name, status.Completed)
@@ -142,7 +142,7 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 				ee.ErrorCode = errors.GetCode(err)
 				ee.ProbableCause = errors.GetCause(err)
 				ee.SuggestedRemediation = errors.GetRemedy(err)
-				hh.StreamErr(e, err)
+				hh.StreamErr(ee, err)
 				return
 			}
 			ee.Summary = fmt.Sprintf("Manifest %s successfully", status.Deployed)
@@ -162,7 +162,7 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 				ee.ErrorCode = errors.GetCode(err)
 				ee.ProbableCause = errors.GetCause(err)
 				ee.SuggestedRemediation = errors.GetRemedy(err)
-				hh.StreamErr(e, err)
+				hh.StreamErr(ee, err)
 				return
 			}
 			ee.Summary = fmt.Sprintf("Label updated on %s namespace", opReq.Namespace)
@@ -187,7 +187,7 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 				ee.ErrorCode = errors.GetCode(err)
 				ee.ProbableCause = errors.GetCause(err)
 				ee.SuggestedRemediation = errors.GetRemedy(err)
-				hh.StreamErr(e, err)
+				hh.StreamErr(ee, err)
 				return
 			}
 			ee.Summary = fmt.Sprintf("Succesfully %sed %s", operation, opReq.OperationName)
