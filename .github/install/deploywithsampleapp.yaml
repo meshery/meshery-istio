@@ -8,7 +8,7 @@ services:
       istioVersion: 1.14.0
       profile: minimal
   bookinfo:
-    type: $(#use https://raw.githubusercontent.com/service-mesh-patterns/service-mesh-patterns/master/samples/bookInfoNoK8sPattern.yaml)
+    type: $(#use https://raw.githubusercontent.com/service-mesh-patterns/service-mesh-patterns/master/samples/bookInfoPattern.yaml)
     settings: 
       namespace: default
     dependsOn:

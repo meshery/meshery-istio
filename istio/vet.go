@@ -17,8 +17,8 @@ import (
 	"github.com/aspenmesh/istio-vet/pkg/vetter/serviceassociation"
 	"github.com/aspenmesh/istio-vet/pkg/vetter/serviceportprefix"
 	"github.com/layer5io/meshery-adapter-library/meshes"
-	"github.com/layer5io/meshkit/errors"
 	internalconfig "github.com/layer5io/meshery-istio/internal/config"
+	"github.com/layer5io/meshkit/errors"
 	mesherykube "github.com/layer5io/meshkit/utils/kubernetes"
 	istioinformer "istio.io/client-go/pkg/informers/externalversions"
 	"k8s.io/client-go/informers"
@@ -49,7 +49,7 @@ func (istio *Istio) RunVet(ch chan<- *meshes.EventsResponse, kubeconfigs []strin
 			mclient, err := mesherykube.New([]byte(k8sconfig))
 			if err != nil {
 				e := &meshes.EventsResponse{
-					Component : internalconfig.ServerConfig["type"],
+					Component:     internalconfig.ServerConfig["type"],
 					ComponentName: internalconfig.ServerConfig["name"],
 				}
 				e.EventType = meshes.EventType_ERROR
@@ -63,7 +63,7 @@ func (istio *Istio) RunVet(ch chan<- *meshes.EventsResponse, kubeconfigs []strin
 			istioClient, err := istioclient.New(&mclient.RestConfig)
 			if err != nil {
 				e := &meshes.EventsResponse{
-					Component : internalconfig.ServerConfig["type"],
+					Component:     internalconfig.ServerConfig["type"],
 					ComponentName: internalconfig.ServerConfig["name"],
 				}
 				e.EventType = meshes.EventType_ERROR
@@ -100,7 +100,7 @@ func (istio *Istio) RunVet(ch chan<- *meshes.EventsResponse, kubeconfigs []strin
 			})
 			if timedout {
 				e := &meshes.EventsResponse{
-					Component : internalconfig.ServerConfig["type"],
+					Component:     internalconfig.ServerConfig["type"],
 					ComponentName: internalconfig.ServerConfig["name"],
 				}
 				e.EventType = meshes.EventType_ERROR
@@ -116,7 +116,7 @@ func (istio *Istio) RunVet(ch chan<- *meshes.EventsResponse, kubeconfigs []strin
 			for inf, ok := range oks {
 				if !ok {
 					e := &meshes.EventsResponse{
-						Component : internalconfig.ServerConfig["type"],
+						Component:     internalconfig.ServerConfig["type"],
 						ComponentName: internalconfig.ServerConfig["name"],
 					}
 					e.EventType = meshes.EventType_ERROR
@@ -136,7 +136,7 @@ func (istio *Istio) RunVet(ch chan<- *meshes.EventsResponse, kubeconfigs []strin
 			})
 			if timedout {
 				e := &meshes.EventsResponse{
-					Component : internalconfig.ServerConfig["type"],
+					Component:     internalconfig.ServerConfig["type"],
 					ComponentName: internalconfig.ServerConfig["name"],
 				}
 				e.EventType = meshes.EventType_ERROR
@@ -152,7 +152,7 @@ func (istio *Istio) RunVet(ch chan<- *meshes.EventsResponse, kubeconfigs []strin
 			for inf, ok := range oks {
 				if !ok {
 					e := &meshes.EventsResponse{
-						Component : internalconfig.ServerConfig["type"],
+						Component:     internalconfig.ServerConfig["type"],
 						ComponentName: internalconfig.ServerConfig["name"],
 					}
 					e.EventType = meshes.EventType_ERROR
@@ -216,7 +216,7 @@ func (istio *Istio) RunVet(ch chan<- *meshes.EventsResponse, kubeconfigs []strin
 func (istio *Istio) StreamWarn(e *meshes.EventsResponse, err error) {
 	istio.Log.Warn(err)
 	e.EventType = meshes.EventType_WARN
-	*istio.Channel <- e
+	istio.EventStreamer.Publish(e)
 }
 
 // completeBefore executes the callback function but if the callback function

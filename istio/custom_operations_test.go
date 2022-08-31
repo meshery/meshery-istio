@@ -15,8 +15,6 @@ func TestIstio_applyCustomOperation(t *testing.T) {
 		isDel     bool
 	}
 
-	ch := make(chan interface{}, 10)
-
 	tests := []struct {
 		name        string
 		args        args
@@ -40,9 +38,8 @@ func TestIstio_applyCustomOperation(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			istio := &Istio{
 				Adapter: adapter.Adapter{
-					Config:  getConfigHandler(t),
-					Log:     getLoggerHandler(t),
-					Channel: &ch,
+					Config: getConfigHandler(t),
+					Log:    getLoggerHandler(t),
 				},
 			}
 			got, err := istio.applyCustomOperation(tt.args.namespace, tt.args.manifest, tt.args.isDel, tt.kubeconfigs)
