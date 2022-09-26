@@ -209,7 +209,6 @@ func (istio *Istio) RunVet(ch chan<- *meshes.EventsResponse, kubeconfigs []strin
 			}
 		}(k8sconfig)
 	}
-
 }
 
 // StreamWarn streams a warning message to the channel

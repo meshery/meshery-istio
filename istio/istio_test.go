@@ -53,7 +53,6 @@ func TestNew(t *testing.T) {
 }
 
 func TestIstio_ApplyOperation(t *testing.T) {
-
 	type args struct {
 		ctx   context.Context
 		opReq adapter.OperationRequest
@@ -371,7 +370,6 @@ func TestIstio_ApplyOperation(t *testing.T) {
 }
 
 func TestIstio_ProcessOAM(t *testing.T) {
-
 	type args struct {
 		ctx    context.Context
 		oamReq adapter.OAMRequest

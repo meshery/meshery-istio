@@ -7,7 +7,6 @@ import (
 	"compress/gzip"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
@@ -122,7 +121,6 @@ func (istio *Istio) applyHelmChart(del bool, version, namespace, dirName string,
 				errs = append(errs, err)
 				errMx.Unlock()
 				return
-
 			}
 
 			err = kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
@@ -136,7 +134,6 @@ func (istio *Istio) applyHelmChart(del bool, version, namespace, dirName string,
 				errs = append(errs, err)
 				errMx.Unlock()
 				return
-
 			}
 
 			if profile == "minimal" {
@@ -153,7 +150,6 @@ func (istio *Istio) applyHelmChart(del bool, version, namespace, dirName string,
 				errs = append(errs, err)
 				errMx.Unlock()
 				return
-
 			}
 
 			if profile == "default" {
@@ -170,9 +166,7 @@ func (istio *Istio) applyHelmChart(del bool, version, namespace, dirName string,
 				errs = append(errs, err)
 				errMx.Unlock()
 				return
-
 			}
-
 		}(config, act)
 	}
 	wg.Wait()
@@ -360,7 +354,7 @@ func (istio *Istio) applyManifest(contents []byte, isDel bool, namespace string,
 	return mergeErrors(errs)
 }
 
-//For direct simpler use cases
+// For direct simpler use cases
 func (istio *Istio) applyManifestOnSingleCluster(contents []byte, isDel bool, namespace string, mclient *mesherykube.Client) error {
 	err := mclient.ApplyManifest(contents, mesherykube.ApplyOptions{
 		Namespace: namespace,
@@ -474,7 +468,7 @@ func tarxzf(location string, stream io.Reader) error {
 func unzip(location string, zippedContent io.Reader) error {
 	// Keep file in memory: Approx size ~ 50MB
 	// TODO: Find a better approach
-	zipped, err := ioutil.ReadAll(zippedContent)
+	zipped, err := io.ReadAll(zippedContent)
 	if err != nil {
 		return ErrUnzipFile(err)
 	}
