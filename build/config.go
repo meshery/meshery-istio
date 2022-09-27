@@ -34,10 +34,6 @@ func NewConfig(version string) manifests.Config {
 			SpecPath:    "spec.versions[0].schema.openAPIV3Schema.properties.spec"}, false),
 		ExtractCrds: func(manifest string) []string {
 			crds := strings.Split(manifest, "---")
-			// trim the spaces
-			for _, crd := range crds {
-				crd = strings.TrimSpace(crd)
-			}
 			return crds
 		},
 	}
