@@ -87,7 +87,6 @@ func (istio *Istio) patchWithEnvoyFilter(namespace string, del bool, app string,
 		return status.Deployed, nil
 	}
 	return st, ErrEnvoyFilter(mergeErrors(errs))
-
 }
 func (istio *Istio) applyPolicy(namespace string, del bool, templates []adapter.Template, kubeconfigs []string) (string, error) {
 	st := status.Deploying
@@ -151,7 +150,6 @@ func (istio *Istio) LoadToMesh(namespace string, service string, remove bool, ku
 				errMx.Unlock()
 				return
 			}
-
 		}(k8sconfig)
 	}
 	wg.Wait()
@@ -159,7 +157,6 @@ func (istio *Istio) LoadToMesh(namespace string, service string, remove bool, ku
 		return nil
 	}
 	return mergeErrors(errs)
-
 }
 
 // LoadNamespaceToMesh is used to mark namespaces for automatic sidecar injection (or not)

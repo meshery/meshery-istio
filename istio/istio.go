@@ -157,7 +157,7 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 				operation = "removed"
 			}
 			if err != nil {
-				ee.Summary = fmt.Sprintf("Error while labelling %s", opReq.Namespace)
+				ee.Summary = fmt.Sprintf("Error while labeling %s", opReq.Namespace)
 				ee.Details = err.Error()
 				ee.ErrorCode = errors.GetCode(err)
 				ee.ProbableCause = errors.GetCause(err)
@@ -190,8 +190,8 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 				hh.StreamErr(ee, err)
 				return
 			}
-			ee.Summary = fmt.Sprintf("Succesfully %sed %s", operation, opReq.OperationName)
-			ee.Details = fmt.Sprintf("Succesfully %sed %s from the %s namespace", operation, opReq.OperationName, opReq.Namespace)
+			ee.Summary = fmt.Sprintf("Successfully %sed %s", operation, opReq.OperationName)
+			ee.Details = fmt.Sprintf("Successfully %sed %s from the %s namespace", operation, opReq.OperationName, opReq.Namespace)
 			hh.StreamInfo(ee)
 		}(istio, e)
 	case internalconfig.IstioVetOperation:
@@ -238,7 +238,7 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 	return nil
 }
 
-//CreateKubeconfigs creates and writes passed kubeconfig onto the filesystem
+// CreateKubeconfigs creates and writes passed kubeconfig onto the filesystem
 func (istio *Istio) CreateKubeconfigs(kubeconfigs []string) error {
 	var errs = make([]error, 0)
 	for _, kubeconfig := range kubeconfigs {

@@ -126,7 +126,7 @@ var (
 
 	// ErrOpInvalid represents the errors which are generated
 	// when an invalid operation is requested
-	ErrOpInvalid = errors.New(ErrOpInvalidCode, errors.Alert, []string{"Invalid operation"}, []string{"Istio adapter recived an invalid operation from the meshey server"}, []string{"The operation is not supported by the adapter", "Invalid operation name"}, []string{"Check if the operation name is valid and supported by the adapter"})
+	ErrOpInvalid = errors.New(ErrOpInvalidCode, errors.Alert, []string{"Invalid operation"}, []string{"Istio adapter received an invalid operation from the meshey server"}, []string{"The operation is not supported by the adapter", "Invalid operation name"}, []string{"Check if the operation name is valid and supported by the adapter"})
 
 	// ErrParseOAMComponent represents the error which is
 	// generated during the OAM component parsing
@@ -134,7 +134,7 @@ var (
 
 	// ErrParseOAMConfig represents the error which is
 	// generated during the OAM configuration parsing
-	ErrParseOAMConfig = errors.New(ErrParseOAMConfigCode, errors.Alert, []string{"error parsing the configuration"}, []string{"Error occured while parsing configuration in the request made by Meshery Server"}, []string{"Could not unmarshall OAM config recieved via ProcessOAM gRPC call into a valid Config struct"}, []string{"Check if Meshery Server is creating valid config for ProcessOAM gRPC call. This error should never happen and can be reported as a bug in Meshery Server. Also, confirm that Meshery Server and Adapters are referring to same config struct provided in MeshKit"})
+	ErrParseOAMConfig = errors.New(ErrParseOAMConfigCode, errors.Alert, []string{"error parsing the configuration"}, []string{"Error occurred while parsing configuration in the request made by Meshery Server"}, []string{"Could not unmarshall OAM config received via ProcessOAM gRPC call into a valid Config struct"}, []string{"Check if Meshery Server is creating valid config for ProcessOAM gRPC call. This error should never happen and can be reported as a bug in Meshery Server. Also, confirm that Meshery Server and Adapters are referring to same config struct provided in MeshKit"})
 
 	// ErrNilClient represents the error which is
 	// generated when kubernetes client is nil
@@ -150,7 +150,7 @@ var (
 
 // ErrInstallUsingIstioctl is the error for install mesh
 func ErrInstallUsingIstioctl(err error) error {
-	return errors.New(ErrInstallUsingIstioctlCode, errors.Alert, []string{"Error with istio operation"}, []string{"Error occured while installing istio mesh through istioctl", err.Error()}, []string{}, []string{})
+	return errors.New(ErrInstallUsingIstioctlCode, errors.Alert, []string{"Error with istio operation"}, []string{"Error occurred while installing istio mesh through istioctl", err.Error()}, []string{}, []string{})
 }
 
 // ErrUnzipFile is the error for unzipping the file
@@ -175,7 +175,7 @@ func ErrRunIstioCtlCmd(err error, des string) error {
 
 // ErrSampleApp is the error for streaming event
 func ErrSampleApp(err error) error {
-	return errors.New(ErrSampleAppCode, errors.Alert, []string{"Error with sample app operation"}, []string{err.Error(), "Error occured while trying to install a sample application using manifests"}, []string{"Invalid kubeclient config", "Invalid manifest"}, []string{"Reconnect your adapter to meshery server to refresh the kubeclient"})
+	return errors.New(ErrSampleAppCode, errors.Alert, []string{"Error with sample app operation"}, []string{err.Error(), "Error occurred while trying to install a sample application using manifests"}, []string{"Invalid kubeclient config", "Invalid manifest"}, []string{"Reconnect your adapter to meshery server to refresh the kubeclient"})
 }
 
 // ErrEnvoyFilter is the error for streaming event
@@ -185,7 +185,7 @@ func ErrEnvoyFilter(err error) error {
 
 // ErrApplyPolicy is the error for streaming event
 func ErrApplyPolicy(err error) error {
-	return errors.New(ErrApplyPolicyCode, errors.Alert, []string{"Error with apply policy operation"}, []string{err.Error(), "Error occured while trying to install a sample application using manifests"}, []string{"Invalid kubeclient config", "Invalid manifest"}, []string{"Reconnect your adapter to meshery server to refresh the kubeclient"})
+	return errors.New(ErrApplyPolicyCode, errors.Alert, []string{"Error with apply policy operation"}, []string{err.Error(), "Error occurred while trying to install a sample application using manifests"}, []string{"Invalid kubeclient config", "Invalid manifest"}, []string{"Reconnect your adapter to meshery server to refresh the kubeclient"})
 }
 
 // ErrAddonFromTemplate is the error for streaming event
@@ -195,7 +195,7 @@ func ErrAddonFromTemplate(err error) error {
 
 // ErrCustomOperation is the error for streaming event
 func ErrCustomOperation(err error) error {
-	return errors.New(ErrCustomOperationCode, errors.Alert, []string{"Error with custom operation"}, []string{"Error occured while applying custom manifest to the cluster", err.Error()}, []string{"Invalid kubeclient config", "Invalid manifest"}, []string{})
+	return errors.New(ErrCustomOperationCode, errors.Alert, []string{"Error with custom operation"}, []string{"Error occurred while applying custom manifest to the cluster", err.Error()}, []string{"Invalid kubeclient config", "Invalid manifest"}, []string{})
 }
 
 // ErrCreatingIstioClient is the error for streaming event
@@ -235,22 +235,22 @@ func ErrProcessOAM(err error) error {
 
 // ErrApplyHelmChart is the error for applying helm chart
 func ErrApplyHelmChart(err error) error {
-	return errors.New(ErrApplyHelmChartCode, errors.Alert, []string{"Error occured while applying Helm Chart"}, []string{err.Error()}, []string{}, []string{})
+	return errors.New(ErrApplyHelmChartCode, errors.Alert, []string{"Error occurred while applying Helm Chart"}, []string{err.Error()}, []string{}, []string{})
 }
 
 // ErrGettingIstioRelease is the error when the yaml unmarshal fails
 func ErrGettingIstioRelease(err error) error {
-	return errors.New(ErrGettingIstioReleaseCode, errors.Alert, []string{"Error occured while fetching Istio release artifacts"}, []string{err.Error()}, []string{}, []string{})
+	return errors.New(ErrGettingIstioReleaseCode, errors.Alert, []string{"Error occurred while fetching Istio release artifacts"}, []string{err.Error()}, []string{}, []string{})
 }
 
 // ErrDownloadingTar is the error when tar download fails
 func ErrDownloadingTar(err error) error {
-	return errors.New(ErrDownloadingTarCode, errors.Alert, []string{"Error occured while downloading Istio tar"}, []string{err.Error()}, []string{}, []string{})
+	return errors.New(ErrDownloadingTarCode, errors.Alert, []string{"Error occurred while downloading Istio tar"}, []string{err.Error()}, []string{}, []string{})
 }
 
 // ErrUnpackingTar is the error when tar unpack fails
 func ErrUnpackingTar(err error) error {
-	return errors.New(ErrUnpackingTarCode, errors.Alert, []string{"Error occured while unpacking tar"}, []string{err.Error()}, []string{}, []string{})
+	return errors.New(ErrUnpackingTarCode, errors.Alert, []string{"Error occurred while unpacking tar"}, []string{err.Error()}, []string{}, []string{})
 }
 
 // ErrMakingBinExecutable occurs when istioctl binary couldn't be made
@@ -264,7 +264,7 @@ func ErrLoadNamespace(err error, str string) error {
 	return errors.New(ErrLoadNamespaceCode, errors.Alert, []string{"Error while labeling namespace:", str}, []string{err.Error()}, []string{}, []string{})
 }
 
-//ErrInvalidInstallationProfile implies error while invalid profile option is passed in pattern file
+// ErrInvalidInstallationProfile implies error while invalid profile option is passed in pattern file
 func ErrInvalidInstallationProfile(str string) error {
 	return errors.New(ErrInvalidInstallationProfileCode, errors.Alert, []string{"Error while installing istio due to wrong profile"}, []string{"Gotten profile " + str}, []string{"Invalid profile passed"}, []string{"Provide one of the profiles: \"demo\",\"minimal\",\"default\" profiles"})
 }

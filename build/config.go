@@ -20,7 +20,7 @@ var AllVersions []string
 
 const Component = "Istio"
 
-//NewConfig creates the configuration for creating components
+// NewConfig creates the configuration for creating components
 func NewConfig(version string) manifests.Config {
 	return manifests.Config{
 		Name:        smp.ServiceMesh_Type_name[int32(smp.ServiceMesh_ISTIO)],
@@ -34,10 +34,6 @@ func NewConfig(version string) manifests.Config {
 			SpecPath:    "spec.versions[0].schema.openAPIV3Schema.properties.spec"}, false),
 		ExtractCrds: func(manifest string) []string {
 			crds := strings.Split(manifest, "---")
-			// trim the spaces
-			for _, crd := range crds {
-				crd = strings.TrimSpace(crd)
-			}
 			return crds
 		},
 	}
