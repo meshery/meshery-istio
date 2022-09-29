@@ -1,4 +1,4 @@
-name: Slack Notifier on Star
+name: Slack Notify on Star
 on: 
   watch:
   issues:
