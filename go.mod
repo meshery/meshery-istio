@@ -3,25 +3,23 @@ module github.com/layer5io/meshery-istio
 go 1.19
 
 replace (
-	// github.com/googleapis/gnostic/openapiv2 => github.com/google/gnostic/openapiv2 v0.5.5
 	//github.com/docker/docker => github.com/moby/moby v17.12.0-ce-rc1.0.20200618181300-9dc6525e6118+incompatible
 	github.com/kudobuilder/kuttl => github.com/layer5io/kuttl v0.4.1-0.20200723152044-916f10574334
 	github.com/spf13/afero => github.com/spf13/afero v1.5.1 // Until viper bug is resolved #1161
 	go.opentelemetry.io/otel v1.3.0 => go.opentelemetry.io/otel v0.11.0
 	go.opentelemetry.io/otel/sdk v1.3.0 => go.opentelemetry.io/otel/sdk v0.11.0
 	gopkg.in/ini.v1 => github.com/go-ini/ini v1.62.0
-//golang.org/x/sys => golang.org/x/sys v0.0.0-20200826173525-f9321e4c35a6
 )
 
 require (
 	github.com/aspenmesh/istio-vet v0.0.0-20200806222806-9c8e9a962b9f
 	github.com/layer5io/meshery-adapter-library v0.5.10
-	github.com/layer5io/meshkit v0.6.0
+	github.com/layer5io/meshkit v0.6.2
 	github.com/layer5io/service-mesh-performance v0.3.4
 	gopkg.in/yaml.v2 v2.4.0
 	istio.io/client-go v1.15.0
-	k8s.io/apimachinery v0.25.1
-	k8s.io/client-go v0.25.1
+	k8s.io/apimachinery v0.25.2
+	k8s.io/client-go v0.25.2
 )
 
 require (
@@ -142,7 +140,7 @@ require (
 	gorm.io/gorm v1.23.4 // indirect
 	helm.sh/helm/v3 v3.9.4 // indirect
 	istio.io/api v0.0.0-20220826132550-04f2b20dc284 // indirect
-	k8s.io/api v0.25.1 // indirect
+	k8s.io/api v0.25.2 // indirect
 	k8s.io/apiextensions-apiserver v0.25.1 // indirect
 	k8s.io/apiserver v0.25.1 // indirect
 	k8s.io/component-base v0.25.1 // indirect
