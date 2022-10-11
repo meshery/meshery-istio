@@ -62,7 +62,7 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 			var err error
 			var stat, version string
 			if len(operations[opReq.OperationName].Versions) == 0 {
-				err = fmt.Errorf("no version found for " + internalconfig.IstioOperation)
+				err = ErrFetchIstioVersions
 			} else {
 				version = string(operations[opReq.OperationName].Versions[len(operations[opReq.OperationName].Versions)-1])
 				stat, err = hh.installIstio(opReq.IsDeleteOperation, false, version, opReq.Namespace, "default", kubeConfigs)
