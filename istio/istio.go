@@ -59,8 +59,14 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 	switch opReq.OperationName {
 	case internalconfig.IstioOperation:
 		go func(hh *Istio, ee *meshes.EventsResponse) {
-			version := string(operations[opReq.OperationName].Versions[0])
-			stat, err := hh.installIstio(opReq.IsDeleteOperation, false, version, opReq.Namespace, "default", kubeConfigs)
+			var err error
+			var stat, version string
+			if len(operations[opReq.OperationName].Versions) == 0 {
+				err = fmt.Errorf("no version found for " + internalconfig.IstioOperation)
+			} else {
+				version = string(operations[opReq.OperationName].Versions[len(operations[opReq.OperationName].Versions)-1])
+				stat, err = hh.installIstio(opReq.IsDeleteOperation, false, version, opReq.Namespace, "default", kubeConfigs)
+			}
 			if err != nil { //Make sure that this is a meshkit error
 				ee.Summary = fmt.Sprintf("Error while %s Istio service mesh", stat)
 				ee.Details = err.Error()
