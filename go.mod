@@ -14,7 +14,7 @@ replace (
 require (
 	github.com/aspenmesh/istio-vet v0.0.0-20200806222806-9c8e9a962b9f
 	github.com/layer5io/meshery-adapter-library v0.6.0
-	github.com/layer5io/meshkit v0.6.2
+	github.com/layer5io/meshkit v0.6.5
 	github.com/layer5io/service-mesh-performance v0.3.4
 	gopkg.in/yaml.v2 v2.4.0
 	istio.io/client-go v1.15.1
@@ -135,7 +135,7 @@ require (
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/ini.v1 v1.66.4 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	gorm.io/gorm v1.23.4 // indirect
+	gorm.io/gorm v1.23.7 // indirect
 	helm.sh/helm/v3 v3.9.4 // indirect
 	istio.io/api v0.0.0-20220907134937-b47284812feb // indirect
 	k8s.io/api v0.25.2 // indirect
@@ -173,7 +173,7 @@ require (
 	go.opentelemetry.io/otel v1.3.0 // indirect
 	go.opentelemetry.io/otel/exporters/trace/jaeger v0.11.0 // indirect
 	go.opentelemetry.io/otel/sdk v1.3.0 // indirect
-	golang.org/x/crypto v0.0.0-20220525230936-793ad666bf5e // indirect
+	golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa // indirect
 	k8s.io/cli-runtime v0.25.1 // indirect
 	sigs.k8s.io/json v0.0.0-20220713155537-f223a00ba0e2 // indirect
 )
