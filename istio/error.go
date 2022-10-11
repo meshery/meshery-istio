@@ -124,7 +124,7 @@ var (
 	// ErrLoadNamespaceCode implies error while finding namespace
 	ErrLoadNamespaceCode = "1032"
 	// ErrLoadNamespaceCode implies error while finding namespace
-	ErrFetchIstioVersionsCode = "1032"
+	ErrFetchIstioVersionsCode = "1033"
 
 	ErrFetchIstioVersions = errors.New(ErrFetchIstioVersionsCode, errors.Alert, []string{"could not get any istio versions"}, []string{"versions for istio could not be fetched"}, []string{"could not reach github.com/istio/istio/releases", "no versions could be fetched from istio release page"}, []string{"make sure adapter is reachable to github"})
 	// ErrOpInvalid represents the errors which are generated
