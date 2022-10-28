@@ -1,0 +1,1 @@
+{"kind":"WorkloadDefinition","apiVersion":"core.oam.dev/v1alpha1","metadata":{"name":"ZipkinIstioAddon","creationTimestamp":null},"spec":{"definitionRef":{"name":"zipkinistioaddon.meshery.layer5.io"},"metadata":{"@type":"pattern.meshery.io/core","version":"1.16.0-beta.2"}}}
