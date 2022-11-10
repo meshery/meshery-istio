@@ -16,6 +16,7 @@ var DefaultGenerationMethod string
 var DefaultGenerationURL string
 var LatestVersion string
 var WorkloadPath string
+var MeshModelPath string
 var AllVersions []string
 
 const Component = "Istio"
@@ -41,6 +42,7 @@ func NewConfig(version string) manifests.Config {
 func init() {
 	wd, _ := os.Getwd()
 	WorkloadPath = filepath.Join(wd, "templates", "oam", "workloads")
+	MeshModelPath = filepath.Join(wd, "templates", "meshmodel", "components")
 	AllVersions, _ = utils.GetLatestReleaseTagsSorted("istio", "istio")
 	if len(AllVersions) == 0 {
 		return

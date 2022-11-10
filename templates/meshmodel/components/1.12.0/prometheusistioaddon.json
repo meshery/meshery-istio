@@ -1,0 +1,1 @@
+{"kind":"PrometheusIstioAddon","apiVersion":"core.oam.dev/v1alpha1","format":"JSON","metadata":{"model":"ISTIO","version":"1.12.0","category":"","sub-category":"","metadata":{"display-name":"Prometheus Istio Addon"}},"schema":"{\"title\": \"Prometheus Istio Addon\",\r\n    \"type\": \"object\",\r\n    \"properties\": {}}"}
