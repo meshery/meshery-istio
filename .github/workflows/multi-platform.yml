@@ -103,9 +103,8 @@ jobs:
           context: "{{defaultContext}}"
           push: true
           build-args: |
-            GIT_STRIPPED_VERSION=${{env.GIT_STRIPPED_VERSION}}
-            GIT_VERSION=${{env.GIT_VERSION}}
-            RELEASE_CHANNEL=${{env.RELEASE_CHANNEL}}
+            VERSION=${{env.GIT_VERSION}}
+            GIT_COMMITSHA=${GITHUB_SHA::7}
           tags: ${{ steps.meta.outputs.tags }}     
           platforms: linux/amd64,linux/arm64
       - 
