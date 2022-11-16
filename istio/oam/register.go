@@ -51,7 +51,7 @@ func RegisterMeshModelComponents(uuid, runtime, host, port string) error {
 	}
 
 	return adapter.
-		NewMeshModelRegistrant(meshmodelRDP, fmt.Sprintf("%s/api/meshmodel/components", runtime)).
+		NewMeshModelRegistrant(meshmodelRDP, fmt.Sprintf("%s/api/meshmodel/components/register", runtime)).
 		Register(uuid)
 }
 
