@@ -21,6 +21,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/layer5io/meshery-istio/build"
 	"github.com/layer5io/meshery-istio/istio"
 	"github.com/layer5io/meshkit/logger"
@@ -38,6 +39,7 @@ var (
 	serviceName = "istio-adapter"
 	version     = "edge"
 	gitsha      = "none"
+	instanceID  = uuid.NewString()
 )
 
 func init() {
@@ -159,6 +161,10 @@ func registerCapabilities(port string, log logger.Handler) {
 	if err := oam.RegisterTraits(mesheryServerAddress(), serviceAddress()+":"+port); err != nil {
 		log.Error(err)
 	}
+	err := oam.RegisterMeshModelComponents(instanceID, mesheryServerAddress(), serviceAddress(), port)
+	if err != nil {
+		log.Error(err)
+	}
 	log.Info("Successfully registered static components with Meshery Server.")
 }
 
@@ -193,12 +199,14 @@ func registerWorkloads(port string, log logger.Handler) {
 	}
 
 	log.Info("Registering latest workload components for version ", version)
+
 	err := adapter.CreateComponents(adapter.StaticCompConfig{
-		URL:     url,
-		Method:  gm,
-		Path:    build.WorkloadPath,
-		DirName: version,
-		Config:  build.NewConfig(version),
+		URL:           url,
+		Method:        gm,
+		OAMPath:       build.WorkloadPath,
+		MeshModelPath: build.MeshModelPath,
+		DirName:       version,
+		Config:        build.NewConfig(version),
 	})
 	if err != nil {
 		log.Info("Failed to generate components for version " + version)

@@ -4,18 +4,22 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshery-istio/internal/config"
+	"github.com/layer5io/meshkit/models/meshmodel/core/types"
 )
 
 var (
 	basePath, _ = os.Getwd()
 
 	//WorkloadPath will be used by both static and component generation
-	WorkloadPath = filepath.Join(basePath, "templates", "oam", "workloads")
-	traitPath    = filepath.Join(basePath, "templates", "oam", "traits")
+	WorkloadPath        = filepath.Join(basePath, "templates", "oam", "workloads")
+	MeshmodelComponents = filepath.Join(basePath, "templates", "meshmodel", "components")
+	traitPath           = filepath.Join(basePath, "templates", "oam", "traits")
 )
 
 // AvailableVersions denote the component versions available statically
@@ -25,6 +29,30 @@ type schemaDefinitionPathSet struct {
 	oamDefinitionPath string
 	jsonSchemaPath    string
 	name              string
+}
+type meshmodelDefinitionPathSet struct {
+	meshmodelDefinitionPath string
+}
+
+func RegisterMeshModelComponents(uuid, runtime, host, port string) error {
+	meshmodelRDP := []adapter.MeshModelRegistrantDefinitionPath{}
+	pathSets, err := loadMeshmodelComponents(MeshmodelComponents)
+	if err != nil {
+		return err
+	}
+	portint, _ := strconv.Atoi(port)
+	for _, pathSet := range pathSets {
+		meshmodelRDP = append(meshmodelRDP, adapter.MeshModelRegistrantDefinitionPath{
+			EntityDefintionPath: pathSet.meshmodelDefinitionPath,
+			Host:                host,
+			Port:                portint,
+			Type:                types.ComponentDefinition,
+		})
+	}
+
+	return adapter.
+		NewMeshModelRegistrant(meshmodelRDP, fmt.Sprintf("%s/api/meshmodel/components/register", runtime)).
+		Register(uuid)
 }
 
 // RegisterWorkloads will register all of the workload definitions
@@ -89,6 +117,32 @@ func RegisterTraits(runtime, host string) error {
 		Register()
 }
 
+var versionLock sync.Mutex
+
+func loadMeshmodelComponents(basepath string) ([]meshmodelDefinitionPathSet, error) {
+	res := []meshmodelDefinitionPathSet{}
+	if err := filepath.Walk(basepath, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if info.IsDir() {
+			return nil
+		}
+
+		res = append(res, meshmodelDefinitionPathSet{
+			meshmodelDefinitionPath: path,
+		})
+		versionLock.Lock()
+		AvailableVersions[filepath.Base(filepath.Dir(path))] = true // Getting available versions already existing on file system
+		versionLock.Unlock()
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
 func load(basePath string) ([]schemaDefinitionPathSet, error) {
 	res := []schemaDefinitionPathSet{}
 
@@ -96,7 +150,6 @@ func load(basePath string) ([]schemaDefinitionPathSet, error) {
 		if err != nil {
 			return err
 		}
-
 		if info.IsDir() {
 			return nil
 		}
@@ -111,7 +164,9 @@ func load(basePath string) ([]schemaDefinitionPathSet, error) {
 				jsonSchemaPath:    fmt.Sprintf("%s.meshery.layer5io.schema.json", nameWithPath),
 				name:              filepath.Base(nameWithPath),
 			})
+			versionLock.Lock()
 			AvailableVersions[filepath.Base(filepath.Dir(path))] = true // Getting available versions already existing on file system
+			versionLock.Unlock()
 		}
 
 		return nil
