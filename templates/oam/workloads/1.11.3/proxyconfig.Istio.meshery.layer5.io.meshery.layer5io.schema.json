@@ -1,0 +1,31 @@
+{
+ "description": "Provides configuration for individual workloads. See more details at: https://istio.io/docs/reference/config/networking/proxy-config.html",
+ "properties": {
+  "concurrency": {
+   "description": "The number of worker threads to run.",
+   "nullable": true,
+   "type": "integer"
+  },
+  "environmentVariables": {
+   "additionalProperties": {
+    "type": "string"
+   },
+   "description": "Additional environment variables for the proxy.",
+   "type": "object"
+  },
+  "selector": {
+   "description": "Optional.",
+   "properties": {
+    "matchLabels": {
+     "additionalProperties": {
+      "type": "string"
+     },
+     "type": "object"
+    }
+   },
+   "type": "object"
+  }
+ },
+ "title": "Proxy Config",
+ "type": "object"
+}
