@@ -201,12 +201,13 @@ func registerWorkloads(port string, log logger.Handler) {
 	log.Info("Registering latest workload components for version ", version)
 
 	err := adapter.CreateComponents(adapter.StaticCompConfig{
-		URL:           url,
-		Method:        gm,
-		OAMPath:       build.WorkloadPath,
-		MeshModelPath: build.MeshModelPath,
-		DirName:       version,
-		Config:        build.NewConfig(version),
+		URL:             url,
+		Method:          gm,
+		OAMPath:         build.WorkloadPath,
+		MeshModelPath:   build.MeshModelPath,
+		MeshModelConfig: build.MeshModelConfig,
+		DirName:         version,
+		Config:          build.NewConfig(version),
 	})
 	if err != nil {
 		log.Info("Failed to generate components for version " + version)

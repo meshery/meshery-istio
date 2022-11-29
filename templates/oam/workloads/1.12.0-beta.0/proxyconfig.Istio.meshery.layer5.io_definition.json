@@ -1,0 +1,20 @@
+{
+ "kind": "WorkloadDefinition",
+ "apiVersion": "core.oam.dev/v1alpha1",
+ "metadata": {
+  "name": "ProxyConfig.Istio",
+  "creationTimestamp": null
+ },
+ "spec": {
+  "definitionRef": {
+   "name": "proxyconfig.Istio.meshery.layer5.io"
+  },
+  "metadata": {
+   "@type": "pattern.meshery.io/mesh/workload",
+   "k8sAPIVersion": "networking.istio.io/v1beta1",
+   "k8sKind": "ProxyConfig",
+   "meshName": "ISTIO",
+   "meshVersion": "1.12.0-beta.0"
+  }
+ }
+}
