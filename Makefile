@@ -21,9 +21,6 @@ include build/Makefile.show-help.mk
 BUILDER=buildx-multi-arch
 ADAPTER=istio
 
-v ?= 1.19.1 # Default go version to be used
-
-
 #-----------------------------------------------------------------------------
 # Docker-based Builds
 #-----------------------------------------------------------------------------
@@ -47,16 +44,16 @@ docker-run:
 	layer5/meshery-$(ADAPTER):$(RELEASE_CHANNEL)-latest
 
 ## Build and run Adapter locally
-run:
-	go$(v) mod tidy; \
+run: dep-check
+	go mod tidy; \
 	DEBUG=true GOPROXY=direct GOSUMDB=off go run main.go
 
 ## Build and run Adapter locally; force component registration
-run-force-dynamic-reg:
+run-force-dynamic-reg: dep-check
 	FORCE_DYNAMIC_REG=true DEBUG=true GOPROXY=direct GOSUMDB=off go run main.go
 
 ## Run Meshery Error utility
-error:
+error: dep-check
 	go run github.com/layer5io/meshkit/cmd/errorutil -d . analyze -i ./helpers -o ./helpers
 
 ## Run Golang tests
@@ -66,3 +63,24 @@ test:
 	export KUBECONFIG="${HOME}/.kube/config"
 	echo "environment-kubeconfig:" ${KUBECONFIG}
 	GOPROXY=direct GOSUMDB=off GO111MODULE=on go test -v ./...
+
+#-----------------------------------------------------------------------------
+# Dependencies
+#-----------------------------------------------------------------------------
+.PHONY: dep-check
+#.SILENT: dep-check
+
+INSTALLED_GO_VERSION=$(shell go version)
+
+dep-check:
+	
+ifeq (,$(findstring $(GOVERSION), $(INSTALLED_GO_VERSION)))
+# Only send a warning.
+# @echo "Dependency missing: go$(GOVERSION). Ensure 'go$(GOVERSION).x' is installed and available in your 'PATH'"	
+	@echo "GOVERSION: " $(GOVERSION)
+	@echo "INSTALLED_GO_VERSION: " $(INSTALLED_GO_VERSION) 
+# Force error and stop.
+	$(error Found $(INSTALLED_GO_VERSION). \
+	 Required golang version is: 'go$(GOVERSION).x'. \
+	 Ensure go '$(GOVERSION).x' is installed and available in your 'PATH'.)
+endif
