@@ -15,7 +15,7 @@ on:
     types: [published]
 jobs:
   SetPatternfileForServicemeshInstall:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     outputs:
       sm_version: ${{ steps.gettag.outputs.release }}
       adapter_version:  ${{ env.version }}
@@ -67,7 +67,7 @@ jobs:
   UpdateDocsForServicemeshInstall:
     needs: TestIstioForServicemeshInstall
     if:  "always() && github.event_name != 'pull_request' "
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Skip if needed
         run: |
@@ -128,7 +128,7 @@ jobs:
           commit_message: '[Docs] Test status of adapter'
 
   SetPatternfileForServicemeshAndAddon:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     outputs:
       sm_version: ${{ steps.gettag.outputs.release }}
       adapter_version:  ${{ env.version }}
@@ -182,7 +182,7 @@ jobs:
   UpdateDocsForServicemeshAndAddon:
     needs: TestIstioForServicemeshAndAddon
     if:  "always() && github.event_name != 'pull_request' "
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Skip if needed
         run: |
@@ -245,7 +245,7 @@ jobs:
           commit_message: '[Docs] Test status of adapter'
 
   SetPatternfileForServicemeshAndSampleApp:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     outputs:
       sm_version: ${{ steps.gettag.outputs.release }}
       adapter_version:  ${{ env.version }}
@@ -297,7 +297,7 @@ jobs:
   UpdateDocsForServicemeshAndSampleApp:
     needs: TestIstioForServicemeshAndSampleApp
     if:  "always() && github.event_name != 'pull_request' "
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Skip if needed
         run: |

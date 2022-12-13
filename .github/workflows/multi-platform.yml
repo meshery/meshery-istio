@@ -33,7 +33,7 @@ env:
 
 jobs:
   print-inputs:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
 
     - run: |
@@ -47,7 +47,7 @@ jobs:
         echo "Env GITHUB_REF:" ${GITHUB_REF}
   
   docker-build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - 
         name: Checkout repo

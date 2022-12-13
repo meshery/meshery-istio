@@ -9,7 +9,7 @@ on:
 jobs:
   build:
     name: Build check
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     # needs: [lint, error_check, static_check, vet, sec_check, tests]
     steps:
     - name: Check out code
@@ -23,7 +23,7 @@ jobs:
     - run: GOPROXY=direct GOSUMDB=off GO111MODULE=on go build .
   docker:
     name: Docker build and push
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
     - name: Check out code
       uses: actions/checkout@v3
