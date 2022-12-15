@@ -10,7 +10,7 @@ jobs:
   Update-error-codes:
     name: Error codes utility
     if: github.repository == 'meshery/meshery-istio'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
         # token here with write access to meshery-istio repo
