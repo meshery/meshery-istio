@@ -36,6 +36,7 @@ func (istio *Istio) installIstio(del, useBin bool, version, namespace string, pr
 	istio.Log.Debug(fmt.Sprintf("Requested install of version: %s", version))
 	istio.Log.Debug(fmt.Sprintf("Requested action is delete: %v", del))
 	istio.Log.Debug(fmt.Sprintf("Requested action is in namespace: %s", namespace))
+	istio.Log.Debug(fmt.Sprintf("Requested action is with profile: %s", profile))
 
 	st := status.Installing
 
@@ -85,7 +86,7 @@ func (istio *Istio) installIstio(del, useBin bool, version, namespace string, pr
 }
 
 func (istio *Istio) applyHelmChart(del bool, version, namespace, dirName string, profile string, kubeconfigs []string) error {
-	if profile != "demo" && profile != "default" && profile != "minimal" {
+	if profile != "demo" && profile != "default" && profile != "minimal" && profile != "ambient" {
 		return ErrInvalidInstallationProfile(profile) // This code will never be executed as json schema would have been validated beforehand
 	}
 	var errs []error
@@ -122,41 +123,80 @@ func (istio *Istio) applyHelmChart(del bool, version, namespace, dirName string,
 				errMx.Unlock()
 				return
 			}
-
-			err = kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
+			istio.Log.Info("Installed Istio base CRDs...")
+			cfg := mesherykube.ApplyHelmChartConfig{
 				LocalPath:       path.Join(downloadLocation, dirName, "manifests/charts/istio-control/istio-discovery"),
 				Namespace:       "istio-system",
 				Action:          act,
 				CreateNamespace: true,
-			})
+			}
+			if profile == "ambient" {
+				cfg.OverrideValues = map[string]interface{}{
+					"pilot": map[string]interface{}{
+						"env": map[string]interface{}{
+							"PILOT_ENABLE_INBOUND_PASSTHROUGH": "false",
+							"PILOT_ENABLE_HBONE":               "true",
+						},
+					},
+				}
+			}
+			err = kClient.ApplyHelmChart(cfg)
+
 			if err != nil {
 				errMx.Lock()
 				errs = append(errs, err)
 				errMx.Unlock()
 				return
 			}
-
+			istio.Log.Info("Installed Istio control plane...")
 			if profile == "minimal" {
 				return
 			}
-			err = kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
+			cfg = mesherykube.ApplyHelmChartConfig{
 				LocalPath:       path.Join(downloadLocation, dirName, "manifests/charts/gateways/istio-ingress"),
 				Namespace:       "istio-system",
 				Action:          act,
 				CreateNamespace: true,
-			})
+			}
+			if profile == "ambient" {
+				cfg.OverrideValues = map[string]interface{}{
+					"meshConfig": map[string]interface{}{
+						"proxyMetadata": map[string]interface{}{
+							"ISTIO_META_ENABLE_HBONE": "true",
+						},
+					},
+				}
+			}
+			err = kClient.ApplyHelmChart(cfg)
 			if err != nil {
 				errMx.Lock()
 				errs = append(errs, err)
 				errMx.Unlock()
 				return
 			}
-
+			istio.Log.Info("Installed Istio Ingress gateway...")
 			if profile == "default" {
 				return
 			}
+
+			//Install istio CNI only only for ambient mode
+			if profile == "ambient" {
+				istio.Log.Info("Installing Istio CNI...")
+				err = kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
+					LocalPath:       path.Join(downloadLocation, dirName, "manifests/charts/gateways/istio-egress"),
+					Namespace:       "istio-system",
+					Action:          act,
+					CreateNamespace: true,
+				})
+				if err != nil {
+					errMx.Lock()
+					errs = append(errs, err)
+					errMx.Unlock()
+				}
+				return
+			}
 			err = kClient.ApplyHelmChart(mesherykube.ApplyHelmChartConfig{
-				LocalPath:       path.Join(downloadLocation, dirName, "manifests/charts/gateways/istio-egress"),
+				LocalPath:       path.Join(downloadLocation, dirName, "manifests/charts/istio-cni"),
 				Namespace:       "istio-system",
 				Action:          act,
 				CreateNamespace: true,
@@ -167,6 +207,7 @@ func (istio *Istio) applyHelmChart(del bool, version, namespace, dirName string,
 				errMx.Unlock()
 				return
 			}
+			istio.Log.Info("Installed Istio Egress Gateway...")
 		}(config, act)
 	}
 	wg.Wait()

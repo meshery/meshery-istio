@@ -17,7 +17,7 @@ var (
 	basePath, _ = os.Getwd()
 
 	//WorkloadPath will be used by both static and component generation
-	WorkloadPath        = filepath.Join(basePath, "templates", "oam", "workloads")
+	WorkloadPath        = filepath.Join(basePath, "templates", "oam", "workloads", "1.16.1")
 	MeshmodelComponents = filepath.Join(basePath, "templates", "meshmodel", "components")
 	traitPath           = filepath.Join(basePath, "templates", "oam", "traits")
 )
