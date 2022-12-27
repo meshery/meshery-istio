@@ -612,8 +612,8 @@ github.com/layer5io/learn-layer5/smi-conformance v0.0.0-20210317075357-06b4f88b3
 github.com/layer5io/learn-layer5/smi-conformance v0.0.0-20210317075357-06b4f88b3e34/go.mod h1:BQPLwdJt7v7y0fXIejI4whR9zMyX07Wjt5xrbgEmHLw=
 github.com/layer5io/meshery-adapter-library v0.6.3 h1:5tsbgrB1q84X2rM1TsRVe3pSBZ8kztjo4lPsHuPBe/Y=
 github.com/layer5io/meshery-adapter-library v0.6.3/go.mod h1:x9/295iLiWab88uOwjgyZbJTX8aqkxfUlVZhqQKabew=
-github.com/layer5io/meshkit v0.6.15 h1:W6eaIPZrccYjtewjQHfZS9xKZrIGsv5dX3IZfj5Zr/k=
-github.com/layer5io/meshkit v0.6.15/go.mod h1:9ZXmiP0dxRCNlVYgchrOnfFcNrdHVXuayiuN8RRTQ68=
+github.com/layer5io/meshkit v0.6.16 h1:bU9Q4Fl31yPqPjNJkf91wT7bM5LtLh+7P0eQix9f22I=
+github.com/layer5io/meshkit v0.6.16/go.mod h1:9ZXmiP0dxRCNlVYgchrOnfFcNrdHVXuayiuN8RRTQ68=
 github.com/layer5io/service-mesh-performance v0.3.2-0.20210122142912-a94e0658b021/go.mod h1:W153amv8aHAeIWxO7b7d7Vibt9RhaEVh4Uh+RG+BumQ=
 github.com/layer5io/service-mesh-performance v0.3.4 h1:aw/elsx0wkry7SyiQRIj31wW7TPCP4YfhINdNOLXVg8=
 github.com/layer5io/service-mesh-performance v0.3.4/go.mod h1:W153amv8aHAeIWxO7b7d7Vibt9RhaEVh4Uh+RG+BumQ=
