@@ -2,6 +2,7 @@ package build
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -52,7 +53,11 @@ func NewConfig(version string) manifests.Config {
 func init() {
 	//Initialize Metadata including logo svgs
 	f, _ := os.Open("./build/meshmodel_metadata.json")
-	defer f.Close()
+	defer func() {
+		if err := f.Close(); err != nil {
+			fmt.Printf("Error closing file: %s\n", err)
+		}
+	}()
 	byt, _ := io.ReadAll(f)
 
 	_ = json.Unmarshal(byt, &Meshmodelmetadata)
