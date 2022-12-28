@@ -2,7 +2,7 @@ name: Components to Documents
 on:
   push:
     paths:
-      - templates/oam/workloads**
+      - templates/meshmodel/components**
   release:
     types: [published]
 
@@ -23,7 +23,7 @@ jobs:
               fi
             }
             mkdir output
-            folder_path=templates/oam/workloads/*
+            folder_path=templates/meshmodel/components/*
             for file in $folder_path;
             do
                 folder_name="$file/*"
