@@ -192,7 +192,6 @@ func handleIstioCoreComponent(
 		istio.Log.Error(err)
 		return "", err
 	}
-	fmt.Println("will try to deploy ", string(yamlByt))
 	msg := fmt.Sprintf("created %s \"%s\" in namespace \"%s\"", kind, comp.Name, comp.Namespace)
 	if isDel {
 		msg = fmt.Sprintf("deleted %s config \"%s\" in namespace \"%s\"", kind, comp.Name, comp.Namespace)
