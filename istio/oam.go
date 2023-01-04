@@ -162,19 +162,18 @@ func handleIstioCoreComponent(
 	kind string,
 	kubeconfigs []string) (string, error) {
 	if apiVersion == "" {
-		apiVersion = getAPIVersionFromComponent(comp)
+		apiVersion = v1alpha1.GetAPIVersionFromComponent(comp)
 		if apiVersion == "" {
 			return "", ErrIstioCoreComponentFail(fmt.Errorf("failed to get API Version for: %s", comp.Name))
 		}
 	}
 
 	if kind == "" {
-		kind = getKindFromComponent(comp)
+		kind = v1alpha1.GetKindFromComponent(comp)
 		if kind == "" {
 			return "", ErrIstioCoreComponentFail(fmt.Errorf("failed to get kind for: %s", comp.Name))
 		}
 	}
-
 	component := map[string]interface{}{
 		"apiVersion": apiVersion,
 		"kind":       kind,
@@ -193,7 +192,6 @@ func handleIstioCoreComponent(
 		istio.Log.Error(err)
 		return "", err
 	}
-
 	msg := fmt.Sprintf("created %s \"%s\" in namespace \"%s\"", kind, comp.Name, comp.Namespace)
 	if isDel {
 		msg = fmt.Sprintf("deleted %s config \"%s\" in namespace \"%s\"", kind, comp.Name, comp.Namespace)
@@ -238,14 +236,6 @@ func handleComponentIstioAddon(istio *Istio, comp v1alpha1.Component, isDel bool
 	}
 
 	return msg, err
-}
-
-func getAPIVersionFromComponent(comp v1alpha1.Component) string {
-	return comp.Annotations["pattern.meshery.io.mesh.workload.k8sAPIVersion"]
-}
-
-func getKindFromComponent(comp v1alpha1.Component) string {
-	return comp.Annotations["pattern.meshery.io.mesh.workload.k8sKind"]
 }
 
 func castSliceInterfaceToSliceString(in []interface{}) []string {
