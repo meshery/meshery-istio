@@ -1,6 +1,9 @@
 package build
 
 import (
+	"encoding/json"
+	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -21,18 +24,12 @@ var AllVersions []string
 
 const Component = "Istio"
 
-var meshmodelmetadata = map[string]interface{}{
-	"Primary Color":   "#466BB0",
-	"Secondary Color": "#93b0e6",
-	"Shape":           "circle",
-	"Logo URL":        "https://github.com/istio/istio/blob/master/logo/istio-bluelogo-whitebackground-unframed.svg",
-	"SVG_Color":       "<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\" viewBox=\"0 0 160 240\"><g id=\"logo\" fill=\"#466BB0\"><rect id=\"background\" width=\"160\" height=\"240\" fill=\"#fff\"/><polygon id=\"hull\" points=\"0 210 160 210 60 240\"/><polygon id=\"mainsail\" points=\"0 200 60 190 60 80\"/><polygon id=\"headsail\" points=\"70 190 160 200 70 0\"/></g></svg>\n",
-	"SVG_White":       "<svg viewBox=\"6.386270046234131 3.7419400215148926 18.227430820465088 25.258059978485107\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M6.38627 24.7904L13.2215 23.738V12.1613L6.38627 24.7904Z\" fill=\"white\"/><path d=\"M6.38627 25.8427H24.6137L13.2215 29L6.38627 25.8427Z\" fill=\"white\"/><path d=\"M14.3608 23.7379L24.6137 24.7904L14.3608 3.74194V23.7379Z\" fill=\"white\"/></svg>",
-}
+var Meshmodelmetadata = make(map[string]interface{})
+
 var MeshModelConfig = adapter.MeshModelConfig{ //Move to build/config.go
 	Category:    "Orchestration & Management",
 	SubCategory: "Service Mesh",
-	Metadata:    meshmodelmetadata,
+	Metadata:    Meshmodelmetadata,
 }
 
 // NewConfig creates the configuration for creating components
@@ -54,6 +51,16 @@ func NewConfig(version string) manifests.Config {
 	}
 }
 func init() {
+	//Initialize Metadata including logo svgs
+	f, _ := os.Open("./build/meshmodel_metadata.json")
+	defer func() {
+		if err := f.Close(); err != nil {
+			fmt.Printf("Error closing file: %s\n", err)
+		}
+	}()
+	byt, _ := io.ReadAll(f)
+
+	_ = json.Unmarshal(byt, &Meshmodelmetadata)
 	wd, _ := os.Getwd()
 	WorkloadPath = filepath.Join(wd, "templates", "oam", "workloads")
 	MeshModelPath = filepath.Join(wd, "templates", "meshmodel", "components")
