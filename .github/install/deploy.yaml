@@ -2,7 +2,8 @@ name: IstioSM
 services:
   istio:
     type: IstioMesh
+    model: ISTIO
     namespace: istio-system
-    version: 1.16.0
+    version: #filled dynamically
     settings:
       profile: demo

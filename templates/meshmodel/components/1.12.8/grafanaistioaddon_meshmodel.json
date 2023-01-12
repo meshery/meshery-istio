@@ -1,7 +1,7 @@
 {
 	"kind": "GrafanaIstioAddon",
 	"apiVersion": "core.meshmodel.dev/v1alpha1",
-	"display-name": "Prometheus Istio Addon",
+	"display-name": "Grafana Istio Addon",
 	"format": "JSON",
 	"metadata": {
 		"Logo URL": "https://github.com/istio/istio/blob/master/logo/istio-bluelogo-whitebackground-unframed.svg",

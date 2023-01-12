@@ -4,7 +4,7 @@ services:
     type: IstioMesh
     model: ISTIO
     namespace: istio-system
-    version: 1.16.1 #will be filled dynamically in workflow
+    version: #will be filled dynamically in workflow
     settings:
       profile: demo
     traits:
@@ -14,7 +14,7 @@ services:
   grafana:
     type: GrafanaIstioAddon
     model: ISTIO
-    version: 1.16.1 #will be filled dynamically in workflow
+    version:  #will be filled dynamically in workflow
     namespace: istio-system
     dependsOn:
       - istio
@@ -22,7 +22,7 @@ services:
   prometheus:
     type: PrometheusIstioAddon
     model: ISTIO
-    version: 1.16.1 #will be filled dynamically in workflow
+    version:  #will be filled dynamically in workflow
     namespace: istio-system
     dependsOn:
       - istio
