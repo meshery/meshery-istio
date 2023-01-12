@@ -1,5 +1,5 @@
 {
-	"kind": "PrometheusIstioAddon",
+	"kind": "GrafanaIstioAddon",
 	"apiVersion": "core.meshmodel.dev/v1alpha1",
 	"display-name": "Prometheus Istio Addon",
 	"format": "JSON",
@@ -13,10 +13,10 @@
 	},
 	"model": {
 		"name": "ISTIO",
-		"version": "1.16.0-beta.2",
+		"version": "1.11.8",
 		"display-name": "ISTIO",
 		"category": "Service Mesh",
 		"sub-category": ""
 	},
-	"schema": "\"properties\":{},\"title\":\"PrometheusIstioAddon\",\"type\":\"object\"}"
+	"schema": "{\n\t\"$id\": \"http://meshery.layer5.io/definition/Workload/PrometheusIstioAddon\",\n\t\"$schema\": \"http://json-schema.org/draft-07/schema\",\n\t\"properties\": {},\n\t\"title\": \"GrafanaIstioAddon\",\n\t\"type\": \"object\"\n}"
 }

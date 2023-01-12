@@ -3,6 +3,6 @@ services:
   istio:
     type: IstioMesh
     namespace: istio-system
-    version: #will be filled dynamically in workflow
+    version: 1.16.0
     settings:
       profile: demo
