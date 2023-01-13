@@ -18,14 +18,3 @@ jobs:
       uses: pullreminders/slack-action@master
       with:
         args: '{\"channel\":\"CSK7N9TGX\",\"text\":\"${{ github.actor }} just starred ${{github.repository}}! (https://github.com/${{github.repository}}/stargazers) Total ⭐️: ${{env.STARS}}\"}'
-  good-first-issue-notify:
-    if:  github.event_name == 'issues' && github.event.label.name == 'good first issue' || github.event.label.name == 'first-timers-only' 
-    name: Notify Slack for new good-first-issue
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Notify slack
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-        uses: pullreminders/slack-action@master
-        with:
-          args: '{\"channel\":\"C019426UBNY\",\"text\":\"A good first issue label was just added to ${{github.event.issue.html_url}}.\"}'
