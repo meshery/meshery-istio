@@ -18,5 +18,5 @@
 		"category": "Service Mesh",
 		"sub-category": ""
 	},
-	"schema": "\"properties\":{},\"title\":\"JaegerIstioAddon\",\"type\":\"object\"}"
+	"schema": "{\"properties\":{},\"title\":\"JaegerIstioAddon\",\"type\":\"object\"}"
 }
