@@ -2,7 +2,8 @@ name: IstioSM
 services:
   istio:
     type: IstioMesh
+    model: istio
     namespace: istio-system
-    version: #will be filled dynamically in workflow
+    version: #filled dynamically
     settings:
       profile: demo
