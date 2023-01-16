@@ -2,6 +2,7 @@ name: IstioSM
 services:
   istio:
     type: IstioMesh
+    model: istio
     namespace: istio-system
     version: #will be filled dynamically in workflow
     settings:
@@ -12,15 +13,16 @@ services:
           - default
   grafana:
     type: GrafanaIstioAddon
-    version: #will be filled dynamically in workflow
+    model: istio
+    version:  #will be filled dynamically in workflow
     namespace: istio-system
     dependsOn:
       - istio
       - prometheus
-
   prometheus:
     type: PrometheusIstioAddon
-    version: #will be filled dynamically in workflow
+    model: istio
+    version:  #will be filled dynamically in workflow
     namespace: istio-system
     dependsOn:
       - istio

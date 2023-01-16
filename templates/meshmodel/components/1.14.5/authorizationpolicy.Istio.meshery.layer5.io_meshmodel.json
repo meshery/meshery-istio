@@ -12,9 +12,9 @@
 		"Shape": "circle"
 	},
 	"model": {
-		"name": "ISTIO",
+		"name": "istio",
 		"version": "1.14.5",
-		"display-name": "ISTIO",
+		"display-name": "istio",
 		"category": "Orchestration \u0026 Management",
 		"sub-category": "Service Mesh"
 	},
