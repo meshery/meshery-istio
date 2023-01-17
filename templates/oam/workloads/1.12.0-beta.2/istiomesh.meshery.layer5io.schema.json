@@ -1,1 +1,1 @@
-{"$id":"http://meshery.layer5.io/definition/Workload/IstioMesh","$schema":"http://json-schema.org/draft-07/schema","properties":{"profile":{"description":"name of the profile","enum":["default","minimal","demo"],"type":"string"}},"required":["profile"],"title":"IstioMesh","type":"object"}
+{"$id":"http://meshery.layer5.io/definition/Workload/IstioMesh","$schema":"http://json-schema.org/draft-07/schema","properties":{"profile":{"description":"name of the profile","enum":["default","minimal","demo"],"type":"string"},"required":["profile"],"title":"IstioMesh","type":"object"}
