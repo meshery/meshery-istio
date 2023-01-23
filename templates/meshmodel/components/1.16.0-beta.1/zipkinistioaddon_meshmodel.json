@@ -18,5 +18,5 @@
 		"category": "Service Mesh",
 		"sub-category": ""
 	},
-	"schema": "\"properties\":{},\"title\":\"ZipkinIstioAddon\",\"type\":\"object\"}"
+	"schema": "{\"properties\":{},\"title\":\"ZipkinIstioAddon\",\"type\":\"object\"}"
 }
