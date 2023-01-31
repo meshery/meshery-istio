@@ -1,0 +1,1 @@
+{"kind":"WorkloadDefinition","apiVersion":"core.oam.dev/v1alpha1","metadata":{"name":"IstioMesh","creationTimestamp":null},"spec":{"definitionRef":{"name":"istiomesh.meshery.layer5.io"},"metadata":{"@type":"pattern.meshery.io/core","version":"1.17.0-beta.1"}}}
