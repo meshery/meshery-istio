@@ -12,9 +12,9 @@
 		"shape": "circle"
 	},
 	"model": {
-		"name": "istio",
+		"name": "ISTIO",
 		"version": "1.15.0-rc.0",
-		"displayName": "istio",
+		"displayName": "Istio",
 		"category": "Service Mesh",
 		"subCategory": ""
 	},
