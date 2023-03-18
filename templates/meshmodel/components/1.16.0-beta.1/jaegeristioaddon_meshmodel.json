@@ -15,7 +15,10 @@
 		"name": "istio",
 		"version": "1.16.0-beta.1",
 		"displayName": "istio",
-		"category": "Service Mesh",
+		"category": {
+			"name": "Service Mesh",
+			"metadata": null
+		},
 		"subCategory": ""
 	},
 	"schema": "{\"properties\":{},\"title\":\"JaegerIstioAddon\",\"type\":\"object\"}"

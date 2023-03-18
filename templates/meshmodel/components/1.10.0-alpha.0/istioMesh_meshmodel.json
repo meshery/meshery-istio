@@ -15,7 +15,10 @@
 		"name": "istio",
 		"version": "1.10.0-alpha.0",
 		"displayName": "ISTIO",
-		"category": "Service Mesh",
+		"category": {
+			"name": "Service Mesh",
+			"metadata": null
+		},
 		"subCategory": ""
 	},
 	"schema": "{\"properties\":{},\"profile\":{\"description\":\"name of the profile\",\"enum\":[\"default\",\"minimal\",\"demo\"],\"type\":\"string\"},\"required\":[\"profile\"],\"title\":\"IstioMesh\",\"type\":\"object\"}"
