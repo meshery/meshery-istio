@@ -14,7 +14,7 @@
 	"model": {
 		"name": "istio",
 		"version": "1.16.2",
-		"model-displayName": "",
+		"displayName": "",
 		"category": {
 			"name": "Service Mesh",
 			"metadata": null
