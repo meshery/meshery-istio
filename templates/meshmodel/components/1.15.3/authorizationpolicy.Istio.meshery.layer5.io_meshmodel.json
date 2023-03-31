@@ -16,7 +16,7 @@
 		"version": "1.15.3",
 		"displayName": "istio",
 		"category": {
-"name":"Orchestration \u0026 Management",
+"name":"Service Mesh",
 "metadata":null
 },
 		"subCategory": "Service Mesh"

@@ -27,7 +27,7 @@ const Component = "Istio"
 var Meshmodelmetadata = make(map[string]interface{})
 
 var MeshModelConfig = adapter.MeshModelConfig{ //Move to build/config.go
-	Category: "Orchestration & Management",
+	Category: "Service Mesh",
 	Metadata: Meshmodelmetadata,
 }
 
