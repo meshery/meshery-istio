@@ -12,11 +12,11 @@
 		"shape": "circle"
 	},
 	"model": {
-		"name": "istio",
+		"name": "ISTIO",
 		"version": "1.14.5",
-		"displayName": "istio",
+		"displayName": "Istio",
 		"category": {
-"name":"Service Mesh",
+"name":"Cloud Native Network",
 "metadata":null
 },
 		"subCategory": "Service Mesh"

@@ -12,10 +12,10 @@
 		"shape": "circle"
 	},
 	"model": {
-		"name": "istio",
+		"name": "ISTIO",
 		"version": "1.16.2",
 		"model-displayName": "",
-		"category": {"name":"Service Mesh","metadata":null},
+		"category": {"name":"Cloud Native Network","metadata":null},
 		"subCategory": ""
 	},
 	"schema": "{\"properties\":{\"profile\":{\"description\":\"name of the profile\",\"enum\":[\"default\",\"minimal\",\"demo\"],\"type\":\"string\"}},\"required\":[\"profile\"],\"title\":\"IstioMesh\",\"type\":\"object\"}"
