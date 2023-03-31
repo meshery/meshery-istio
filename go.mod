@@ -17,7 +17,7 @@ require (
 	github.com/layer5io/meshkit v0.6.34
 	github.com/layer5io/service-mesh-performance v0.3.4
 	gopkg.in/yaml.v2 v2.4.0
-	istio.io/client-go v1.17.0
+	istio.io/client-go v1.17.1
 	k8s.io/apimachinery v0.26.1
 	k8s.io/client-go v0.26.1
 )
@@ -133,7 +133,7 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	gorm.io/gorm v1.23.7 // indirect
 	helm.sh/helm/v3 v3.11.1 // indirect
-	istio.io/api v0.0.0-20230204131218-41d7951eb9e4 // indirect
+	istio.io/api v0.0.0-20230217221049-9d422bf48675 // indirect
 	k8s.io/api v0.26.1 // indirect
 	k8s.io/apiextensions-apiserver v0.26.0 // indirect
 	k8s.io/apiserver v0.26.0 // indirect
