@@ -18,17 +18,14 @@ import (
 var DefaultGenerationMethod string
 var DefaultGenerationURL string
 var LatestVersion string
-var WorkloadPath string
 var MeshModelPath string
 var AllVersions []string
 
 const Component = "Istio"
 
-var Meshmodelmetadata = make(map[string]interface{})
-
 var MeshModelConfig = adapter.MeshModelConfig{ //Move to build/config.go
 	Category: "Cloud Native Network",
-	Metadata: Meshmodelmetadata,
+	Metadata: map[string]interface{}{},
 }
 
 // NewConfig creates the configuration for creating components
@@ -59,9 +56,8 @@ func init() {
 	}()
 	byt, _ := io.ReadAll(f)
 
-	_ = json.Unmarshal(byt, &Meshmodelmetadata)
+	_ = json.Unmarshal(byt, &MeshModelConfig.Metadata)
 	wd, _ := os.Getwd()
-	WorkloadPath = filepath.Join(wd, "templates", "oam", "workloads")
 	MeshModelPath = filepath.Join(wd, "templates", "meshmodel", "components")
 	AllVersions, _ = utils.GetLatestReleaseTagsSorted("istio", "istio")
 	if len(AllVersions) == 0 {
