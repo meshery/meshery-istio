@@ -189,7 +189,6 @@ func registerWorkloads(port string, log logger.Handler) {
 	}
 
 	log.Info("Registering latest workload components for version ", version)
-
 	err := adapter.CreateComponents(adapter.StaticCompConfig{
 		URL:             url,
 		Method:          gm,
@@ -203,6 +202,14 @@ func registerWorkloads(port string, log logger.Handler) {
 		log.Error(err)
 		return
 	}
+	// err := adapter.CreateComponents(adapter.StaticCompConfig{
+	// 	URL:             url,
+	// 	Method:          gm,
+	// 	MeshModelPath:   build.MeshModelPath,
+	// 	MeshModelConfig: build.MeshModelConfig,
+	// 	DirName:         version,
+	// 	Config:          build.NewConfig(version),
+	// })
 
 	//The below log is checked in the workflows. If you change this log, reflect that change in the workflow where components are generated
 	log.Info("Component creation completed for version ", version)
