@@ -13,7 +13,7 @@
 	},
 	"model": {
 		"name": "ISTIO",
-		"version": "1.9.0",
+		"version": "1.14.2",
 		"displayName": "Istio",
 		"category": {"name":"Cloud Native Network","metadata":null},
 		"subCategory": ""
