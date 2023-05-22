@@ -17,8 +17,8 @@ require (
 	github.com/layer5io/service-mesh-performance v0.3.4
 	gopkg.in/yaml.v2 v2.4.0
 	istio.io/client-go v1.17.0
-	k8s.io/apimachinery v0.26.1
-	k8s.io/client-go v0.26.1
+	k8s.io/apimachinery v0.27.2
+	k8s.io/client-go v0.27.2
 )
 
 require (
@@ -49,9 +49,9 @@ require (
 	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/go-errors/errors v1.0.1 // indirect
 	github.com/go-logr/logr v1.2.4 // indirect
-	github.com/go-openapi/jsonpointer v0.19.5 // indirect
-	github.com/go-openapi/jsonreference v0.20.0 // indirect
-	github.com/go-openapi/swag v0.19.14 // indirect
+	github.com/go-openapi/jsonpointer v0.19.6 // indirect
+	github.com/go-openapi/jsonreference v0.20.1 // indirect
+	github.com/go-openapi/swag v0.22.3 // indirect
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/glog v1.0.0 // indirect
@@ -77,7 +77,7 @@ require (
 	github.com/lib/pq v1.10.7 // indirect
 	github.com/liggitt/tabwriter v0.0.0-20181228230101-89fcab3d43de // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
-	github.com/mailru/easyjson v0.7.6 // indirect
+	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/mattn/go-runewidth v0.0.9 // indirect
@@ -133,14 +133,14 @@ require (
 	gorm.io/gorm v1.23.7 // indirect
 	helm.sh/helm/v3 v3.11.1 // indirect
 	istio.io/api v0.0.0-20230204131218-41d7951eb9e4 // indirect
-	k8s.io/api v0.26.1 // indirect
+	k8s.io/api v0.27.2 // indirect
 	k8s.io/apiextensions-apiserver v0.26.0 // indirect
 	k8s.io/apiserver v0.26.0 // indirect
 	k8s.io/component-base v0.26.0 // indirect
-	k8s.io/klog/v2 v2.80.1 // indirect
-	k8s.io/kube-openapi v0.0.0-20221012153701-172d655c2280 // indirect
+	k8s.io/klog/v2 v2.90.1 // indirect
+	k8s.io/kube-openapi v0.0.0-20230501164219-8b0f38b5fd1f // indirect
 	k8s.io/kubectl v0.26.0 // indirect
-	k8s.io/utils v0.0.0-20221107191617-1a15be271d1d // indirect
+	k8s.io/utils v0.0.0-20230209194617-a36077c30491 // indirect
 	oras.land/oras-go v1.2.2 // indirect
 	sigs.k8s.io/kustomize/api v0.12.1 // indirect
 	sigs.k8s.io/kustomize/kyaml v0.13.9 // indirect
@@ -184,5 +184,5 @@ require (
 	gorm.io/driver/postgres v1.3.10 // indirect
 	gorm.io/driver/sqlite v1.3.1 // indirect
 	k8s.io/cli-runtime v0.26.0 // indirect
-	sigs.k8s.io/json v0.0.0-20220713155537-f223a00ba0e2 // indirect
+	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 )
