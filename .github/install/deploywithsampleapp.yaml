@@ -1,4 +1,4 @@
-name: istio
+name: ISTIO
 services:
   istioinstallation:
     type: $(#use https://raw.githubusercontent.com/service-mesh-patterns/service-mesh-patterns/master/samples/istioinstall.yaml)
