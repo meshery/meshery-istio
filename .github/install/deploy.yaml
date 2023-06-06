@@ -2,7 +2,7 @@ name: IstioSM
 services:
   istio:
     type: IstioMesh
-    model: istio
+    model: ISTIO
     namespace: istio-system
     version: #filled dynamically
     settings:
