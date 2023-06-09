@@ -1,4 +1,4 @@
-name: istio
+name: ISTIO
 services:
   istioinstallation:
     type: $(#use https://raw.githubusercontent.com/service-mesh-patterns/service-mesh-patterns/master/samples/istioinstall.yaml)
@@ -8,7 +8,7 @@ services:
       istioVersion: 1.14.0
       profile: minimal
   bookinfo:
-    type: $(#use https://raw.githubusercontent.com/service-mesh-patterns/service-mesh-patterns/master/samples/bookInfoWithoutK8s.yaml)
+    type: $(#use https://raw.githubusercontent.com/service-mesh-patterns/service-mesh-patterns/master/samples/bookInfo.yaml)
     settings: 
       namespace: default
     dependsOn:
