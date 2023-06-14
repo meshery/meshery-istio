@@ -189,27 +189,39 @@ func registerWorkloads(port string, log logger.Handler) {
 	}
 
 	log.Info("Registering latest workload components for version ", version)
-	err := adapter.CreateComponents(adapter.StaticCompConfig{
-		URL:             url,
-		Method:          gm,
-		MeshModelPath:   build.MeshModelPath,
-		MeshModelConfig: build.MeshModelConfig,
-		DirName:         version,
-		Config:          build.NewConfig(version),
-	})
-	if err != nil {
-		log.Info("Failed to generate components for version " + version)
-		log.Error(err)
-		return
+	if url == "" {
+		for _, u := range build.CRDURL {
+			log.Info("Registering CRDs from ", u)
+			log.Info("Gm: ", gm)
+			err := adapter.CreateComponents(adapter.StaticCompConfig{
+				URL:             u,
+				Method:          gm,
+				MeshModelPath:   build.MeshModelPath,
+				MeshModelConfig: build.MeshModelConfig,
+				DirName:         version,
+				Config:          build.NewConfig(version),
+			})
+			if err != nil {
+				log.Info("Failed to generate components for version " + version)
+				log.Error(err)
+				return
+			}
+		}
+	} else {
+		err := adapter.CreateComponents(adapter.StaticCompConfig{
+			URL:             url,
+			Method:          gm,
+			MeshModelPath:   build.MeshModelPath,
+			MeshModelConfig: build.MeshModelConfig,
+			DirName:         version,
+			Config:          build.NewConfig(version),
+		})
+		if err != nil {
+			log.Info("Failed to generate components for version " + version)
+			log.Error(err)
+			return
+		}
 	}
-	// err := adapter.CreateComponents(adapter.StaticCompConfig{
-	// 	URL:             url,
-	// 	Method:          gm,
-	// 	MeshModelPath:   build.MeshModelPath,
-	// 	MeshModelConfig: build.MeshModelConfig,
-	// 	DirName:         version,
-	// 	Config:          build.NewConfig(version),
-	// })
 
 	//The below log is checked in the workflows. If you change this log, reflect that change in the workflow where components are generated
 	log.Info("Component creation completed for version ", version)

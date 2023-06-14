@@ -17,6 +17,7 @@ import (
 
 var DefaultGenerationMethod string
 var DefaultGenerationURL string
+var CRDURL []string
 var LatestVersion string
 var MeshModelPath string
 var AllVersions []string
@@ -65,5 +66,7 @@ func init() {
 	}
 	LatestVersion = AllVersions[len(AllVersions)-1]
 	DefaultGenerationMethod = adapter.Manifests
-	DefaultGenerationURL = "https://raw.githubusercontent.com/istio/istio/" + LatestVersion + "/manifests/charts/base/crds/crd-all.gen.yaml"
+	CRDURL = []string{
+		"https://raw.githubusercontent.com/istio/istio/" + LatestVersion + "/manifests/charts/base/crds/crd-all.gen.yaml", 
+		"https://raw.githubusercontent.com/istio/istio/" + LatestVersion + "/manifests/charts/base/crds/crd-operator.yaml"}
 }
