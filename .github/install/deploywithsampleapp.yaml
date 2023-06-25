@@ -7,6 +7,25 @@ services:
       namespace: default
       istioVersion: 1.14.0
       profile: minimal
+      global:
+        imagePullSecrets: []
+        istioNamespace: istio-system
+
+        istiod:
+          enableAnalysis: false
+
+        configValidation: true
+        externalIstiod: false
+        remotePilotAddress: ""
+
+      base:
+        enableCRDTemplates: false
+        # Validation webhook configuration url
+        # For example: https://$remotePilotAddress:15017/validate
+        validationURL: ""
+        enableIstioConfigCRDs: true
+
+      defaultRevision: "default"
   bookinfo:
     type: $(#use https://raw.githubusercontent.com/service-mesh-patterns/service-mesh-patterns/master/samples/bookInfo.yaml)
     settings: 

@@ -7,6 +7,25 @@ services:
     version: #will be filled dynamically in workflow
     settings:
       profile: demo
+      global:
+        imagePullSecrets: []
+        istioNamespace: istio-system
+
+        istiod:
+          enableAnalysis: false
+
+        configValidation: true
+        externalIstiod: false
+        remotePilotAddress: ""
+
+      base:
+        enableCRDTemplates: false
+        # Validation webhook configuration url
+        # For example: https://$remotePilotAddress:15017/validate
+        validationURL: ""
+        enableIstioConfigCRDs: true
+
+      defaultRevision: "default"
     traits:
       automaticSidecarInjection:
         namespaces:
