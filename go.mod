@@ -13,7 +13,7 @@ replace (
 require (
 	github.com/aspenmesh/istio-vet v0.0.0-20200806222806-9c8e9a962b9f
 	github.com/layer5io/meshery-adapter-library v0.6.7
-	github.com/layer5io/meshkit v0.6.45
+	github.com/layer5io/meshkit v0.6.49
 	github.com/layer5io/service-mesh-performance v0.3.4
 	gopkg.in/yaml.v2 v2.4.0
 	istio.io/client-go v1.17.0
@@ -83,7 +83,7 @@ require (
 	github.com/mattn/go-runewidth v0.0.9 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
 	github.com/mitchellh/copystructure v1.2.0 // indirect
-	github.com/mitchellh/go-wordwrap v1.0.0 // indirect
+	github.com/mitchellh/go-wordwrap v1.0.1 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/moby/locker v1.0.1 // indirect
@@ -149,10 +149,10 @@ require (
 )
 
 require (
-	cuelang.org/go v0.4.3 // indirect
+	cuelang.org/go v0.5.0 // indirect
 	github.com/Masterminds/squirrel v1.5.3 // indirect
 	github.com/chai2010/gettext-go v1.0.2 // indirect
-	github.com/cockroachdb/apd/v2 v2.0.1 // indirect
+	github.com/cockroachdb/apd/v2 v2.0.2 // indirect
 	github.com/containerd/containerd v1.6.19 // indirect
 	github.com/docker/cli v20.10.21+incompatible // indirect
 	github.com/emicklei/go-restful/v3 v3.9.0 // indirect
