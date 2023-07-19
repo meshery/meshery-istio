@@ -39,7 +39,7 @@ func NewConfig(version string) manifests.Config {
 			IdPath:      "spec.names.kind",
 			VersionPath: "spec.versions[0].name",
 			GroupPath:   "spec.group",
-			SpecPath:    "spec.versions[0].schema.openAPIV3Schema.properties.spec"}, false),
+			SpecPath:    "spec.versions[0].schema.openAPIV3Schema"}, false),
 		ExtractCrds: func(manifest string) []string {
 			crds := strings.Split(manifest, "---")
 			return crds
