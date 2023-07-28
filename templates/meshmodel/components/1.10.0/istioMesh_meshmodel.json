@@ -21,5 +21,5 @@
     },
     "subCategory": ""
   },
-  "schema": "{\"properties\":{},\"profile\":{\"description\":\"name of the profile\",\"enum\":[\"default\",\"minimal\",\"demo\"],\"type\":\"string\"},\"required\":[\"profile\"],\"title\":\"IstioMesh\",\"type\":\"object\"}"
+  "schema": "{\"properties\":{\"profile\":{\"description\":\"name of the profile\",\"enum\":[\"default\",\"minimal\",\"demo\"],\"type\":\"string\"}},\"required\":[\"profile\"],\"type\":\"object\",\"title\":\"IstioMesh\"}"
 }
