@@ -12,7 +12,7 @@
 		"shape": "circle"
 	},
 	"model": {
-		"name": "ISTIO",
+		"name": "istio",
 		"version": "1.8.5",
 		"displayName": "Istio",
 		"category": {"name":"Cloud Native Network","metadata":null},
