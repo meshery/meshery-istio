@@ -12,11 +12,11 @@
 		"shape": "circle"
 	},
 	"model": {
-		"name": "ISTIO",
+		"name": "istio",
 		"version": "1.10.0-alpha.0",
 		"displayName": "Istio",
 		"category": {"name":"Cloud Native Network","metadata":null},
 		"subCategory": ""
 	},
-	"schema": "{\"properties\":{},\"profile\":{\"description\":\"name of the profile\",\"enum\":[\"default\",\"minimal\",\"demo\"],\"type\":\"string\"},\"required\":[\"profile\"],\"title\":\"IstioMesh\",\"type\":\"object\"}"
+	"schema": "{\"properties\":{\"profile\":{\"description\":\"name of the profile\",\"enum\":[\"default\",\"minimal\",\"demo\"],\"type\":\"string\"}},\"required\":[\"profile\"],\"type\":\"object\",\"title\":\"IstioMesh\"}"
 }
