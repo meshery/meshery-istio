@@ -15,6 +15,7 @@ import (
 	"github.com/layer5io/meshkit/logger"
 	"github.com/layer5io/meshkit/models"
 	"github.com/layer5io/meshkit/models/oam/core/v1alpha1"
+	"github.com/layer5io/meshkit/utils"
 	"github.com/layer5io/meshkit/utils/events"
 	"gopkg.in/yaml.v2"
 )
@@ -44,6 +45,7 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 	}
 	kubeConfigs := opReq.K8sConfigs
 	operations := make(adapter.Operations)
+	requestedVersion := adapter.Version(opReq.Version)
 	err = istio.Config.GetObject(adapter.OperationsKey, &operations)
 	if err != nil {
 		return err
@@ -65,6 +67,9 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 				err = ErrFetchIstioVersions
 			} else {
 				version = string(operations[opReq.OperationName].Versions[len(operations[opReq.OperationName].Versions)-1])
+				if utils.Contains[[]adapter.Version, adapter.Version](operations[opReq.OperationName].Versions, requestedVersion) {
+					version = requestedVersion.String()
+				}
 				stat, err = hh.installIstio(opReq.IsDeleteOperation, false, version, opReq.Namespace, "default", kubeConfigs)
 			}
 			if err != nil { //Make sure that this is a meshkit error
