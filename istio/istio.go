@@ -73,7 +73,7 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 				stat, err = hh.installIstio(opReq.IsDeleteOperation, false, version, opReq.Namespace, "default", kubeConfigs)
 			}
 			if err != nil { //Make sure that this is a meshkit error
-				ee.Summary = fmt.Sprintf("Error while %s Istio service mesh", stat)
+				ee.Summary = fmt.Sprintf("Error while %s Istio service mesh %s", stat, version)
 				ee.Details = err.Error()
 				ee.ErrorCode = errors.GetCode(err)
 				ee.ProbableCause = errors.GetCause(err)
@@ -81,8 +81,8 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 				hh.StreamErr(ee, err)
 				return
 			}
-			ee.Summary = fmt.Sprintf("Istio service mesh %s successfully", stat)
-			ee.Details = fmt.Sprintf("The Istio service mesh is now %s.", stat)
+			ee.Summary = fmt.Sprintf("Istio service mesh %s %s successfully", version, stat)
+			ee.Details = fmt.Sprintf("The Istio service mesh %s is now %s.", version, stat)
 			hh.StreamInfo(ee)
 		}(istio, e)
 	case common.BookInfoOperation, common.HTTPBinOperation, common.ImageHubOperation, common.EmojiVotoOperation:
