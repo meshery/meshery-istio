@@ -14,7 +14,7 @@ require (
 	github.com/aspenmesh/istio-vet v0.0.0-20200806222806-9c8e9a962b9f
 	github.com/layer5io/meshery-adapter-library v0.6.9
 	github.com/layer5io/meshkit v0.6.58
-	github.com/layer5io/service-mesh-performance v0.3.4
+	github.com/layer5io/service-mesh-performance v0.6.1
 	gopkg.in/yaml.v2 v2.4.0
 	istio.io/client-go v1.17.0
 	k8s.io/apimachinery v0.26.1
