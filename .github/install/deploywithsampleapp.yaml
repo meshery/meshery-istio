@@ -1,15 +1,15 @@
-name: ISTIO
+name: Istio
 services:
   istioinstallation:
     type: $(#use https://raw.githubusercontent.com/service-mesh-patterns/service-mesh-patterns/master/samples/istioinstall.yaml)
-    settings: 
+    settings:
       controlplaneNS: istio-system
       namespace: default
       istioVersion: 1.14.0
       profile: minimal
   bookinfo:
     type: $(#use https://raw.githubusercontent.com/service-mesh-patterns/service-mesh-patterns/master/samples/bookInfo.yaml)
-    settings: 
+    settings:
       namespace: default
     dependsOn:
       - istioinstallation
