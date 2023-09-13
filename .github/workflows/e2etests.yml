@@ -7,7 +7,7 @@ on:
     tags:
       - "v*"
     paths-ignore:
-      - 'docs/**'   
+      - "docs/**"
   pull_request:
     branches:
       - "*"
@@ -18,32 +18,32 @@ jobs:
     runs-on: ubuntu-22.04
     outputs:
       sm_version: ${{ steps.gettag.outputs.release }}
-      adapter_version:  ${{ env.version }}
+      adapter_version: ${{ env.version }}
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Get version of adapter
         run: |
-            if [ ${{ github.event_name }} == "release" ];then
-                echo "version=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
-            else 
-                echo "version=edge" >> $GITHUB_ENV
-            fi
+          if [ ${{ github.event_name }} == "release" ];then
+              echo "version=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
+          else 
+              echo "version=edge" >> $GITHUB_ENV
+          fi
       - name: Get latest release tag
         id: gettag
         uses: pozetroninc/github-action-get-latest-release@master
         with:
           repository: istio/istio
-          excludes: prerelease, draft, edge 
+          excludes: prerelease, draft, edge
       - name: Change service mesh version in patternfile
-        run: | 
-           yq e -i '.services.istio.version="${{ steps.gettag.outputs.release }}"' ./.github/install/deploy.yaml 
-           cat ./.github/install/deploy.yaml
+        run: |
+          yq e -i '.services.istio.version="${{ steps.gettag.outputs.release }}"' ./.github/install/deploy.yaml 
+          cat ./.github/install/deploy.yaml
       - name: Uploading file
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: patternfile
-          path: ./.github/install/deploy.yaml 
+          path: ./.github/install/deploy.yaml
 
   TestIstioForServicemeshInstall:
     needs: SetPatternfileForServicemeshInstall
@@ -59,31 +59,31 @@ jobs:
       provider: Local
       k8s_version: v1.20.1
       sm_version: ${{ needs.SetPatternfileForServicemeshInstall.outputs.sm_version }}
-      adapter_version:  ${{ needs.SetPatternfileForServicemeshInstall.outputs.adapter_version }}
+      adapter_version: ${{ needs.SetPatternfileForServicemeshInstall.outputs.adapter_version }}
       output_filename: data.json
     secrets:
-      token: ${{ secrets.PROVIDER_TOKEN }} 
+      token: ${{ secrets.PROVIDER_TOKEN }}
 
   UpdateDocsForServicemeshInstall:
     needs: TestIstioForServicemeshInstall
-    if:  "always() && github.event_name != 'pull_request' "
+    if: "always() && github.event_name != 'pull_request' "
     runs-on: ubuntu-22.04
     steps:
       - name: Skip if needed
         run: |
-            echo "this is it ${{ needs.SkipIfNeeded.outputs.skipdocupdate }} "
-            if [ "${{github.event_name }}" == "push" ];then
-              echo "version=edge" >> $GITHUB_ENV
-            fi
-            if [ "${{github.event_name }}" == "release" ];then
-              echo "version=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
-            fi
-      - uses: actions/checkout@v3
+          echo "this is it ${{ needs.SkipIfNeeded.outputs.skipdocupdate }} "
+          if [ "${{github.event_name }}" == "push" ];then
+            echo "version=edge" >> $GITHUB_ENV
+          fi
+          if [ "${{github.event_name }}" == "release" ];then
+            echo "version=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
+          fi
+      - uses: actions/checkout@v4
         with:
-          repository: meshery/meshery 
-          token: ${{ secrets.GH_ACCESS_TOKEN }}   
+          repository: meshery/meshery
+          token: ${{ secrets.GH_ACCESS_TOKEN }}
       - name: DownloadJSON
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: data.json
       - name: Add commit SHORT_SHA
@@ -124,41 +124,41 @@ jobs:
           commit_user_name: l5io
           commit_user_email: ci@layer5.io
           commit_author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
-          commit_options: '--signoff'
-          commit_message: '[Docs] Test status of adapter'
+          commit_options: "--signoff"
+          commit_message: "[Docs] Test status of adapter"
 
   SetPatternfileForServicemeshAndAddon:
     runs-on: ubuntu-22.04
     outputs:
       sm_version: ${{ steps.gettag.outputs.release }}
-      adapter_version:  ${{ env.version }}
+      adapter_version: ${{ env.version }}
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Get version of adapter
         run: |
-            if [ ${{ github.event_name }} == "release" ];then
-                echo "version=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
-            else 
-                echo "version=edge" >> $GITHUB_ENV
-            fi
+          if [ ${{ github.event_name }} == "release" ];then
+              echo "version=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
+          else 
+              echo "version=edge" >> $GITHUB_ENV
+          fi
       - name: Get latest release tag
         id: gettag
         uses: pozetroninc/github-action-get-latest-release@master
         with:
           repository: istio/istio
-          excludes: prerelease, draft, edge 
+          excludes: prerelease, draft, edge
       - name: Change service mesh version in patternfile
-        run: | 
-           yq e -i '.services.istio.version="${{ steps.gettag.outputs.release }}"' ./.github/install/deploywithaddons.yaml 
-           yq e -i '.services.grafana.version="${{ steps.gettag.outputs.release }}"' ./.github/install/deploywithaddons.yaml 
-           yq e -i '.services.prometheus.version="${{ steps.gettag.outputs.release }}"' ./.github/install/deploywithaddons.yaml 
-           cat ./.github/install/deploywithaddons.yaml
+        run: |
+          yq e -i '.services.istio.version="${{ steps.gettag.outputs.release }}"' ./.github/install/deploywithaddons.yaml 
+          yq e -i '.services.grafana.version="${{ steps.gettag.outputs.release }}"' ./.github/install/deploywithaddons.yaml 
+          yq e -i '.services.prometheus.version="${{ steps.gettag.outputs.release }}"' ./.github/install/deploywithaddons.yaml 
+          cat ./.github/install/deploywithaddons.yaml
       - name: Uploading file
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: patternfile
-          path: ./.github/install/deploywithaddons.yaml 
+          path: ./.github/install/deploywithaddons.yaml
 
   TestIstioForServicemeshAndAddon:
     needs: SetPatternfileForServicemeshAndAddon
@@ -174,31 +174,31 @@ jobs:
       provider: Local
       k8s_version: v1.20.1
       sm_version: ${{ needs.SetPatternfileForServicemeshAndAddon.outputs.sm_version }}
-      adapter_version:  ${{ needs.SetPatternfileForServicemeshAndAddon.outputs.adapter_version }}
+      adapter_version: ${{ needs.SetPatternfileForServicemeshAndAddon.outputs.adapter_version }}
       output_filename: data.json
     secrets:
-      token: ${{ secrets.PROVIDER_TOKEN }} 
+      token: ${{ secrets.PROVIDER_TOKEN }}
 
   UpdateDocsForServicemeshAndAddon:
     needs: TestIstioForServicemeshAndAddon
-    if:  "always() && github.event_name != 'pull_request' "
+    if: "always() && github.event_name != 'pull_request' "
     runs-on: ubuntu-22.04
     steps:
       - name: Skip if needed
         run: |
-            echo "this is it ${{ needs.SkipIfNeeded.outputs.skipdocupdate }} "
-            if [ "${{github.event_name }}" == "push" ];then
-              echo "version=edge" >> $GITHUB_ENV
-            fi
-            if [ "${{github.event_name }}" == "release" ];then
-              echo "version=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
-            fi
-      - uses: actions/checkout@v3
+          echo "this is it ${{ needs.SkipIfNeeded.outputs.skipdocupdate }} "
+          if [ "${{github.event_name }}" == "push" ];then
+            echo "version=edge" >> $GITHUB_ENV
+          fi
+          if [ "${{github.event_name }}" == "release" ];then
+            echo "version=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
+          fi
+      - uses: actions/checkout@v4
         with:
-          repository: meshery/meshery 
-          token: ${{ secrets.GH_ACCESS_TOKEN }}   
+          repository: meshery/meshery
+          token: ${{ secrets.GH_ACCESS_TOKEN }}
       - name: DownloadJSON
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: data.json
       - name: Add commit SHORT_SHA
@@ -241,39 +241,39 @@ jobs:
           commit_user_name: l5io
           commit_user_email: ci@layer5.io
           commit_author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
-          commit_options: '--signoff'
-          commit_message: '[Docs] Test status of adapter'
+          commit_options: "--signoff"
+          commit_message: "[Docs] Test status of adapter"
 
   SetPatternfileForServicemeshAndSampleApp:
     runs-on: ubuntu-22.04
     outputs:
       sm_version: ${{ steps.gettag.outputs.release }}
-      adapter_version:  ${{ env.version }}
+      adapter_version: ${{ env.version }}
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Get version of adapter
         run: |
-            if [ ${{ github.event_name }} == "release" ];then
-                echo "version=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
-            else 
-                echo "version=edge" >> $GITHUB_ENV
-            fi
+          if [ ${{ github.event_name }} == "release" ];then
+              echo "version=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
+          else 
+              echo "version=edge" >> $GITHUB_ENV
+          fi
       - name: Get latest release tag
         id: gettag
         uses: pozetroninc/github-action-get-latest-release@master
         with:
           repository: istio/istio
-          excludes: prerelease, draft, edge 
+          excludes: prerelease, draft, edge
       - name: Change service mesh version in patternfile
-        run: | 
-           yq e -i '.services.istioinstallation.settings.istioVersion="${{ steps.gettag.outputs.release }}"' ./.github/install/deploywithsampleapp.yaml 
-           cat ./.github/install/deploywithsampleapp.yaml
+        run: |
+          yq e -i '.services.istioinstallation.settings.istioVersion="${{ steps.gettag.outputs.release }}"' ./.github/install/deploywithsampleapp.yaml 
+          cat ./.github/install/deploywithsampleapp.yaml
       - name: Uploading file
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: patternfile
-          path: ./.github/install/deploywithsampleapp.yaml 
+          path: ./.github/install/deploywithsampleapp.yaml
 
   TestIstioForServicemeshAndSampleApp:
     needs: SetPatternfileForServicemeshAndSampleApp
@@ -289,31 +289,31 @@ jobs:
       provider: Local
       k8s_version: v1.20.1
       sm_version: ${{ needs.SetPatternfileForServicemeshAndSampleApp.outputs.sm_version }}
-      adapter_version:  ${{ needs.SetPatternfileForServicemeshAndSampleApp.outputs.adapter_version }}
+      adapter_version: ${{ needs.SetPatternfileForServicemeshAndSampleApp.outputs.adapter_version }}
       output_filename: data.json
     secrets:
-      token: ${{ secrets.PROVIDER_TOKEN }} 
+      token: ${{ secrets.PROVIDER_TOKEN }}
 
   UpdateDocsForServicemeshAndSampleApp:
     needs: TestIstioForServicemeshAndSampleApp
-    if:  "always() && github.event_name != 'pull_request' "
+    if: "always() && github.event_name != 'pull_request' "
     runs-on: ubuntu-22.04
     steps:
       - name: Skip if needed
         run: |
-            echo "this is it ${{ needs.SkipIfNeeded.outputs.skipdocupdate }} "
-            if [ "${{github.event_name }}" == "push" ];then
-              echo "version=edge" >> $GITHUB_ENV
-            fi
-            if [ "${{github.event_name }}" == "release" ];then
-              echo "version=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
-            fi
-      - uses: actions/checkout@v3
+          echo "this is it ${{ needs.SkipIfNeeded.outputs.skipdocupdate }} "
+          if [ "${{github.event_name }}" == "push" ];then
+            echo "version=edge" >> $GITHUB_ENV
+          fi
+          if [ "${{github.event_name }}" == "release" ];then
+            echo "version=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
+          fi
+      - uses: actions/checkout@v4
         with:
-          repository: meshery/meshery 
-          token: ${{ secrets.GH_ACCESS_TOKEN }}   
+          repository: meshery/meshery
+          token: ${{ secrets.GH_ACCESS_TOKEN }}
       - name: DownloadJSON
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: data.json
       - name: Add commit SHORT_SHA
@@ -358,5 +358,5 @@ jobs:
           commit_user_name: l5io
           commit_user_email: ci@layer5.io
           commit_author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
-          commit_options: '--signoff'
-          commit_message: '[Docs] Test status of adapter'
+          commit_options: "--signoff"
+          commit_message: "[Docs] Test status of adapter"
