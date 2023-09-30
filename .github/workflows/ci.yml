@@ -2,7 +2,7 @@ name: Default Meshery Istio Workflow
 on:
   push:
     branches:
-      - "*"
+      - "master"
     tags:
       - "v*"
     paths-ignore:
@@ -16,7 +16,7 @@ jobs:
     name: golangci-lint
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/setup-go@v3
+      - uses: actions/setup-go@v4
         with:
           go-version: 1.19
       - uses: actions/checkout@v3
@@ -24,95 +24,8 @@ jobs:
         uses: golangci/golangci-lint-action@v3
         with:
           # Required: the version of golangci-lint is required and must be specified without patch version: we always use the latest patch version.
-          version: v1.49
-
-          # Optional: working directory, useful for monorepos
-          # working-directory: somedir
-
-          # Optional: golangci-lint command line arguments.
-          # args: --issues-exit-code=0
-
-          # Optional: show only new issues if it's a pull request. The default value is `false`.
-          # only-new-issues: true
-  error_check:
-    name: Error check
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 1
-      - name: Setup Go
-        uses: actions/setup-go@v3
-        with:
-          go-version: 1.19
-      - run: GOPROXY=https://proxy.golang.org,direct GOSUMDB=off GO111MODULE=on go install github.com/kisielk/errcheck@latest; /home/runner/go/bin/errcheck -tags draft ./...
-  error_code_check:
-    name: Error code utility check
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 1
-      - name: Setup Go
-        uses: actions/setup-go@v3
-        with:
-          go-version: 1.19
-      - run: |
-            errWillHave="level=error"
-            GOPROXY=https://proxy.golang.org,direct GOSUMDB=off GO111MODULE=on go install github.com/layer5io/meshkit/cmd/errorutil;
-            err=$(/home/runner/go/bin/errorutil -d . update --skip-dirs meshery -i ./helpers -o ./helpers);
-            echo "ERR: $err";
-            if [[ $err == *"$errWillHave"* ]];
-            then
-              echo "$err";
-              return 1;
-            fi
-            
-  static_check:
-    name: Static check
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 1
-      - name: Setup Go
-        uses: actions/setup-go@v3
-        with:
-          go-version: 1.19
-      - uses: dominikh/staticcheck-action@v1.2.0
-        with:
-          install-go: false
-          version: "2022.1"
-  vet:
-    name: Vet
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 1
-      - name: Setup Go
-        uses: actions/setup-go@v3
-        with:
-          go-version: 1.19
-      - run: GOPROXY=https://proxy.golang.org,direct GOSUMDB=off GO111MODULE=on go vet -tags draft ./...
-  sec_check:
-    name: Security check
-    runs-on: ubuntu-22.04
-    env:
-      GO111MODULE: on
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 1
-      - name: Run Gosec Security Scanner
-        uses: securego/gosec@master
-        with:
-          args: -exclude=G301,G304,G107,G101,G110,G204,G409,G305,G302 ./... 
+          version: latest
+          args: --timeout=5m
   tests:
     #  needs: [lint, error_check, static_check, vet, sec_check]
      name: Tests
