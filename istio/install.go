@@ -409,6 +409,7 @@ func (istio *Istio) getExecutable(release, dirName string) (string, error) {
 
 func tarxzf(location string, stream io.Reader) error {
 	uncompressedStream, err := gzip.NewReader(stream)
+
 	if err != nil {
 		return err
 	}
@@ -429,34 +430,30 @@ func tarxzf(location string, stream io.Reader) error {
 		switch header.Typeflag {
 		case tar.TypeDir:
 			// File traversal is required to store the extracted manifests at the right place
-			// #nosec
-			if err := os.MkdirAll(path.Join(location, header.Name), 0750); err != nil {
+			if os.MkdirAll(path.Join(location, header.Name), 0750) != nil {
 				return ErrTarXZF(err)
 			}
 		case tar.TypeReg:
 			// File traversal is required to store the extracted manifests at the right place
-			// #nosec
-			outFile, err := os.Create(path.Join(location, header.Name))
-			if err != nil {
-				return ErrTarXZF(err)
+			outFile, createFileErr := os.Create(path.Join(location, header.Name))
+			if createFileErr != nil {
+				return ErrTarXZF(createFileErr)
 			}
-			// Trust istioctl tar
-			// #nosec
-			if _, err := io.Copy(outFile, tarReader); err != nil {
-				return ErrTarXZF(err)
+			// Trust istioctl tar hence
+			if _, copyErr := io.Copy(outFile, tarReader); copyErr != nil {
+				return ErrTarXZF(copyErr)
 			}
+
 			if err = outFile.Close(); err != nil {
 				return ErrTarXZF(err)
 			}
 
 			if header.FileInfo().Name() == "istioctl" {
 				// istioctl binary needs to be executable
-				// #nosec
-				if err = os.Chmod(outFile.Name(), 0750); err != nil {
+				if os.Chmod(outFile.Name(), 0750) != nil {
 					return ErrMakingBinExecutable(err)
 				}
 			}
-
 		default:
 			return ErrTarXZF(err)
 		}
@@ -465,6 +462,7 @@ func tarxzf(location string, stream io.Reader) error {
 	return nil
 }
 
+// TODO: The defer function is the last change to close the file, if it fails, it will be left open. We should return this error rather than logging it
 func unzip(location string, zippedContent io.Reader) error {
 	// Keep file in memory: Approx size ~ 50MB
 	// TODO: Find a better approach
@@ -490,7 +488,6 @@ func unzip(location string, zippedContent io.Reader) error {
 		}()
 
 		// need file traversal to place the extracted files at the right place, hence
-		// #nosec
 		extractedFilePath := path.Join(location, file.Name)
 
 		if file.FileInfo().IsDir() {
@@ -508,11 +505,8 @@ func unzip(location string, zippedContent io.Reader) error {
 			if err != nil {
 				return ErrUnzipFile(err)
 			}
-
-			/* #nosec G307 */
-
 			defer func() {
-				if err := outputFile.Close(); err != nil {
+				if outputFile.Close() != nil {
 					fmt.Println(err)
 				}
 			}()
