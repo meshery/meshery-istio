@@ -303,12 +303,11 @@ func (istio *Istio) ProcessOAM(ctx context.Context, oamReq adapter.OAMRequest) (
 	kubeconfigs := oamReq.K8sConfigs
 	var comps []v1alpha1.Component
 	for _, acomp := range oamReq.OamComps {
-		comp, err := oam.ParseApplicationComponent(acomp)
-		if err != nil {
+		comp, configErr := oam.ParseApplicationComponent(acomp)
+		if configErr != nil {
 			istio.Log.Error(ErrParseOAMComponent)
 			continue
 		}
-
 		comps = append(comps, comp)
 	}
 
@@ -320,15 +319,15 @@ func (istio *Istio) ProcessOAM(ctx context.Context, oamReq adapter.OAMRequest) (
 	// If operation is delete then first HandleConfiguration and then handle the deployment
 	if oamReq.DeleteOp {
 		// Process configuration
-		msg2, err := istio.HandleApplicationConfiguration(config, oamReq.DeleteOp, kubeconfigs)
-		if err != nil {
-			return msg2, ErrProcessOAM(err)
+		msg2, appConfiguration := istio.HandleApplicationConfiguration(config, oamReq.DeleteOp, kubeconfigs)
+		if appConfiguration != nil {
+			return msg2, ErrProcessOAM(appConfiguration)
 		}
 
 		// Process components
-		msg1, err := istio.HandleComponents(comps, oamReq.DeleteOp, kubeconfigs)
-		if err != nil {
-			return msg1 + "\n" + msg2, ErrProcessOAM(err)
+		msg1, componentsErr := istio.HandleComponents(comps, oamReq.DeleteOp, kubeconfigs)
+		if componentsErr != nil {
+			return msg1 + "\n" + msg2, ErrProcessOAM(componentsErr)
 		}
 
 		return msg1 + "\n" + msg2, nil
