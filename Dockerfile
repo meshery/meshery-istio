@@ -1,4 +1,5 @@
-FROM golang:1.19 as builder
+ARG GOLANG_VERSION=1.21
+FROM golang:${GOLANG_VERSION} as builder
 
 ARG VERSION
 ARG GIT_COMMITSHA
