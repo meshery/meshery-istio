@@ -115,7 +115,7 @@ func main() {
 
 	// Server Initialization
 	log.Info("Adaptor Listening at port: ", service.Port)
-	err = grpc.Start(service, nil)
+	err = grpc.Start(service)
 	if err != nil {
 		log.Error(err)
 		os.Exit(1)
