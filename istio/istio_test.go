@@ -11,6 +11,7 @@ import (
 	configprovider "github.com/layer5io/meshery-adapter-library/config/provider"
 	internalconfig "github.com/layer5io/meshery-istio/internal/config"
 	"github.com/layer5io/meshkit/logger"
+	"github.com/sirupsen/logrus"
 )
 
 func TestNew(t *testing.T) {
@@ -419,8 +420,8 @@ func getConfigHandler(t *testing.T) adapterconfig.Handler {
 
 func getLoggerHandler(t *testing.T) logger.Handler {
 	log, _ := logger.New("istio test", logger.Options{
-		Format:     logger.SyslogLogFormat,
-		DebugLevel: true,
+		Format:   logger.SyslogLogFormat,
+		LogLevel: int(logrus.DebugLevel),
 	})
 	return log
 }
