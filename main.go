@@ -24,6 +24,7 @@ import (
 	"github.com/layer5io/meshery-istio/build"
 	"github.com/layer5io/meshery-istio/istio"
 	"github.com/layer5io/meshkit/logger"
+	"github.com/sirupsen/logrus"
 
 	// "github.com/layer5io/meshkit/tracing"
 	"github.com/layer5io/meshery-adapter-library/adapter"
@@ -53,9 +54,13 @@ func init() {
 // main is the entrypoint of the adaptor
 func main() {
 	// Initialize Logger instance
+	logLevel := logrus.InfoLevel
+	if isDebug() {
+		logLevel = logrus.DebugLevel
+	}
 	log, err := logger.New(serviceName, logger.Options{
 		Format:     logger.SyslogLogFormat,
-		DebugLevel: isDebug(),
+		LogLevel: int(logLevel),
 	})
 	if err != nil {
 		fmt.Println(err)
