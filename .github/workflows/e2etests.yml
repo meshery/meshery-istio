@@ -83,7 +83,7 @@ jobs:
           repository: meshery/meshery
           token: ${{ secrets.GH_ACCESS_TOKEN }}
       - name: DownloadJSON
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4.1.7
         with:
           name: data.json
       - name: Add commit SHORT_SHA
@@ -198,7 +198,7 @@ jobs:
           repository: meshery/meshery
           token: ${{ secrets.GH_ACCESS_TOKEN }}
       - name: DownloadJSON
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4.1.7
         with:
           name: data.json
       - name: Add commit SHORT_SHA
@@ -313,7 +313,7 @@ jobs:
           repository: meshery/meshery
           token: ${{ secrets.GH_ACCESS_TOKEN }}
       - name: DownloadJSON
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4.1.7
         with:
           name: data.json
       - name: Add commit SHORT_SHA
