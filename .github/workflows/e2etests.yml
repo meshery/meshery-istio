@@ -42,7 +42,7 @@ jobs:
       - name: Uploading file
         uses: actions/upload-artifact@v4
         with:
-          name: patternfile
+          name: patternfile-${{ github.run_id }}
           path: ./.github/install/deploy.yaml
 
   TestIstioForServicemeshInstall:
@@ -157,7 +157,7 @@ jobs:
       - name: Uploading file
         uses: actions/upload-artifact@v4
         with:
-          name: patternfile
+          name: patternfile-${{ github.run_id }}
           path: ./.github/install/deploywithaddons.yaml
 
   TestIstioForServicemeshAndAddon:
@@ -272,7 +272,7 @@ jobs:
       - name: Uploading file
         uses: actions/upload-artifact@v4
         with:
-          name: patternfile
+          name: patternfile-${{ github.run_id }}
           path: ./.github/install/deploywithsampleapp.yaml
 
   TestIstioForServicemeshAndSampleApp:
