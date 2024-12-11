@@ -83,9 +83,9 @@ jobs:
           repository: meshery/meshery
           token: ${{ secrets.GH_ACCESS_TOKEN }}
       - name: DownloadJSON
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
-          name: data.json
+          name: data-servicemesh-install.json
       - name: Add commit SHORT_SHA
         run: echo "SHORT_SHA=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_ENV
       - name: echo results
@@ -198,9 +198,9 @@ jobs:
           repository: meshery/meshery
           token: ${{ secrets.GH_ACCESS_TOKEN }}
       - name: DownloadJSON
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
-          name: data.json
+          name: data-servicemesh-addon.json
       - name: Add commit SHORT_SHA
         run: echo "SHORT_SHA=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_ENV
       - name: echo results
@@ -313,9 +313,9 @@ jobs:
           repository: meshery/meshery
           token: ${{ secrets.GH_ACCESS_TOKEN }}
       - name: DownloadJSON
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
-          name: data.json
+          name: data-servicemesh-sample-app.json
       - name: Add commit SHORT_SHA
         run: echo "SHORT_SHA=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_ENV
       - name: echo results
