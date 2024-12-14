@@ -86,7 +86,6 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: patternfile-servicemesh-install
-          path: ./.github/install/deploy.yaml
       - name: Add commit SHORT_SHA
         run: echo "SHORT_SHA=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_ENV
       - name: echo results
@@ -202,7 +201,6 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: patternfile-servicemesh-addon
-          path: ./.github/install/deploywithaddons.yaml
       - name: Add commit SHORT_SHA
         run: echo "SHORT_SHA=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_ENV
       - name: echo results
@@ -318,7 +316,6 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: patternfile-servicemesh-sample-app
-          path: ./.github/install/deploywithsampleapp.yaml
       - name: Add commit SHORT_SHA
         run: echo "SHORT_SHA=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_ENV
       - name: echo results
