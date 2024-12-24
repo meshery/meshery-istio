@@ -65,5 +65,5 @@ func init() {
 	}
 	LatestVersion = AllVersions[len(AllVersions)-1]
 	DefaultGenerationMethod = adapter.Manifests
-	DefaultGenerationURL = "https://raw.githubusercontent.com/istio/istio/" + LatestVersion + "/manifests/charts/base/crds/crd-all.gen.yaml"
+	DefaultGenerationURL = "https://raw.githubusercontent.com/istio/istio/" + LatestVersion + "/manifests/charts/base/files/crd-all.gen.yaml"
 }
