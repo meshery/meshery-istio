@@ -262,7 +262,7 @@ func mergeErrors(errs []error) error {
 		errMsgs = append(errMsgs, err.Error())
 	}
 
-	return fmt.Errorf(strings.Join(errMsgs, "\n"))
+	return fmt.Errorf("%s", strings.Join(errMsgs, "\n"))
 }
 
 func mergeMsgs(strs []string) string {

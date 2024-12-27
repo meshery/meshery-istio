@@ -40,7 +40,7 @@ jobs:
           yq e -i '.services.istio.version="${{ steps.gettag.outputs.release }}"' ./.github/install/deploy.yaml 
           cat ./.github/install/deploy.yaml
       - name: Uploading file
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: patternfile
           path: ./.github/install/deploy.yaml
@@ -83,7 +83,7 @@ jobs:
           repository: meshery/meshery
           token: ${{ secrets.GH_ACCESS_TOKEN }}
       - name: DownloadJSON
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: data.json
       - name: Add commit SHORT_SHA
@@ -155,7 +155,7 @@ jobs:
           yq e -i '.services.prometheus.version="${{ steps.gettag.outputs.release }}"' ./.github/install/deploywithaddons.yaml 
           cat ./.github/install/deploywithaddons.yaml
       - name: Uploading file
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: patternfile
           path: ./.github/install/deploywithaddons.yaml
@@ -198,7 +198,7 @@ jobs:
           repository: meshery/meshery
           token: ${{ secrets.GH_ACCESS_TOKEN }}
       - name: DownloadJSON
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: data.json
       - name: Add commit SHORT_SHA
@@ -270,7 +270,7 @@ jobs:
           yq e -i '.services.istioinstallation.settings.istioVersion="${{ steps.gettag.outputs.release }}"' ./.github/install/deploywithsampleapp.yaml 
           cat ./.github/install/deploywithsampleapp.yaml
       - name: Uploading file
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: patternfile
           path: ./.github/install/deploywithsampleapp.yaml
@@ -313,7 +313,7 @@ jobs:
           repository: meshery/meshery
           token: ${{ secrets.GH_ACCESS_TOKEN }}
       - name: DownloadJSON
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: data.json
       - name: Add commit SHORT_SHA
