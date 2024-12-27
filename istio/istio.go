@@ -3,6 +3,7 @@ package istio
 import (
 	"context"
 	"fmt"
+	stderrors "errors"
 
 	"github.com/layer5io/meshery-adapter-library/adapter"
 	"github.com/layer5io/meshery-adapter-library/common"
@@ -214,9 +215,9 @@ func (istio *Istio) ApplyOperation(ctx context.Context, opReq adapter.OperationR
 			for msg := range responseChan {
 				switch msg.EventType {
 				case meshes.EventType_ERROR:
-					istio.StreamErr(msg, ErrIstioVet(fmt.Errorf(msg.Details)))
+					istio.StreamErr(msg, ErrIstioVet(stderrors.New(msg.Details)))
 				case meshes.EventType_WARN:
-					istio.StreamWarn(msg, ErrIstioVet(fmt.Errorf(msg.Details)))
+					istio.StreamWarn(msg, ErrIstioVet(stderrors.New(msg.Details)))
 				default:
 					istio.StreamInfo(msg)
 				}
