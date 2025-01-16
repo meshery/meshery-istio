@@ -85,7 +85,7 @@ jobs:
       - name: DownloadJSON
         uses: actions/download-artifact@v4
         with:
-          name: data.json
+          name: patternfile
       - name: Add commit SHORT_SHA
         run: echo "SHORT_SHA=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_ENV
       - name: echo results
@@ -157,7 +157,7 @@ jobs:
       - name: Uploading file
         uses: actions/upload-artifact@v4
         with:
-          name: patternfile
+          name: patternfile-servicemesh-addon
           path: ./.github/install/deploywithaddons.yaml
 
   TestIstioForServicemeshAndAddon:
@@ -200,7 +200,7 @@ jobs:
       - name: DownloadJSON
         uses: actions/download-artifact@v4
         with:
-          name: data.json
+          name: patternfile-servicemesh-addon
       - name: Add commit SHORT_SHA
         run: echo "SHORT_SHA=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_ENV
       - name: echo results
@@ -272,7 +272,7 @@ jobs:
       - name: Uploading file
         uses: actions/upload-artifact@v4
         with:
-          name: patternfile
+          name: patternfile-servicemesh-sample-app
           path: ./.github/install/deploywithsampleapp.yaml
 
   TestIstioForServicemeshAndSampleApp:
@@ -296,7 +296,7 @@ jobs:
 
   UpdateDocsForServicemeshAndSampleApp:
     needs: TestIstioForServicemeshAndSampleApp
-    if: "always() && github.event_name != 'pull_request' "
+    if: "always() && github.event_name != 'pull_request'"
     runs-on: ubuntu-22.04
     steps:
       - name: Skip if needed
@@ -315,7 +315,7 @@ jobs:
       - name: DownloadJSON
         uses: actions/download-artifact@v4
         with:
-          name: data.json
+          name: patternfile-servicemesh-sample-app
       - name: Add commit SHORT_SHA
         run: echo "SHORT_SHA=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_ENV
       - name: echo results
