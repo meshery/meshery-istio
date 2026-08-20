@@ -6,23 +6,23 @@
       <img alt="Shows an illustrated light mode meshery logo in light color mode and a dark mode meshery logo dark color mode." src="https://raw.githubusercontent.com/meshery/meshery-istio/master/img/readme/meshery-logo-light-text-side.svg" width="70%" align="center" style="margin-bottom:20px;">
     </picture>
   </a>
-  <a href="https://meshery.io/community"><img alt="Meshery Community" src="img/readme/community.svg" width="25%" align="left" /></a>
   <br /><br />
 </p>
  
 # Meshery Adapter for Istio
 <div align="center">
 
-[![Docker Pulls](https://img.shields.io/docker/pulls/meshery-extensions/meshery-istio.svg)](https://hub.docker.com/r/meshery-extensions/meshery-istio)
+[![Docker Pulls](https://img.shields.io/docker/pulls/meshery/meshery-istio.svg)](https://hub.docker.com/r/meshery/meshery-istio)
 [![Go Report Card](https://goreportcard.com/badge/github.com/meshery-extensions/meshery-istio)](https://goreportcard.com/report/github.com/meshery/meshery-istio)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/meshery/meshery-istio/multi-platform.yml?branch=master)](https://github.com/meshery/meshery-istio/actions)
 [![GitHub](https://img.shields.io/github/license/meshery/meshery-istio.svg)](LICENSE)
 [![GitHub issues by-label](https://img.shields.io/github/issues/meshery/meshery-istio/help%20wanted.svg)](https://github.com/issues?q=is%3Aopen%20is%3Aissue%20archived%3Afalse%20(org%3Ameshery%20OR%20org%3Aservice-mesh-performance%20OR%20org%3Aservice-mesh-patterns%20OR%20org%3Ameshery-extensions)%20label%3A%22help%20wanted%22)
 [![Website](https://img.shields.io/website/https/meshery/meshery.svg)](https://meshery.io/)
 [![Twitter Follow](https://img.shields.io/twitter/follow/meshery.svg?label=Follow&style=social)](https://twitter.com/intent/follow?screen_name=mesheryio)
-[![Discuss Users](https://img.shields.io/discourse/users?server=http%3A%2F%2Fdiscuss.meshery.io)](https://meshery.io/community#discussion-forums)
+[![Discuss Users](https://img.shields.io/discourse/users?server=http%3A%2F%2Fdiscuss.meshery.io)](https://discuss.meshery.io)
 [![Slack](https://img.shields.io/badge/Slack-@meshery.svg?logo=slack)](http://slack.meshery.io)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/3564/badge)](https://bestpractices.coreinfrastructure.org/projects/3564)
+[![support: official](https://img.shields.io/badge/support-official-2f6feb)](https://github.com/meshery/meshery/blob/master/GOVERNANCE.md#extensions-githubcommeshery-extensions)
 
 </div>
 
@@ -48,7 +48,7 @@ Our projects are community-built and welcome collaboration.👍 Be sure to see t
 ✔️ <em><strong>Watch</strong></em> community <a href="https://www.youtube.com/@mesheryio?sub_confirmation=1">meeting recordings</a>.<br />
 ✔️ <em><strong>Fill-in</strong></em> a <a href="https://meshery.io/newcomers">community member form</a> to gain access to community resources.
 <br />
-✔️ <em><strong>Discuss</strong></em> in the <a href="https://meshery.io/community#discussion-forums">Community Forum</a>.<br />
+✔️ <em><strong>Discuss</strong></em> in the <a href="https://discuss.meshery.io">Community Forum</a>.<br />
 ✔️ <em><strong>Explore more</strong></em> in the <a href="https://meshery.io/community#handbook">Community Handbook</a>.<br />
 </p>
 <p align="center">
